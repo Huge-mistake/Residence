@@ -87,22 +87,22 @@ public class ResidencePlayerMaxValues {
         Map<String, Object> map = new HashMap<String, Object>();
 
         if (maxRes != -1)
-            map.put("Res", maxRes);
+            map.put("MaxRes", maxRes);
 
         if (maxRents != -1)
-            map.put("Rents", maxRents);
+            map.put("MaxRents", maxRents);
 
         if (maxSubzones != -1)
-            map.put("Subzones", maxSubzones);
+            map.put("MaxSubzones", maxSubzones);
 
         if (maxSubzoneDepth != -1)
-            map.put("SubzoneDepth", maxSubzoneDepth);
+            map.put("MaxSubzoneDepth", maxSubzoneDepth);
 
         if (maxX != -1)
-            map.put("X", maxX);
+            map.put("MaxX", maxX);
 
         if (maxZ != -1)
-            map.put("Z", maxZ);
+            map.put("MaxZ", maxZ);
 
         max.put("Max", map);
 
