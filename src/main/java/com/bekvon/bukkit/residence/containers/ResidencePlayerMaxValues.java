@@ -87,22 +87,22 @@ public class ResidencePlayerMaxValues {
         Map<String, Object> map = new HashMap<String, Object>();
 
         if (maxRes != -1)
-            map.put("MaxRes", maxRes);
+            map.put("Res", maxRes);
 
         if (maxRents != -1)
-            map.put("MaxRents", maxRents);
+            map.put("Rents", maxRents);
 
         if (maxSubzones != -1)
-            map.put("MaxSubzones", maxSubzones);
+            map.put("Subzones", maxSubzones);
 
         if (maxSubzoneDepth != -1)
-            map.put("MaxSubzoneDepth", maxSubzoneDepth);
+            map.put("SubzoneDepth", maxSubzoneDepth);
 
         if (maxX != -1)
-            map.put("MaxX", maxX);
+            map.put("X", maxX);
 
         if (maxZ != -1)
-            map.put("MaxZ", maxZ);
+            map.put("Z", maxZ);
 
         max.put("Max", map);
 
@@ -129,23 +129,23 @@ public class ResidencePlayerMaxValues {
         int maxX = -1;
         int maxZ = -1;
 
-        if (map.containsKey("MaxRes"))
-            maxRes = (Integer) map.get("MaxRes");
+        if (map.containsKey("Res"))
+            maxRes = (Integer) map.get("Res");
 
-        if (map.containsKey("MaxRents"))
-            maxRents = (Integer) map.get("MaxRents");
+        if (map.containsKey("Rents"))
+            maxRents = (Integer) map.get("Rents");
 
-        if (map.containsKey("MaxSubzones"))
-            maxSubzones = (Integer) map.get("MaxSubzones");
+        if (map.containsKey("Subzones"))
+            maxSubzones = (Integer) map.get("Subzones");
 
-        if (map.containsKey("MaxSubzoneDepth"))
-            maxSubzoneDepth = (Integer) map.get("MaxSubzoneDepth");
+        if (map.containsKey("SubzoneDepth"))
+            maxSubzoneDepth = (Integer) map.get("SubzoneDepth");
 
-        if (map.containsKey("MaxX"))
-            maxX = (Integer) map.get("MaxX");
+        if (map.containsKey("X"))
+            maxX = (Integer) map.get("X");
 
-        if (map.containsKey("MaxZ"))
-            maxZ = (Integer) map.get("MaxZ");
+        if (map.containsKey("Z"))
+            maxZ = (Integer) map.get("Z");
 
         if (maxRes != -1 || maxRents != -1 || maxSubzones != -1 || maxSubzoneDepth != -1 || maxX != -1 || maxZ != -1) {
             ResidencePlayerMaxValues values = get(uuid);
