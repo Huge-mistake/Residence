@@ -129,23 +129,23 @@ public class ResidencePlayerMaxValues {
         int maxX = -1;
         int maxZ = -1;
 
-        if (map.containsKey("Res"))
-            maxRes = (Integer) map.get("Res");
+        if (map.containsKey("MaxRes"))
+            maxRes = (Integer) map.get("MaxRes");
 
-        if (map.containsKey("Rents"))
-            maxRents = (Integer) map.get("Rents");
+        if (map.containsKey("MaxRents"))
+            maxRents = (Integer) map.get("MaxRents");
 
-        if (map.containsKey("Subzones"))
-            maxSubzones = (Integer) map.get("Subzones");
+        if (map.containsKey("MaxSubzones"))
+            maxSubzones = (Integer) map.get("MaxSubzones");
 
-        if (map.containsKey("SubzoneDepth"))
-            maxSubzoneDepth = (Integer) map.get("SubzoneDepth");
+        if (map.containsKey("MaxSubzoneDepth"))
+            maxSubzoneDepth = (Integer) map.get("MaxSubzoneDepth");
 
-        if (map.containsKey("X"))
-            maxX = (Integer) map.get("X");
+        if (map.containsKey("MaxX"))
+            maxX = (Integer) map.get("MaxX");
 
-        if (map.containsKey("Z"))
-            maxZ = (Integer) map.get("Z");
+        if (map.containsKey("MaxZ"))
+            maxZ = (Integer) map.get("MaxZ");
 
         if (maxRes != -1 || maxRents != -1 || maxSubzones != -1 || maxSubzoneDepth != -1 || maxX != -1 || maxZ != -1) {
             ResidencePlayerMaxValues values = get(uuid);
