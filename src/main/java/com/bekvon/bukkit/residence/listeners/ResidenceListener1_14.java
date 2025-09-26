@@ -74,6 +74,8 @@ public class ResidenceListener1_14 implements Listener {
         // disabling event on world
         if (plugin.isDisabledWorldListener(event.getVehicle().getWorld()))
             return;
+        if (ResAdmin.isResAdmin(event.getPlayer())) {
+            return;
 
         if (event.isCancelled())
             return;
@@ -94,3 +96,4 @@ public class ResidenceListener1_14 implements Listener {
 
     }
 }
+
