@@ -1453,7 +1453,7 @@ public class ResidencePlayerListener implements Listener {
 
             if (heldItem.isDye() || heldItem.equals(CMIMaterial.GLOW_INK_SAC)) {
 
-                if (heldItem.equals(CMIMaterial.BONE_MEAL))  {
+                if (heldItem.equals(CMIMaterial.BONE_MEAL)) {
                     FlagPermissions tperms = FlagPermissions.getPerms(block.getRelative(event.getBlockFace()).getLocation(), player);
                     if (!tperms.playerHas(player, Flags.build, true)) {
                         lm.Flag_Deny.sendMessage(player, Flags.build);
@@ -2902,4 +2902,3 @@ public class ResidencePlayerListener implements Listener {
         return playerTempData.getCurrentResidence(uuid);
     }
 }
-
