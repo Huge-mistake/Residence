@@ -76,6 +76,7 @@ public class ResidenceListener1_14 implements Listener {
             return;
         if (ResAdmin.isResAdmin(event.getPlayer())) {
             return;
+        }
 
         if (event.isCancelled())
             return;
