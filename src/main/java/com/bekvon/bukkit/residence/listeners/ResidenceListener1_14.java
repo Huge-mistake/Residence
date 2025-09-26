@@ -96,4 +96,3 @@ public class ResidenceListener1_14 implements Listener {
 
     }
 }
-
