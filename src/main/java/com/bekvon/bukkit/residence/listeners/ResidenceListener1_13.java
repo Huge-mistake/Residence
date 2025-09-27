@@ -233,12 +233,21 @@ public class ResidenceListener1_13 implements Listener {
             } else if (cmat.isPlate()) {
                 if (perms.playerHas(player, targetFlag, hasUse))
                     return;
+
             }
 
         } else {
             FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
-            if (perms.has(targetFlag, perms.has(Flags.use, true)))
-                return;
+
+            if (cmat.isButton()) {
+                if (perms.has(targetFlag, perms.has(Flags.use, true))) {
+                    return;
+                }
+            } else if (cmat.isPlate()) {
+                if (perms.has(targetFlag, perms.has(Flags.use, true))) {
+                    return;
+                }
+            } 
         }
 
         event.setCancelled(true);
