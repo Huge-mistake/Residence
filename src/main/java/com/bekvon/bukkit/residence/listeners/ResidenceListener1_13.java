@@ -6,6 +6,8 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Farmland;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.SpectralArrow;
+import org.bukkit.entity.Snowball;
+import org.bukkit.entity.Egg;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -195,8 +197,14 @@ public class ResidenceListener1_13 implements Listener {
             return;
 
         Entity ent = event.getEntity();
-        if (!(ent instanceof Arrow) && !(ent instanceof Trident) && !(ent instanceof SpectralArrow) && !(ent instanceof Item))
+        if (!(ent instanceof Arrow) &&
+            !(ent instanceof Trident) &&
+            !(ent instanceof Item) &&
+            !(ent instanceof Egg) &&
+            !(ent instanceof SpectralArrow) &&
+            !(ent instanceof Snowball)) {
             return;
+        }
 
         @NotNull
         CMIMaterial cmat = CMIMaterial.get(event.getBlock().getType());
