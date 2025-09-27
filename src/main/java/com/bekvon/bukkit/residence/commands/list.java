@@ -56,13 +56,9 @@ public class list implements cmd {
         }
 
         if (target == null) {
-            if (sender instanceof org.bukkit.entity.Player) {
-                target = sender.getName();
-            } else {
-                lm.Invalid_Player.sendMessage(sender);
-                return false;
-            }
+            target = sender.getName();
         }
+
         if (target != null && !sender.getName().equalsIgnoreCase(target) &&
             !ResPerm.command_$1_others.hasPermission(sender, this.getClass().getSimpleName())) {
             lm.General_NoCmdPermission.sendMessage(sender);
