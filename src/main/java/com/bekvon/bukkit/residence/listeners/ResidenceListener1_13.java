@@ -124,10 +124,10 @@ public class ResidenceListener1_13 implements Listener {
         if (!Flags.button.isGlobalyEnabled())
             return;
 
-        if (plugin.isDisabledWorldListener(event.getHitBlock().getWorld()))
+        if (event.getHitBlock() == null)
             return;
 
-        if (event.getHitBlock() == null)
+        if (plugin.isDisabledWorldListener(event.getHitBlock().getWorld()))
             return;
 
         Block block = event.getHitBlock().getLocation().clone().add(event.getHitBlockFace().getDirection()).getBlock();
