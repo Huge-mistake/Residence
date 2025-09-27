@@ -193,13 +193,29 @@ public class ResidenceListener1_13 implements Listener {
             return;
 
         Entity ent = event.getEntity();
-        if (!(ent instanceof Arrow) && !(ent instanceof Trident) && !(ent instanceof Item))
+        if (!(ent instanceof Arrow) && !(ent instanceof Trident) && !(ent instanceof SpectralArrow) && !(ent instanceof Item))
             return;
 
         @NotNull
         CMIMaterial cmat = CMIMaterial.get(event.getBlock().getType());
 
+        boolean isButton = cmat.isButton();
+        boolean isPlate = cmat.isPlate();
+
         if (!cmat.isButton() && !cmat.isPlate())
+            return;
+
+        Flags targetFlag;
+        ResPerm bypassPerm;
+
+        if (isButton) {
+            targetFlag = Flags.button;
+            bypassPerm = ResPerm.bypass_button;
+
+        } else if (isPlate) {
+            targetFlag = Flags.pressure;
+            bypassPerm = ResPerm.bypass_pressure;
+        } else
             return;
 
         Player player = Utils.potentialProjectileToPlayer(ent);
@@ -217,15 +233,12 @@ public class ResidenceListener1_13 implements Listener {
             if (perms.playerHas(player, result, hasUse))
                 return;
 
-            switch (result) {
-            case button:
-                if (ResPerm.bypass_button.hasPermission(player, 10000L))
-                    return;
-                break;
-            }
+            if (result == targetFlag && bypassPerm.hasPermission(player, 10000L))
+                return;
+
         } else {
             FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
-            if (perms.has(Flags.button, perms.has(Flags.use, true)))
+            if (perms.has(targetFlag, perms.has(Flags.use, true)))
                 return;
         }
 
