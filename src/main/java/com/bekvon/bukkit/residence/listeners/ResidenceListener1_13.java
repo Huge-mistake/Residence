@@ -5,6 +5,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Farmland;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.SpectralArrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
+import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.permissions.PermissionManager.ResPerm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
@@ -199,28 +201,26 @@ public class ResidenceListener1_13 implements Listener {
         @NotNull
         CMIMaterial cmat = CMIMaterial.get(event.getBlock().getType());
 
-        boolean isButton = cmat.isButton();
-        boolean isPlate = cmat.isPlate();
-
         if (!cmat.isButton() && !cmat.isPlate())
             return;
 
         Flags targetFlag;
-        ResPerm bypassPerm;
 
-        if (isButton) {
+        if (cmat.isButton()) {
             targetFlag = Flags.button;
-            bypassPerm = ResPerm.bypass_button;
 
-        } else if (isPlate) {
+        } else if (cmat.isPlate()) {
             targetFlag = Flags.pressure;
-            bypassPerm = ResPerm.bypass_pressure;
+
         } else
             return;
 
         Player player = Utils.potentialProjectileToPlayer(ent);
 
         if (player != null) {
+
+            if (ResAdmin.isResAdmin(player))
+                return;
 
             Flags result = FlagPermissions.getMaterialUseFlagList().get(event.getBlock().getType());
             if (result == null)
@@ -231,9 +231,6 @@ public class ResidenceListener1_13 implements Listener {
             boolean hasUse = perms.playerHas(player, Flags.use, true);
 
             if (perms.playerHas(player, result, hasUse))
-                return;
-
-            if (result == targetFlag && bypassPerm.hasPermission(player, 10000L))
                 return;
 
         } else {
