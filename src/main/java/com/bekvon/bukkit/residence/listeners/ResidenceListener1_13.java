@@ -204,7 +204,7 @@ public class ResidenceListener1_13 implements Listener {
         if (!cmat.isButton() && !cmat.isPlate())
             return;
 
-        Flags targetFlag;
+        Flags targetFlag = null;
 
         if (cmat.isButton()) {
             targetFlag = Flags.button;
@@ -212,8 +212,7 @@ public class ResidenceListener1_13 implements Listener {
         } else if (cmat.isPlate()) {
             targetFlag = Flags.pressure;
 
-        } else
-            return;
+        }
 
         Player player = Utils.potentialProjectileToPlayer(ent);
 
@@ -222,16 +221,19 @@ public class ResidenceListener1_13 implements Listener {
             if (ResAdmin.isResAdmin(player))
                 return;
 
-            Flags result = FlagPermissions.getMaterialUseFlagList().get(event.getBlock().getType());
-            if (result == null)
-                return;
-
             FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation(), player);
 
             boolean hasUse = perms.playerHas(player, Flags.use, true);
 
-            if (perms.playerHas(player, result, hasUse))
-                return;
+            if (cmat.isButton()) {
+
+                if (perms.playerHas(player, targetFlag, hasUse))
+                    return;
+
+            } else if (cmat.isPlate()) {
+                if (perms.playerHas(player, targetFlag, hasUse))
+                    return;
+            }
 
         } else {
             FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
