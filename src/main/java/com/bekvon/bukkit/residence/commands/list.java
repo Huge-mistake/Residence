@@ -46,7 +46,7 @@ public class list implements cmd {
 
             if (world == null) {
                 World tempW = CMIWorld.getWorld(args[i]);
-                if (tempW.getName().equalsIgnoreCase(args[i])) {
+                if (tempW != null && tempW.getName().equalsIgnoreCase(args[i])) {
                     world = tempW;
                     continue;
                 }
@@ -55,8 +55,19 @@ public class list implements cmd {
             target = args[i];
         }
 
-        if (target != null && !sender.getName().equalsIgnoreCase(target) && !ResPerm.command_$1_others.hasPermission(sender, this.getClass().getSimpleName()))
+        if (target == null) {
+            if (sender instanceof org.bukkit.entity.Player) {
+                target = sender.getName();
+            } else {
+                lm.Invalid_Player.sendMessage(sender);
+                return false;
+            }
+        }
+        if (target != null && !sender.getName().equalsIgnoreCase(target) &&
+            !ResPerm.command_$1_others.hasPermission(sender, this.getClass().getSimpleName())) {
+            lm.General_NoCmdPermission.sendMessage(sender);
             return true;
+        }
 
         UUID uuid = ResidencePlayer.getUUID(target);
 
