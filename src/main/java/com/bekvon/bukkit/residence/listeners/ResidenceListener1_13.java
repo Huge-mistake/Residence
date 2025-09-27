@@ -4,14 +4,10 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Farmland;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.SpectralArrow;
-import org.bukkit.entity.Snowball;
-import org.bukkit.entity.Egg;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Trident;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -208,13 +204,8 @@ public class ResidenceListener1_13 implements Listener {
         if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
             return;
 
-        Entity ent = event.getEntity();
-        if (!(ent instanceof Arrow) &&
-            !(ent instanceof Trident) &&
-            !(ent instanceof Item) &&
-            !(ent instanceof Egg) &&
-            !(ent instanceof SpectralArrow) &&
-            !(ent instanceof Snowball)) {
+        Entity entity = event.getEntity();
+        if (!(entity instanceof Projectile) && !(entity instanceof Item)) {
             return;
         }
 
@@ -237,7 +228,7 @@ public class ResidenceListener1_13 implements Listener {
 
         }
 
-        Player player = Utils.potentialProjectileToPlayer(ent);
+        Player player = Utils.potentialProjectileToPlayer(entity);
 
         if (player != null) {
 
