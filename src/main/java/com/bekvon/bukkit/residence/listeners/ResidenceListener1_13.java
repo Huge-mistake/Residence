@@ -174,7 +174,7 @@ public class ResidenceListener1_13 implements Listener {
 
             // The perfect spot, the earlier check sends exactly one deny msgs
             // Deny msgs for the EntityInteractEvent below to avoid chat spam
-            // Send matching deny msgs for Button or pressure flag types
+            // Send matching deny msgs for flag types
             lm.Flag_Deny.sendMessage(player, targetFlag);
 
         //Check when the entity has no player source
