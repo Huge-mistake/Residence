@@ -1451,15 +1451,12 @@ public class ResidencePlayerListener implements Listener {
 
             CMIMaterial blockM = CMIMaterial.get(block.getType());
 
-            if (heldItem.isDye() || heldItem.equals(CMIMaterial.GLOW_INK_SAC)) {
-
-                if (heldItem.equals(CMIMaterial.BONE_MEAL)) {
-                    FlagPermissions tperms = FlagPermissions.getPerms(block.getRelative(event.getBlockFace()).getLocation(), player);
-                    if (!tperms.playerHas(player, Flags.build, true)) {
-                        lm.Flag_Deny.sendMessage(player, Flags.build);
-                        event.setCancelled(true);
-                        return;
-                    }
+            if (heldItem.equals(CMIMaterial.BONE_MEAL)) {
+                FlagPermissions tperms = FlagPermissions.getPerms(block.getRelative(event.getBlockFace()).getLocation(), player);
+                if (!tperms.playerHas(player, Flags.build, true)) {
+                    lm.Flag_Deny.sendMessage(player, Flags.build);
+                    event.setCancelled(true);
+                    return;
                 }
             }
             if (heldItem.equals(CMIMaterial.ARMOR_STAND) || heldItem.isBoat()) {
@@ -2902,3 +2899,4 @@ public class ResidencePlayerListener implements Listener {
         return playerTempData.getCurrentResidence(uuid);
     }
 }
+
