@@ -111,7 +111,7 @@ public class ResidenceListener1_20 implements Listener {
             if (player != null) {
 
                 FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
-                if (perms.playerHas(player, Flags.destroy))
+                if (perms.playerHas(player, Flags.destroy, true))
                     return;
 
                 lm.Flag_Deny.sendMessage(player, Flags.destroy);
@@ -121,7 +121,7 @@ public class ResidenceListener1_20 implements Listener {
             }
 
             FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation());
-            if (perms.has(Flags.destroy))
+            if (perms.has(Flags.destroy, true))
                 return;
 
             event.setCancelled(true);
@@ -133,7 +133,7 @@ public class ResidenceListener1_20 implements Listener {
             if (heldItem != null && heldItem.equals(CMIMaterial.BRUSH)) {
 
                 FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
-                if (perms.playerHas(player, Flags.brush))
+                if (perms.playerHas(player, Flags.brush, true))
                     return;
 
                 lm.Flag_Deny.sendMessage(player, Flags.brush);
