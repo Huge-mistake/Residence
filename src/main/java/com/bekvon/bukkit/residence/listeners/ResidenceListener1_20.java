@@ -89,7 +89,7 @@ public class ResidenceListener1_20 implements Listener {
 
     }
 
-    // For objects like decorative pots
+    // Projectile hit decorated_pot,Brush sweep suspicious_gravel suspicious_sand
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPotBreak(EntityChangeBlockEvent event) {
 
@@ -97,20 +97,48 @@ public class ResidenceListener1_20 implements Listener {
         if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
             return;
 
-        if (!(event.getEntity() instanceof Projectile))
-            return;
-
-        Projectile projectile = (Projectile) event.getEntity();
-
+        Block targetBlock = event.getBlock();
         Player player = null;
 
-        if (projectile.getShooter() instanceof Player)
-            player = (Player) projectile.getShooter();
+        if (event.getEntity() instanceof Projectile) {
 
-        if (player != null && player.hasMetadata("NPC"))
-            return;
+            Projectile projectile = (Projectile) event.getEntity();
 
-        if (!ResidenceBlockListener.canBreakBlock(player, event.getBlock().getLocation(), true))
+            if (projectile.getShooter() instanceof Player) {
+                player = (Player) projectile.getShooter();
+            }
+
+            if (player != null) {
+
+                FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
+                if (perms.playerHas(player, Flags.destroy))
+                    return;
+
+                lm.Flag_Deny.sendMessage(player, Flags.destroy);
+
+                event.setCancelled(true);
+
+            }
+
+            FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation());
+            if (perms.has(Flags.destroy))
+                return;
+
             event.setCancelled(true);
-    }
-}
+
+        }else if (event.getEntity() instanceof Player) {
+            player = (Player) event.getEntity();
+            CMIMaterial heldItem = CMIMaterial.get(player.getItemInHand());
+
+            if (heldItem != null && heldItem.equals(CMIMaterial.BRUSH)) {
+
+                FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
+                if (perms.playerHas(player, Flags.brush))
+                    return;
+
+                lm.Flag_Deny.sendMessage(player, Flags.brush);
+
+                event.setCancelled(true);
+
+            }
+        }
