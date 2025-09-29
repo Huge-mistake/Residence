@@ -143,3 +143,4 @@ public class ResidenceListener1_20 implements Listener {
             }
         }
     }
+}
