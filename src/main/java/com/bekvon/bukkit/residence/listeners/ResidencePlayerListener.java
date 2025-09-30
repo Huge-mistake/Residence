@@ -1480,7 +1480,6 @@ public class ResidencePlayerListener implements Listener {
                 return;
 
             }
-
         }
 
         if (isContainer(mat, block) || isCanUseEntity(mat, block)) {
@@ -2878,3 +2877,4 @@ public class ResidencePlayerListener implements Listener {
         return playerTempData.getCurrentResidence(uuid);
     }
 }
+
