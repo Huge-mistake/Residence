@@ -1481,16 +1481,6 @@ public class ResidencePlayerListener implements Listener {
 
             }
 
-            if (heldItem.equals(CMIMaterial.BRUSH)) {
-                ClaimedResidence res = plugin.getResidenceManager().getByLoc(block.getLocation());
-                if (res != null && !res.getPermissions().playerHas(player, Flags.brush, FlagCombo.OnlyTrue)) {
-                    lm.Flag_Deny.sendMessage(player, Flags.brush);
-                    event.setCancelled(true);
-                    return;
-
-                }
-            }
-
         }
 
         if (isContainer(mat, block) || isCanUseEntity(mat, block)) {
@@ -2888,3 +2878,4 @@ public class ResidencePlayerListener implements Listener {
         return playerTempData.getCurrentResidence(uuid);
     }
 }
+
