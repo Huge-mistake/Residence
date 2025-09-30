@@ -89,10 +89,10 @@ public class ResidenceListener1_20 implements Listener {
 
     }
 
-    // Projectile hit decorated_pot chorus_flower pointed_dripstone
-    // Brush sweep suspicious_gravel suspicious_sand
+    // Projectile hit chorus_flower decorated_pot pointed_dripstone
+    // Brush sweep suspicious_sand suspicious_gravel
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
+    public void onProjectilePlayerChangeBlock(EntityChangeBlockEvent event) {
 
         // disabling event on world
         if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
@@ -138,9 +138,9 @@ public class ResidenceListener1_20 implements Listener {
             CMIMaterial heldItem = CMIMaterial.get(player.getItemInHand());
             CMIMaterial blockM = CMIMaterial.get(targetBlock.getType());
 
-            // Check player hold brush interact suspicious_gravel suspicious_sand
+            // Check player hold brush interact suspicious_sand suspicious_gravel
             if (heldItem != null && heldItem.equals(CMIMaterial.BRUSH) &&
-                (blockM == CMIMaterial.SUSPICIOUS_GRAVEL || blockM == CMIMaterial.SUSPICIOUS_SAND)) {
+                (blockM == CMIMaterial.SUSPICIOUS_SAND || blockM == CMIMaterial.SUSPICIOUS_GRAVEL)) {
 
                 if (ResAdmin.isResAdmin(player))
                     return;
