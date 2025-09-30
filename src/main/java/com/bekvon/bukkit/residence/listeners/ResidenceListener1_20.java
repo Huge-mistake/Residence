@@ -89,7 +89,7 @@ public class ResidenceListener1_20 implements Listener {
 
     }
 
-    // Projectile hit decorated_pot,Brush sweep suspicious_gravel suspicious_sand
+    // Projectile hit decorated_pot, Brush sweep suspicious_gravel suspicious_sand
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPotBreak(EntityChangeBlockEvent event) {
 
@@ -108,7 +108,7 @@ public class ResidenceListener1_20 implements Listener {
                 player = (Player) projectile.getShooter();
             }
 
-            if (player != null) {
+            if (player != null && player.hasMetadata("NPC")) {
 
                 if (ResAdmin.isResAdmin(player))
                     return;
