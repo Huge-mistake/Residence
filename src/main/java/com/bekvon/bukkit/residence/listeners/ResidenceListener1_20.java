@@ -92,7 +92,7 @@ public class ResidenceListener1_20 implements Listener {
     // Projectile hit decorated_pot chorus_flower pointed_dripstone
     // Brush sweep suspicious_gravel suspicious_sand
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPotBreak(EntityChangeBlockEvent event) {
+    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
 
         // disabling event on world
         if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
@@ -101,10 +101,11 @@ public class ResidenceListener1_20 implements Listener {
         Block targetBlock = event.getBlock();
         Player player = null;
 
+        // Check if projectile
         if (event.getEntity() instanceof Projectile) {
-
             Projectile projectile = (Projectile) event.getEntity();
 
+            // Get projectile player source
             if (projectile.getShooter() instanceof Player) {
                 player = (Player) projectile.getShooter();
             }
@@ -123,19 +124,21 @@ public class ResidenceListener1_20 implements Listener {
                 event.setCancelled(true);
 
             }
-
+            // Check projectile not player source
             FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation());
             if (perms.has(Flags.destroy, true))
                 return;
 
             event.setCancelled(true);
 
+        // Not projectile
         }else if (event.getEntity() instanceof Player) {
             player = (Player) event.getEntity();
 
             CMIMaterial heldItem = CMIMaterial.get(player.getItemInHand());
             CMIMaterial blockM = CMIMaterial.get(targetBlock.getType());
 
+            // Check hold brush interact suspicious_gravel suspicious_sand
             if (heldItem != null && heldItem.equals(CMIMaterial.BRUSH) &&
                 (blockM == CMIMaterial.SUSPICIOUS_GRAVEL || blockM == CMIMaterial.SUSPICIOUS_SAND)) {
 
