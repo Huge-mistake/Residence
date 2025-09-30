@@ -108,7 +108,7 @@ public class ResidenceListener1_20 implements Listener {
                 player = (Player) projectile.getShooter();
             }
 
-            if (player != null && player.hasMetadata("NPC")) {
+            if (player != null) {
 
                 if (ResAdmin.isResAdmin(player))
                     return;
