@@ -110,6 +110,9 @@ public class ResidenceListener1_20 implements Listener {
 
             if (player != null) {
 
+                if (ResAdmin.isResAdmin(player))
+                    return;
+
                 FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
                 if (perms.playerHas(player, Flags.destroy, true))
                     return;
@@ -128,9 +131,15 @@ public class ResidenceListener1_20 implements Listener {
 
         }else if (event.getEntity() instanceof Player) {
             player = (Player) event.getEntity();
-            CMIMaterial heldItem = CMIMaterial.get(player.getItemInHand());
 
-            if (heldItem != null && heldItem.equals(CMIMaterial.BRUSH)) {
+            CMIMaterial heldItem = CMIMaterial.get(player.getItemInHand());
+            CMIMaterial blockM = CMIMaterial.get(targetBlock.getType());
+
+            if (heldItem != null && heldItem.equals(CMIMaterial.BRUSH) &&
+               (blockM == CMIMaterial.SUSPICIOUS_GRAVEL || blockM == CMIMaterial.SUSPICIOUS_SAND)) {
+
+                if (ResAdmin.isResAdmin(player))
+                    return;
 
                 FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
                 if (perms.playerHas(player, Flags.brush, true))
