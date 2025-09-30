@@ -131,14 +131,14 @@ public class ResidenceListener1_20 implements Listener {
 
             event.setCancelled(true);
 
-        // Not projectile
+        // Not projectile, get player
         }else if (event.getEntity() instanceof Player) {
             player = (Player) event.getEntity();
 
             CMIMaterial heldItem = CMIMaterial.get(player.getItemInHand());
             CMIMaterial blockM = CMIMaterial.get(targetBlock.getType());
 
-            // Check hold brush interact suspicious_gravel suspicious_sand
+            // Check player hold brush interact suspicious_gravel suspicious_sand
             if (heldItem != null && heldItem.equals(CMIMaterial.BRUSH) &&
                 (blockM == CMIMaterial.SUSPICIOUS_GRAVEL || blockM == CMIMaterial.SUSPICIOUS_SAND)) {
 
