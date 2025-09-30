@@ -146,7 +146,7 @@ public class ResidenceListener1_20 implements Listener {
                     return;
 
                 FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
-                if (perms.playerHas(player, Flags.brush, true))
+                if (perms.playerHas(player, Flags.brush, FlagCombo.OnlyTrue))
                     return;
 
                 lm.Flag_Deny.sendMessage(player, Flags.brush);
