@@ -136,7 +136,7 @@ public class ResidenceListener1_20 implements Listener {
             CMIMaterial blockM = CMIMaterial.get(targetBlock.getType());
 
             if (heldItem != null && heldItem.equals(CMIMaterial.BRUSH) &&
-               (blockM == CMIMaterial.SUSPICIOUS_GRAVEL || blockM == CMIMaterial.SUSPICIOUS_SAND)) {
+                (blockM == CMIMaterial.SUSPICIOUS_GRAVEL || blockM == CMIMaterial.SUSPICIOUS_SAND)) {
 
                 if (ResAdmin.isResAdmin(player))
                     return;
