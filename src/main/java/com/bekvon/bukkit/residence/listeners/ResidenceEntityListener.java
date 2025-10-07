@@ -1114,6 +1114,19 @@ public class ResidenceEntityListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onEntityBreakDoor(EntityBreakDoorEvent event) {
+
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(event.getEntity().getWorld()))
+            return;
+
+        if (plugin.getPermsByLoc(event.getBlock().getLocation()).has(Flags.destroy, true))
+            return;
+
+        event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onSplashPotion(EntityChangeBlockEvent event) {
         // Disabling listener if flag disabled globally
         if (!Flags.witherdestruction.isGlobalyEnabled())
