@@ -116,7 +116,7 @@ public class ResidenceListener1_20 implements Listener {
                     return;
 
                 FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
-                if (perms.playerHas(player, Flags.destroy, FlagCombo.OnlyTrue))
+                if (perms.playerHas(player, Flags.destroy, true))
                     return;
 
                 lm.Flag_Deny.sendMessage(player, Flags.destroy);
@@ -126,7 +126,7 @@ public class ResidenceListener1_20 implements Listener {
             }
             // Check projectile not player source
             FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation());
-            if (perms.has(Flags.destroy, FlagCombo.OnlyTrue))
+            if (perms.has(Flags.destroy, true))
                 return;
 
             event.setCancelled(true);
@@ -146,7 +146,7 @@ public class ResidenceListener1_20 implements Listener {
                     return;
 
                 FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
-                if (perms.playerHas(player, Flags.brush, FlagCombo.OnlyTrue))
+                if (perms.playerHas(player, Flags.brush, true))
                     return;
 
                 lm.Flag_Deny.sendMessage(player, Flags.brush);
