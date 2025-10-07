@@ -147,12 +147,12 @@ public class ResidenceListener1_20 implements Listener {
                     return;
 
                 ClaimedResidence res = plugin.getResidenceManager().getByLoc(targetBlock.getLocation());
-                if (res != null && !res.getPermissions().playerHas(player, Flags.brush, FlagCombo.OnlyTrue))
+                if (res != null && !res.getPermissions().playerHas(player, Flags.brush, FlagCombo.OnlyTrue)) {
 
-                lm.Flag_Deny.sendMessage(player, Flags.brush);
+                    lm.Flag_Deny.sendMessage(player, Flags.brush);
 
-                event.setCancelled(true);
-
+                    event.setCancelled(true);
+                }
             }
         }
     }
