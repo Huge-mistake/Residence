@@ -1114,6 +1114,7 @@ public class ResidenceEntityListener implements Listener {
         }
     }
 
+    // Various zombies break the door
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityBreakDoor(EntityBreakDoorEvent event) {
 
