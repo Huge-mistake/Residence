@@ -1117,9 +1117,6 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityBreakDoor(EntityBreakDoorEvent event) {
 
-        // Disabling listener if flag disabled globally
-        if (!Flags.destroy.isGlobalyEnabled())
-            return;
         // disabling event on world
         if (plugin.isDisabledWorldListener(event.getEntity().getWorld()))
             return;
