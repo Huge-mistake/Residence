@@ -144,13 +144,15 @@ public class ResidenceListener1_20 implements Listener {
             CMIMaterial mainHand = CMIMaterial.get(player.getInventory().getItemInMainHand());
             CMIMaterial offHand = CMIMaterial.get(player.getInventory().getItemInOffHand());
 
+            // Check player hold brush
             boolean heldItem =
                     (mainHand != null && mainHand.equals(CMIMaterial.BRUSH)) ||
                     (offHand != null && offHand.equals(CMIMaterial.BRUSH));
 
-            // Check player hold brush interact suspicious_sand suspicious_gravel
-            if (heldItem && blockM != null &&
-                    (blockM == CMIMaterial.SUSPICIOUS_SAND || blockM == CMIMaterial.SUSPICIOUS_GRAVEL)) {
+            // Check brush interact suspicious_sand and suspicious_gravel
+            if (heldItem &&
+                (blockM == CMIMaterial.SUSPICIOUS_SAND ||
+                 blockM == CMIMaterial.SUSPICIOUS_GRAVEL)) {
 
                 if (ResAdmin.isResAdmin(player))
                     return;
