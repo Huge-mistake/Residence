@@ -17,7 +17,6 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.permissions.PermissionManager.ResPerm;
-import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 
@@ -146,13 +145,13 @@ public class ResidenceListener1_20 implements Listener {
                 if (ResAdmin.isResAdmin(player))
                     return;
 
-                ClaimedResidence res = plugin.getResidenceManager().getByLoc(targetBlock.getLocation());
-                if (res != null && !res.getPermissions().playerHas(player, Flags.brush, FlagCombo.OnlyTrue)) {
-
+                FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
+                if (perms.playerHas(player, Flags.brush, perms.has(Flags.destroy, true)))
+                    return;
+                    
                     lm.Flag_Deny.sendMessage(player, Flags.brush);
 
                     event.setCancelled(true);
-                }
             }
         }
     }
