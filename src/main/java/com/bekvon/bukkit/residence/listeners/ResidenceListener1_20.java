@@ -136,8 +136,8 @@ public class ResidenceListener1_20 implements Listener {
         }else if (Version.isCurrentLower(Version.v1_20_R1)) {
             return;
         }
-            // Not projectile, get player
-            if (event.getEntity() instanceof Player) {
+        // Not projectile, get player
+        if (event.getEntity() instanceof Player) {
             player = (Player) event.getEntity();
 
             CMIMaterial blockM = CMIMaterial.get(block.getType());
@@ -151,8 +151,8 @@ public class ResidenceListener1_20 implements Listener {
 
             // Check brush interact suspicious_sand and suspicious_gravel
             if (heldItem &&
-                (blockM == CMIMaterial.SUSPICIOUS_SAND ||
-                 blockM == CMIMaterial.SUSPICIOUS_GRAVEL)) {
+                    (blockM == CMIMaterial.SUSPICIOUS_SAND ||
+                     blockM == CMIMaterial.SUSPICIOUS_GRAVEL)) {
 
                 if (ResAdmin.isResAdmin(player))
                     return;
