@@ -21,6 +21,7 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 
 import net.Zrips.CMILib.Items.CMIMaterial;
+import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener1_20 implements Listener {
 
@@ -98,7 +99,7 @@ public class ResidenceListener1_20 implements Listener {
         if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
             return;
 
-        Block targetBlock = event.getBlock();
+        Block block = event.getBlock();
         Player player = null;
 
         // Check if projectile
@@ -115,7 +116,7 @@ public class ResidenceListener1_20 implements Listener {
                 if (ResAdmin.isResAdmin(player))
                     return;
 
-                FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
+                FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
                 if (perms.playerHas(player, Flags.destroy, true))
                     return;
 
@@ -125,33 +126,43 @@ public class ResidenceListener1_20 implements Listener {
 
             }
             // Check projectile not player source
-            FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation());
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             if (perms.has(Flags.destroy, true))
                 return;
 
             event.setCancelled(true);
 
+            // No brush below 1.20
+        }else if (Version.isCurrentLower(Version.v1_20_R1)) {
+            return;
+        }
             // Not projectile, get player
-        }else if (event.getEntity() instanceof Player) {
+            if (event.getEntity() instanceof Player) {
             player = (Player) event.getEntity();
 
-            CMIMaterial heldItem = CMIMaterial.get(player.getItemInHand());
-            CMIMaterial blockM = CMIMaterial.get(targetBlock.getType());
+            CMIMaterial blockM = CMIMaterial.get(block.getType());
+            CMIMaterial mainHand = CMIMaterial.get(player.getInventory().getItemInMainHand());
+            CMIMaterial offHand = CMIMaterial.get(player.getInventory().getItemInOffHand());
+
+            boolean heldItem =
+                    (mainHand != null && mainHand.equals(CMIMaterial.BRUSH)) ||
+                    (offHand != null && offHand.equals(CMIMaterial.BRUSH));
 
             // Check player hold brush interact suspicious_sand suspicious_gravel
-            if (heldItem != null && heldItem.equals(CMIMaterial.BRUSH) &&
+            if (heldItem && blockM != null &&
                     (blockM == CMIMaterial.SUSPICIOUS_SAND || blockM == CMIMaterial.SUSPICIOUS_GRAVEL)) {
 
                 if (ResAdmin.isResAdmin(player))
                     return;
 
-                FlagPermissions perms = FlagPermissions.getPerms(targetBlock.getLocation(), player);
+                FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
                 if (perms.playerHas(player, Flags.brush, perms.has(Flags.destroy, true)))
                     return;
-                    
-                    lm.Flag_Deny.sendMessage(player, Flags.brush);
 
-                    event.setCancelled(true);
+                lm.Flag_Deny.sendMessage(player, Flags.brush);
+
+                event.setCancelled(true);
+
             }
         }
     }
