@@ -1478,6 +1478,7 @@ public class ResidencePlayerListener implements Listener {
                 return;
 
             }
+
         }
 
         if (isContainer(mat, block) || isCanUseEntity(mat, block)) {
