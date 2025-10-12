@@ -239,7 +239,7 @@ public class ResidenceListener1_13 implements Listener {
             if (ResAdmin.isResAdmin(player))
                 return;
 
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation(), player);
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
             boolean hasUse = perms.playerHas(player, Flags.use, true);
 
             if (isButton) {
@@ -260,7 +260,7 @@ public class ResidenceListener1_13 implements Listener {
 
         // Entity not player source
         } else {
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             boolean hasUse = perms.has(Flags.use, true);
 
             if (isButton) {
