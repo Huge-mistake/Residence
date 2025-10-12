@@ -1118,11 +1118,15 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityBreakDoor(EntityBreakDoorEvent event) {
 
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getEntity().getWorld()))
+        Block block = event.getBlock();
+        if (block == null)
             return;
 
-        if (plugin.getPermsByLoc(event.getBlock().getLocation()).has(Flags.destroy, true))
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(block.getWorld()))
+            return;
+
+        if (plugin.getPermsByLoc(block.getLocation()).has(Flags.destroy, true))
             return;
 
         event.setCancelled(true);
@@ -1819,3 +1823,4 @@ public class ResidenceEntityListener implements Listener {
         }
     }
 }
+
