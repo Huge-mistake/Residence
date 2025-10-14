@@ -317,6 +317,11 @@ public class FlagPermissions {
             addMaterialToUseFlag(CMIMaterial.CHISELED_BOOKSHELF.getMaterial(), Flags.container);
         }
 
+        if (Version.isCurrentEqualOrHigher(Version.v1_21_R6)) {
+            addMaterialToUseFlag(CMIMaterial.COPPERCHEST.getMaterial(), Flags.container);
+            addMaterialToUseFlag(CMIMaterial.SHELF.getMaterial(), Flags.container);
+        }
+
         addMaterialToUseFlag(Material.DISPENSER, Flags.container);
 //	addMaterialToUseFlag(CMIMaterial.CAKE.getMaterial(), Flags.cake);
     }
