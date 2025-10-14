@@ -263,6 +263,14 @@ public class FlagPermissions {
                     addMaterialToUseFlag(one.getMaterial(), Flags.cake);
             }
 
+            if (Version.isCurrentEqualOrHigher(Version.v1_21_R6)) {
+                if (one.containsCriteria(CMIMC.COPPERCHEST))
+                    addMaterialToUseFlag(one.getMaterial(), Flags.container);
+
+                if (one.containsCriteria(CMIMC.SHELF))
+                    addMaterialToUseFlag(one.getMaterial(), Flags.container);
+            }
+
         }
 
         if (CMIMaterial.DAYLIGHT_DETECTOR.getMaterial() != null)
@@ -315,11 +323,6 @@ public class FlagPermissions {
 
         if (Version.isCurrentEqualOrHigher(Version.v1_20_R1)) {
             addMaterialToUseFlag(CMIMaterial.CHISELED_BOOKSHELF.getMaterial(), Flags.container);
-        }
-
-        if (Version.isCurrentEqualOrHigher(Version.v1_21_R6)) {
-            addMaterialToUseFlag(CMIMaterial.COPPERCHEST.getMaterial(), Flags.container);
-            addMaterialToUseFlag(CMIMaterial.SHELF.getMaterial(), Flags.container);
         }
 
         addMaterialToUseFlag(Material.DISPENSER, Flags.container);
@@ -1690,3 +1693,4 @@ public class FlagPermissions {
         return Residence.getInstance().getWorldFlags().getPerms(world);
     }
 }
+
