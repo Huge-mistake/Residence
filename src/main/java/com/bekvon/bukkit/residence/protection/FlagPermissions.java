@@ -1693,4 +1693,3 @@ public class FlagPermissions {
         return Residence.getInstance().getWorldFlags().getPerms(world);
     }
 }
-
