@@ -65,9 +65,9 @@
 			<scope>provided</scope> 
 		</dependency>
 		<dependency>
-			<groupId>com.github.Zrips</groupId>
+			<groupId>com.github.CatTeaA</groupId>
 			<artifactId>CMILib</artifactId>
-			<version>1.5.6.3</version>
+			<version>1.5.6.9</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
