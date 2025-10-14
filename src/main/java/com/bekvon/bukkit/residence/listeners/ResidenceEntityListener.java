@@ -459,9 +459,6 @@ public class ResidenceEntityListener implements Listener {
 
         Entity entity = event.getEntity();
 
-        if (!Utils.isAnimal(entity))
-            return;
-
         if (ResAdmin.isResAdmin(player))
             return;
 
