@@ -46,6 +46,7 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.PlayerLeashEntityEvent;
+import org.bukkit.event.player.PlayerUnleashEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
@@ -449,6 +450,31 @@ public class ResidenceEntityListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void AnimalLeash(PlayerLeashEntityEvent event) {
+        // Disabling listener if flag disabled globally
+        if (!Flags.leash.isGlobalyEnabled())
+            return;
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(event.getEntity().getWorld()))
+            return;
+        Player player = event.getPlayer();
+
+        Entity entity = event.getEntity();
+
+        if (ResAdmin.isResAdmin(player))
+            return;
+
+        ClaimedResidence res = plugin.getResidenceManager().getByLoc(entity.getLocation());
+
+        if (res == null)
+            return;
+        if (res.getPermissions().playerHas(player, Flags.leash, FlagCombo.OnlyFalse)) {
+            lm.Residence_FlagDeny.sendMessage(player, Flags.leash, res.getName());
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void AnimalUnleash(PlayerUnleashEntityEvent event) {
         // Disabling listener if flag disabled globally
         if (!Flags.leash.isGlobalyEnabled())
             return;
