@@ -130,7 +130,7 @@ public class ResidenceListener1_21 implements Listener {
             return;
         
         Entity entity = event.getRightClicked();
-        if (!(entity == CMIEntityType.COPPER_GOLEM))
+        if (CMIEntityType.get(entity) != CMIEntityType.COPPER_GOLEM)
             return;
         
         Player player = event.getPlayer();
