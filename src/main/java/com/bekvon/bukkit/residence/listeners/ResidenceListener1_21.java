@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.potion.PotionEffectType;
@@ -24,6 +25,7 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
+import net.Zrips.CMILib.Entities.CMIEntityType;
 import net.Zrips.CMILib.Logs.CMIDebug;
 
 public class ResidenceListener1_21 implements Listener {
@@ -118,5 +120,31 @@ public class ResidenceListener1_21 implements Listener {
 
         // Removing weaving effect on death as there is no other way to properly handle this effect inside residence
         ent.removePotionEffect(PotionEffectType.WEAVING);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onCopperGolemInteract(PlayerInteractEntityEvent event) {
+
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+            return;
+        
+        Entity entity = event.getRightClicked();
+        if (!(entity == CMIEntityType.COPPER_GOLEM))
+            return;
+        
+        Player player = event.getPlayer();
+
+        if (ResAdmin.isResAdmin(player))
+            return;
+
+        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
+        if (perms.playerHas(player, Flags.copper, perms.has(Flags.animalkilling, true)))
+            return;
+
+        lm.Flag_Deny.sendMessage(player, Flags.copper);
+
+        event.setCancelled(true);
+
     }
 }
