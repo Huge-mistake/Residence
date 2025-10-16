@@ -1,10 +1,13 @@
 package com.bekvon.bukkit.residence.listeners;
 
+import net.Zrips.CMILib.Entities.CMIEntityType;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -14,6 +17,7 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import io.papermc.paper.event.entity.EntityPushedByEntityAttackEvent;
+import io.papermc.paper.event.entity.ItemTransportingEntityValidateTargetEvent;
 
 public class ResidenceListener1_21_8_Paper implements Listener {
 
@@ -62,5 +66,31 @@ public class ResidenceListener1_21_8_Paper implements Listener {
                 return true;
         }
         return false;
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onCopperGolemInteract(ItemTransportingEntityValidateTargetEvent event) {
+
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(event.getEntity().getWorld()))
+            return;
+
+        //Entity entity = event.getEntity();
+        if (CMIEntityType.get(event.getEntity()) != CMIEntityType.COPPER_GOLEM)
+            return;
+
+        //Block block = event.getBlock();
+        //CMIMaterial cmat = CMIMaterial.get(block.getType());
+        //boolean isCopperChest = cmat.isCopperBlock();
+        //boolean isChest = (cmat == CMIMaterial.CHEST || cmat == CMIMaterial.TRAPPED_CHEST);
+        //if (!isCopperChest && !isChest)
+        //    return;
+
+        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+        if (perms.has(Flags.container, true))
+            return;
+
+        event.setAllowed(false);
+
     }
 }
