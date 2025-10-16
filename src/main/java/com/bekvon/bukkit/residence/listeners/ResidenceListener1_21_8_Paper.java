@@ -1,8 +1,6 @@
 package com.bekvon.bukkit.residence.listeners;
 
-import net.Zrips.CMILib.Entities.CMIEntityType;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -15,6 +13,8 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
+
+import net.Zrips.CMILib.Entities.CMIEntityType;
 
 import io.papermc.paper.event.entity.EntityPushedByEntityAttackEvent;
 import io.papermc.paper.event.entity.ItemTransportingEntityValidateTargetEvent;
@@ -71,23 +71,19 @@ public class ResidenceListener1_21_8_Paper implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onCopperGolemInteract(ItemTransportingEntityValidateTargetEvent event) {
 
+        Entity entity = event.getEntity();
+        if (entity == null)
+            return;
+
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getEntity().getWorld()))
+        if (plugin.isDisabledWorldListener(entity.getWorld()))
             return;
 
-        //Entity entity = event.getEntity();
-        if (CMIEntityType.get(event.getEntity()) != CMIEntityType.COPPER_GOLEM)
+        if (CMIEntityType.get(entity) != CMIEntityType.COPPER_GOLEM)
             return;
-
-        //Block block = event.getBlock();
-        //CMIMaterial cmat = CMIMaterial.get(block.getType());
-        //boolean isCopperChest = cmat.isCopperBlock();
-        //boolean isChest = (cmat == CMIMaterial.CHEST || cmat == CMIMaterial.TRAPPED_CHEST);
-        //if (!isCopperChest && !isChest)
-        //    return;
 
         FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
-        if (perms.has(Flags.container, true))
+        if (perms.has(Flags.golemopenchest, perms.has(Flags.container, true)))
             return;
 
         event.setAllowed(false);
