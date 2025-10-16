@@ -71,7 +71,7 @@
 			<scope>provided</scope> 
 		</dependency>
 		<dependency>
-			<groupId>com.github.Zrips</groupId>
+			<groupId>com.github.Huge-mistake</groupId>
 			<artifactId>CMILib</artifactId>
 			<version>1.5.7.0</version>
 			<scope>provided</scope>
