@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>com.github.Huge-mistake</groupId>
 			<artifactId>CMILib</artifactId>
-			<version>1.5.7.0</version>
+			<version>1.5.7.1</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
