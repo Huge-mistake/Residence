@@ -1449,8 +1449,6 @@ public class ResidencePlayerListener implements Listener {
 
             CMIMaterial blockM = CMIMaterial.get(block.getType());
 
-            if (heldItem.isDye() || heldItem.equals(CMIMaterial.GLOW_INK_SAC)) {
-
             if (heldItem.equals(CMIMaterial.BONE_MEAL)) {
                 FlagPermissions tperms = FlagPermissions.getPerms(block.getRelative(event.getBlockFace()).getLocation(), player);
                 if (!tperms.playerHas(player, Flags.build, true)) {
