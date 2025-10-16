@@ -412,8 +412,8 @@ public class ResidenceBlockListener implements Listener {
         Player player = event.getPlayer();
         if (ResAdmin.isResAdmin(player))
             return;
-
-        if (!CMIMaterial.isChest(event.getBlock()))
+        Block block = event.getBlock();
+        if (block.getType() != Material.CHEST && block.getType() != Material.TRAPPED_CHEST)
             return;
 
         if (plugin.getPlayerManager().getResidenceCount(player.getUniqueId()) != 0)
