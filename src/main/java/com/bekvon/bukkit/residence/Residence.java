@@ -77,6 +77,7 @@ import com.bekvon.bukkit.residence.listeners.ResidenceListener1_20;
 import com.bekvon.bukkit.residence.listeners.ResidenceListener1_21;
 import com.bekvon.bukkit.residence.listeners.ResidenceListener1_21_8_Paper;
 import com.bekvon.bukkit.residence.listeners.ResidenceListener1_21_8_Spigot;
+import com.bekvon.bukkit.residence.listeners.ResidenceListener1_21_9_Paper;
 import com.bekvon.bukkit.residence.listeners.ResidencePlayerListener;
 import com.bekvon.bukkit.residence.permissions.PermissionManager;
 import com.bekvon.bukkit.residence.persistance.YMLSaveHelper;
