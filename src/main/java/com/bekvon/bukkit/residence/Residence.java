@@ -638,6 +638,11 @@ public class Residence extends JavaPlugin {
                         pm.registerEvents(new ResidenceListener1_21_8_Spigot(this), this);
                 }
 
+                if (Version.isCurrentEqualOrHigher(Version.v1_21_R6)) {
+                    if (Version.isPaperBranch())
+                        pm.registerEvents(new ResidenceListener1_21_9_Paper(this), this);
+                }
+
                 plistener = new ResidencePlayerListener(this);
 
                 pm.registerEvents(new ResidenceBlockListener(this), this);
