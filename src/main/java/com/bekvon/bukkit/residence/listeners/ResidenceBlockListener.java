@@ -459,7 +459,7 @@ public class ResidenceBlockListener implements Listener {
 
         Material type = block.getType();
 
-        if (!CMIMaterial.isChest(block.getType()))
+        if (!CMIMaterial.isChest(type))
             return;
 
         ClaimedResidence orRes = plugin.getResidenceManager().getByLoc(block.getLocation());
