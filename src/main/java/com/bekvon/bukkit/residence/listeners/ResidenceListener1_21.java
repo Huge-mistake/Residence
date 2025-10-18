@@ -26,6 +26,7 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.Entities.CMIEntityType;
+import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Logs.CMIDebug;
 
 public class ResidenceListener1_21 implements Listener {
@@ -136,6 +137,15 @@ public class ResidenceListener1_21 implements Listener {
         Player player = event.getPlayer();
 
         if (ResAdmin.isResAdmin(player))
+            return;
+
+        CMIMaterial mainHand = CMIMaterial.get(player.getInventory().getItemInMainHand());
+        CMIMaterial offHand = CMIMaterial.get(player.getInventory().getItemInOffHand());
+        boolean heldItem =
+                (mainHand != null && (mainHand.equals(CMIMaterial.HONEYCOMB) || mainHand.toString().contains("_AXE"))) ||
+                (offHand != null && (offHand.equals(CMIMaterial.HONEYCOMB) || offHand.toString().contains("_AXE")));
+
+        if (!heldItem)
             return;
 
         FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
