@@ -118,6 +118,15 @@ public class ResidenceListener1_17 implements Listener {
         if (ResAdmin.isResAdmin(player))
             return;
 
+        CMIMaterial mainHand = CMIMaterial.get(player.getInventory().getItemInMainHand());
+        CMIMaterial offHand = CMIMaterial.get(player.getInventory().getItemInOffHand());
+        boolean heldItem =
+                (mainHand != null && (mainHand.equals(CMIMaterial.HONEYCOMB) || mainHand.toString().contains("_AXE"))) ||
+                (offHand != null && (offHand.equals(CMIMaterial.HONEYCOMB) || offHand.toString().contains("_AXE")));
+
+        if (!heldItem)
+            return;
+
         FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
         if (perms.playerHas(player, Flags.copper, perms.has(Flags.destroy, true)))
             return;
