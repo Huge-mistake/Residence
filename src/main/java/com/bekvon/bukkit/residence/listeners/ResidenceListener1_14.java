@@ -39,7 +39,7 @@ public class ResidenceListener1_14 implements Listener {
         if (ResAdmin.isResAdmin(player))
             return;
 
-        FlagPermissions perms = FlagPermissions.getPerms(event.getLectern().getLocation(), player);
+        FlagPermissions perms = FlagPermissions.getPerms(event.getLectern().getLocation());
         if (perms.playerHas(player, Flags.container, true))
             return;
 
@@ -84,7 +84,7 @@ public class ResidenceListener1_14 implements Listener {
             if (ResAdmin.isResAdmin(player))
                 return;
 
-            FlagPermissions perms = FlagPermissions.getPerms(event.getVehicle().getLocation(), player);
+            FlagPermissions perms = FlagPermissions.getPerms(event.getVehicle().getLocation());
             if (perms.playerHas(player, Flags.vehicledestroy, true))
                 return;
 
