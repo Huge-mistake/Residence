@@ -46,6 +46,7 @@ import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.PlayerLeashEntityEvent;
+import org.bukkit.event.player.PlayerUnleashEntityEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
