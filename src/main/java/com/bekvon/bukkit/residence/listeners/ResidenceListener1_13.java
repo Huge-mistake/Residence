@@ -202,8 +202,11 @@ public class ResidenceListener1_13 implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityInteractButton(EntityInteractEvent event) {
 
+        Block block = event.getBlock();
+        if (block == null)
+            return;
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
+        if (plugin.isDisabledWorldListener(block.getWorld()))
             return;
 
         Entity entity = event.getEntity();
@@ -212,7 +215,6 @@ public class ResidenceListener1_13 implements Listener {
             return;
 
         @NotNull
-        Block block = event.getBlock();
         CMIMaterial cmat = CMIMaterial.get(block.getType());
         boolean isButton = cmat.isButton();
         boolean isPlate = cmat.isPlate();
