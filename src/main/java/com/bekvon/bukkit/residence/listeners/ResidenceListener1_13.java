@@ -266,7 +266,7 @@ public class ResidenceListener1_13 implements Listener {
                 event.setCancelled(true);
                 return;
 
-            } 
+            }
         }
     }
 }
