@@ -135,14 +135,13 @@ public class ResidenceListener1_20 implements Listener {
                     return;
 
                 lm.Flag_Deny.sendMessage(player, Flags.destroy);
-
                 event.setCancelled(true);
                 return;
 
             }
             // Not player source
             // Check potential block as a shooter which should be allowed if its inside same residence
-            if (Utils.isSourceBlockInsideSameResidence(entity, ClaimedResidence.getByLoc(event.getBlock().getLocation())))
+            if (Utils.isSourceBlockInsideSameResidence(entity, ClaimedResidence.getByLoc(block.getLocation())))
                 return;
 
             FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
@@ -152,9 +151,8 @@ public class ResidenceListener1_20 implements Listener {
             event.setCancelled(true);
             return;
 
-            // Event not triggered by projectile
         }
-
+        // Event not triggered by projectile
         // Only check SuspiciousBlocks
         CMIMaterial blockM = CMIMaterial.get(block.getType());
         if (!(blockM == CMIMaterial.SUSPICIOUS_SAND ||
@@ -175,7 +173,6 @@ public class ResidenceListener1_20 implements Listener {
             return;
 
         lm.Flag_Deny.sendMessage(player, Flags.brush);
-
         event.setCancelled(true);
     }
 }
