@@ -155,8 +155,8 @@ public class ResidenceListener1_20 implements Listener {
         // Event not triggered by projectile
         // Only check SuspiciousBlocks
         CMIMaterial blockM = CMIMaterial.get(block.getType());
-        if (!(blockM == CMIMaterial.SUSPICIOUS_SAND ||
-            blockM == CMIMaterial.SUSPICIOUS_GRAVEL))
+        if (blockM != CMIMaterial.SUSPICIOUS_SAND &&
+            blockM != CMIMaterial.SUSPICIOUS_GRAVEL)
             return;
 
         // Only check player
