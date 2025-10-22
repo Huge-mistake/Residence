@@ -87,8 +87,8 @@ public class ResidenceListener1_19 implements Listener {
 
     private void breakHopper(Inventory hopperInventory) {
 
-        if (hopperInventory.getHolder() instanceof HopperMinecart) {
-            HopperMinecart entity = (HopperMinecart) hopperInventory.getHolder();
+        if (hopperInventory instanceof HopperMinecart) {
+            HopperMinecart entity = (HopperMinecart) hopperInventory;
             entity.remove();
             return;
         }
