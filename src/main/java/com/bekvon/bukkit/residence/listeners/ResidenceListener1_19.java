@@ -88,8 +88,8 @@ public class ResidenceListener1_19 implements Listener {
     private void breakHopper(Inventory hopperInventory) {
 
         if (hopperInventory.getHolder() instanceof HopperMinecart) {
-            HopperMinecart hopperMinecart = (HopperMinecart) hopperInventory.getHolder();
-            hopperMinecart.setDamage(10);
+            HopperMinecart entity = (HopperMinecart) hopperInventory.getHolder();
+            entity.remove();
             return;
         }
 
@@ -103,7 +103,7 @@ public class ResidenceListener1_19 implements Listener {
 
         block.breakNaturally();
     }
-    
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHopper(InventoryMoveItemEvent event) {
 
