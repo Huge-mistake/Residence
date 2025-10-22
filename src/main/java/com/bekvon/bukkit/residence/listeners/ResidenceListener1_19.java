@@ -2,8 +2,6 @@ package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,7 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -22,25 +19,11 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-
 public class ResidenceListener1_19 implements Listener {
 
     private Residence plugin;
 
-    public ResidenceListener1_19(Residence plugin) {
-        this.plugin = plugin;
-        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-            long currentTime = System.currentTimeMillis();
-            cleanExpiredDebounceEntries(currentTime);
-        }, 0, 600);
-    }
-
-    private final Map<String, Long> moveItemDebounce = new ConcurrentHashMap<>();
-
-    private static final long DEBOUNCE_THRESHOLD = 2000;
+    public ResidenceListener1_19(Residence plugin) {this.plugin = plugin;}
 
     @EventHandler(priority = EventPriority.NORMAL)
     public void onSignInteract(PlayerInteractEvent event) {
@@ -100,75 +83,26 @@ public class ResidenceListener1_19 implements Listener {
         }
     }
 
-    private void cleanExpiredDebounceEntries(long currentTime) {
-        moveItemDebounce.entrySet().removeIf(
-                entry -> currentTime - entry.getValue() > DEBOUNCE_THRESHOLD * 2
-        );
-    }
-
-    private Block getBlockFromHolder(InventoryHolder holder) {
-        if (holder instanceof BlockState) {
-            return ((BlockState) holder).getBlock();
-        }
-        return null;
-    }
-
-    private String generateEventId(Block hopperBlock, Block chestBlock) {
-        if (hopperBlock == null || chestBlock == null) return null;
-
-        String worldName = hopperBlock.getWorld().getName();
-
-        Location hLoc = hopperBlock.getLocation();
-        Location cLoc = chestBlock.getLocation();
-        return String.format("%s_%d_%d_%d_%d_%d_%d",
-                worldName,
-                hLoc.getBlockX(), hLoc.getBlockY(), hLoc.getBlockZ(),
-                cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ()
-        );
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHopper(InventoryMoveItemEvent event) {
 
-        Inventory initiator = event.getInitiator();
-        Block hopperBlock = getBlockFromHolder(initiator.getHolder());
-        Inventory source = event.getSource();
-        Block chestBlock = getBlockFromHolder(source.getHolder());
-
-
-        String eventId = generateEventId(hopperBlock, chestBlock);
-        if (eventId == null) return;
-
-        long currentTime = System.currentTimeMillis();
-        if (moveItemDebounce.containsKey(eventId)) {
-            long lastProcessedTime = moveItemDebounce.get(eventId);
-            if (currentTime - lastProcessedTime < DEBOUNCE_THRESHOLD) {
-                event.setCancelled(true);
-                return;
-            }
-        }
-
-        if (hopperBlock == null || !hopperBlock.getType().name().contains("hopper"))
-            return;
-        if (chestBlock == null)
+        Inventory chest = event.getSource();
+        Inventory hopper = event.getDestination();
+        if (chest == null || hopper == null)
             return;
 
-        ClaimedResidence chestRes = ClaimedResidence.getByLoc(chestBlock.getLocation());
-        if (chestRes == null || chestRes.getName() == null)
+        ClaimedResidence chestRes = ClaimedResidence.getByLoc(chest.getLocation());
+        if (chestRes == null)
             return;
 
-        ClaimedResidence hopperRes = ClaimedResidence.getByLoc(hopperBlock.getLocation());
-        if (hopperRes == null || hopperRes.getName() == null) {
+        ClaimedResidence hopperRes = ClaimedResidence.getByLoc(hopper.getLocation());
+        if (hopperRes == null) {
             event.setCancelled(true);
             return;
         }
-        if (Objects.equals(chestRes.getName(), hopperRes.getName()))
+        if (chestRes == hopperRes)
             return;
 
         event.setCancelled(true);
-        if (!moveItemDebounce.containsKey(eventId) || currentTime - moveItemDebounce.get(eventId) > DEBOUNCE_THRESHOLD) {
-            moveItemDebounce.put(eventId, currentTime);
-        }
-        cleanExpiredDebounceEntries(currentTime);
     }
 }
