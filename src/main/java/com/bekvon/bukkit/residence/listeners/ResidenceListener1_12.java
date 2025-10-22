@@ -2,27 +2,21 @@ package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.permissions.PermissionManager.ResPerm;
-import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
-import com.bekvon.bukkit.residence.containers.ResAdmin;
 
-import net.Zrips.CMILib.Entities.CMIEntityType;
 import net.Zrips.CMILib.Items.CMIItemStack;
 
 public class ResidenceListener1_12 implements Listener {
@@ -77,35 +71,5 @@ public class ResidenceListener1_12 implements Listener {
 
         event.setDamage(0);
         event.setCancelled(true);
-    }
-
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onFishingBobberHit(ProjectileHitEvent event) {
-
-        Entity entity = event.getEntity();
-        if (entity == null)
-            return;
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(entity.getWorld()))
-            return;
-
-        if (CMIEntityType.get(entity) != CMIEntityType.FISHING_BOBBER)
-            return;
-
-        Projectile projectile = (Projectile) entity;
-        if (projectile.getShooter() instanceof Player) {
-
-            Player player = (Player) projectile.getShooter();
-
-            if (ResAdmin.isResAdmin(player))
-                return;
-
-            FlagPermissions perms = FlagPermissions.getPerms(event.getHitEntity().getLocation(), player);
-            if (perms.playerHas(player, Flags.hook, perms.playerHas(player, Flags.destroy, true)))
-                return;
-
-            lm.Flag_Deny.sendMessage(player, Flags.hook);
-            event.setCancelled(true);
-        }
     }
 }
