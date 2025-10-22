@@ -87,8 +87,8 @@ public class ResidenceListener1_19 implements Listener {
 
     private void breakHopper(Inventory hopperInventory) {
 
-        if (hopperInventory instanceof HopperMinecart) {
-            HopperMinecart entity = (HopperMinecart) hopperInventory;
+        if (hopperInventory.getHolder() instanceof HopperMinecart) {
+            HopperMinecart entity = (HopperMinecart) hopperInventory.getHolder();
             entity.remove();
             return;
         }
@@ -105,7 +105,7 @@ public class ResidenceListener1_19 implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onHopper(InventoryMoveItemEvent event) {
+    public void onHopperCrossRes(InventoryMoveItemEvent event) {
 
         Inventory chest = event.getSource();
         Inventory hopper = event.getDestination();
@@ -113,21 +113,22 @@ public class ResidenceListener1_19 implements Listener {
             return;
 
         ClaimedResidence chestRes = ClaimedResidence.getByLoc(chest.getLocation());
+        // Container not in Residence
         if (chestRes == null)
             return;
 
         ClaimedResidence hopperRes = ClaimedResidence.getByLoc(hopper.getLocation());
+        // Hopper not in Residence
         if (hopperRes == null) {
             event.setCancelled(true);
             breakHopper(hopper);
             return;
         }
-
+        // Container & Hopper in Same Residence
         if (chestRes == hopperRes)
             return;
 
         event.setCancelled(true);
         breakHopper(hopper);
-        return;
     }
 }
