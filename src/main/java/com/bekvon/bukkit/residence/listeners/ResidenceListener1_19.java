@@ -89,6 +89,7 @@ public class ResidenceListener1_19 implements Listener {
 
     private void breakHopper(Inventory hopperInventory) {
 
+        // Only hopper_minecart
         if (hopperInventory.getHolder() instanceof HopperMinecart) {
             HopperMinecart entity = (HopperMinecart) hopperInventory.getHolder();
             entity.remove();
@@ -100,6 +101,7 @@ public class ResidenceListener1_19 implements Listener {
             return;
 
         Block block = hopperLoc.getBlock();
+        // Only hopper
         if (block.getType() != Material.HOPPER)
             return;
 
@@ -130,6 +132,7 @@ public class ResidenceListener1_19 implements Listener {
         if (chestRes == hopperRes)
             return;
 
+        // Not in Same Residence
         event.setCancelled(true);
         breakHopper(hopper);
     }
