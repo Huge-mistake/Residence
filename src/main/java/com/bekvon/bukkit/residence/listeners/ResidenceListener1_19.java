@@ -2,7 +2,9 @@ package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -83,6 +85,25 @@ public class ResidenceListener1_19 implements Listener {
         }
     }
 
+    private void breakHopper(Inventory hopperInventory) {
+
+        if (hopperInventory.getHolder() instanceof HopperMinecart) {
+            HopperMinecart hopperMinecart = (HopperMinecart) hopperInventory.getHolder();
+            hopperMinecart.setDamage(10);
+            return;
+        }
+
+        Location hopperLoc = hopperInventory.getLocation();
+        if (hopperLoc == null)
+            return;
+
+        Block block = hopperLoc.getBlock();
+        if (block.getType() != Material.HOPPER)
+            return;
+
+        block.breakNaturally();
+    }
+    
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHopper(InventoryMoveItemEvent event) {
 
@@ -98,11 +119,15 @@ public class ResidenceListener1_19 implements Listener {
         ClaimedResidence hopperRes = ClaimedResidence.getByLoc(hopper.getLocation());
         if (hopperRes == null) {
             event.setCancelled(true);
+            breakHopper(hopper);
             return;
         }
+
         if (chestRes == hopperRes)
             return;
 
         event.setCancelled(true);
+        breakHopper(hopper);
+        return;
     }
 }
