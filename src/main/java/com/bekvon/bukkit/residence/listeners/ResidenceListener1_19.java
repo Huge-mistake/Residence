@@ -22,8 +22,9 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ResidenceListener1_19 implements Listener {
 
@@ -31,9 +32,13 @@ public class ResidenceListener1_19 implements Listener {
 
     public ResidenceListener1_19(Residence plugin) {
         this.plugin = plugin;
+        plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            long currentTime = System.currentTimeMillis();
+            cleanExpiredDebounceEntries(currentTime);
+        }, 0, 600);
     }
 
-    private final Map<String, Long> moveItemDebounce = new HashMap<>();
+    private final Map<String, Long> moveItemDebounce = new ConcurrentHashMap<>();
 
     private static final long DEBOUNCE_THRESHOLD = 2000;
 
@@ -110,26 +115,33 @@ public class ResidenceListener1_19 implements Listener {
         long currentTime = System.currentTimeMillis();
         if (moveItemDebounce.containsKey(eventId)) {
             long lastProcessedTime = moveItemDebounce.get(eventId);
-            if (currentTime - lastProcessedTime < DEBOUNCE_THRESHOLD)
+            if (currentTime - lastProcessedTime < DEBOUNCE_THRESHOLD) {
                 event.setCancelled(true);
                 return;
+            }
         }
 
-        if (hopperBlock == null || !hopperBlock.getType().name().contains("HOPPER"))
+        if (hopperBlock == null || !hopperBlock.getType().name().contains("hopper"))
             return;
         if (chestBlock == null)
             return;
 
-        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(chestBlock.getLocation());
-        if (sourceRes == null)
+        ClaimedResidence chestRes = ClaimedResidence.getByLoc(chestBlock.getLocation());
+        if (chestRes == null || chestRes.getName() == null)
             return;
 
         ClaimedResidence hopperRes = ClaimedResidence.getByLoc(hopperBlock.getLocation());
-        if (hopperRes != null && hopperRes.equals(sourceRes))
+        if (hopperRes == null || hopperRes.getName() == null) {
+            event.setCancelled(true);
+            return;
+        }
+        if (Objects.equals(chestRes.getName(), hopperRes.getName()))
             return;
 
         event.setCancelled(true);
-        moveItemDebounce.put(eventId, currentTime);
+        if (!moveItemDebounce.containsKey(eventId) || currentTime - moveItemDebounce.get(eventId) > DEBOUNCE_THRESHOLD) {
+            moveItemDebounce.put(eventId, currentTime);
+        }
         cleanExpiredDebounceEntries(currentTime);
     }
 
@@ -148,8 +160,15 @@ public class ResidenceListener1_19 implements Listener {
 
     private String generateEventId(Block hopperBlock, Block chestBlock) {
         if (hopperBlock == null || chestBlock == null) return null;
-        return hopperBlock.getWorld().getUID().toString() + "_" +
-                hopperBlock.getX() + "_" + hopperBlock.getY() + "_" + hopperBlock.getZ() + "_" +
-                chestBlock.getX() + "_" + chestBlock.getY() + "_" + chestBlock.getZ();
+
+        String worldName = hopperBlock.getWorld().getName();
+
+        Location hLoc = hopperBlock.getLocation();
+        Location cLoc = chestBlock.getLocation();
+        return String.format("%s_%d_%d_%d_%d_%d_%d",
+                worldName,
+                hLoc.getBlockX(), hLoc.getBlockY(), hLoc.getBlockZ(),
+                cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ()
+        );
     }
 }
