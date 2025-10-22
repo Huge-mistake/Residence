@@ -2,12 +2,16 @@ package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -81,5 +85,52 @@ public class ResidenceListener1_19 implements Listener {
         if (!perms.has(Flags.skulk, true)) {
             event.setCancelled(true);
         }
+    }
+
+    private void breakHopper(Inventory hopperInventory) {
+
+        if (hopperInventory.getHolder() instanceof HopperMinecart) {
+            HopperMinecart entity = (HopperMinecart) hopperInventory.getHolder();
+            entity.remove();
+            return;
+        }
+
+        Location hopperLoc = hopperInventory.getLocation();
+        if (hopperLoc == null)
+            return;
+
+        Block block = hopperLoc.getBlock();
+        if (block.getType() != Material.HOPPER)
+            return;
+
+        block.breakNaturally();
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onHopperCrossRes(InventoryMoveItemEvent event) {
+
+        Inventory chest = event.getSource();
+        Inventory hopper = event.getDestination();
+        if (chest == null || hopper == null)
+            return;
+
+        ClaimedResidence chestRes = ClaimedResidence.getByLoc(chest.getLocation());
+        // Container not in Residence
+        if (chestRes == null)
+            return;
+
+        ClaimedResidence hopperRes = ClaimedResidence.getByLoc(hopper.getLocation());
+        // Hopper not in Residence
+        if (hopperRes == null) {
+            event.setCancelled(true);
+            breakHopper(hopper);
+            return;
+        }
+        // Container & Hopper in Same Residence
+        if (chestRes == hopperRes)
+            return;
+
+        event.setCancelled(true);
+        breakHopper(hopper);
     }
 }
