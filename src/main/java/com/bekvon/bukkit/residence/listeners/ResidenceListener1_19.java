@@ -100,6 +100,33 @@ public class ResidenceListener1_19 implements Listener {
         }
     }
 
+    private void cleanExpiredDebounceEntries(long currentTime) {
+        moveItemDebounce.entrySet().removeIf(
+                entry -> currentTime - entry.getValue() > DEBOUNCE_THRESHOLD * 2
+        );
+    }
+
+    private Block getBlockFromHolder(InventoryHolder holder) {
+        if (holder instanceof BlockState) {
+            return ((BlockState) holder).getBlock();
+        }
+        return null;
+    }
+
+    private String generateEventId(Block hopperBlock, Block chestBlock) {
+        if (hopperBlock == null || chestBlock == null) return null;
+
+        String worldName = hopperBlock.getWorld().getName();
+
+        Location hLoc = hopperBlock.getLocation();
+        Location cLoc = chestBlock.getLocation();
+        return String.format("%s_%d_%d_%d_%d_%d_%d",
+                worldName,
+                hLoc.getBlockX(), hLoc.getBlockY(), hLoc.getBlockZ(),
+                cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ()
+        );
+    }
+
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onHopper(InventoryMoveItemEvent event) {
 
@@ -143,32 +170,5 @@ public class ResidenceListener1_19 implements Listener {
             moveItemDebounce.put(eventId, currentTime);
         }
         cleanExpiredDebounceEntries(currentTime);
-    }
-
-    private void cleanExpiredDebounceEntries(long currentTime) {
-        moveItemDebounce.entrySet().removeIf(
-                entry -> currentTime - entry.getValue() > DEBOUNCE_THRESHOLD * 2
-        );
-    }
-
-    private Block getBlockFromHolder(InventoryHolder holder) {
-        if (holder instanceof BlockState) {
-            return ((BlockState) holder).getBlock();
-        }
-        return null;
-    }
-
-    private String generateEventId(Block hopperBlock, Block chestBlock) {
-        if (hopperBlock == null || chestBlock == null) return null;
-
-        String worldName = hopperBlock.getWorld().getName();
-
-        Location hLoc = hopperBlock.getLocation();
-        Location cLoc = chestBlock.getLocation();
-        return String.format("%s_%d_%d_%d_%d_%d_%d",
-                worldName,
-                hLoc.getBlockX(), hLoc.getBlockY(), hLoc.getBlockZ(),
-                cLoc.getBlockX(), cLoc.getBlockY(), cLoc.getBlockZ()
-        );
     }
 }
