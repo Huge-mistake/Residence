@@ -934,13 +934,7 @@ public class ResidenceBlockListener implements Listener {
             }
 
             if (plugin.getConfigManager().isNoWaterPlace() &&
-                    (cmat == CMIMaterial.WATER_BUCKET ||
-                     cmat == CMIMaterial.COD_BUCKET ||
-                     cmat == CMIMaterial.SALMON_BUCKET ||
-                     cmat == CMIMaterial.TROPICAL_FISH_BUCKET ||
-                     cmat == CMIMaterial.PUFFERFISH_BUCKET ||
-                     cmat == CMIMaterial.AXOLOTL_BUCKET ||
-                     cmat == CMIMaterial.TADPOLE_BUCKET)) {
+                    (cmat == CMIMaterial.WATER_BUCKET || cmat.containsCriteria(CMIMC.BUCKETANIMAL))) {
                 event.setCancelled(true);
                 return;
             }
@@ -953,21 +947,12 @@ public class ResidenceBlockListener implements Listener {
                 (cmat == CMIMaterial.BUCKET ||
                  cmat == CMIMaterial.LAVA_BUCKET ||
                  cmat == CMIMaterial.WATER_BUCKET ||
-                 cmat == CMIMaterial.COD_BUCKET ||
-                 cmat == CMIMaterial.SALMON_BUCKET ||
-                 cmat == CMIMaterial.TROPICAL_FISH_BUCKET ||
-                 cmat == CMIMaterial.PUFFERFISH_BUCKET ||
-                 cmat == CMIMaterial.AXOLOTL_BUCKET ||
-                 cmat == CMIMaterial.TADPOLE_BUCKET ||
                  cmat == CMIMaterial.POWDER_SNOW_BUCKET ||
-                 cmat == CMIMaterial.MINECART ||
-                 cmat == CMIMaterial.HOPPER_MINECART ||
-                 cmat == CMIMaterial.CHEST_MINECART ||
-                 cmat == CMIMaterial.FURNACE_MINECART ||
-                 cmat == CMIMaterial.TNT_MINECART ||
                  cmat == CMIMaterial.TNT ||
                  cmat == CMIMaterial.BONE_MEAL ||
-                 cmat.isBoots())) {
+                 cmat.containsCriteria(CMIMC.BOAT) ||
+                 cmat.containsCriteria(CMIMC.MINECART) ||
+                 cmat.containsCriteria(CMIMC.BUCKETANIMAL))) {
             event.setCancelled(true);
         }
     }
