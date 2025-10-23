@@ -88,17 +88,17 @@ public class ResidenceListener1_19 implements Listener {
     }
 
     private void breakHopper(Inventory hopperInventory) {
-
+        // delay 1 tick break, ensure after event cancel
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
             Location hopperLoc = hopperInventory.getLocation();
             if (hopperLoc == null)
                 return;
             Block block = hopperLoc.getBlock();
-            // Only hopper
+            // only hopper
             if (block.getType() != Material.HOPPER)
                 return;
             block.breakNaturally();
-        }, 100);
+        }, 1);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
