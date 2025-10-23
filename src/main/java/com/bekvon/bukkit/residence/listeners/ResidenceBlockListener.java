@@ -960,6 +960,7 @@ public class ResidenceBlockListener implements Listener {
                  cmat == CMIMaterial.TADPOLE_BUCKET)) {
             event.setCancelled(true);
         }
+    }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onLavaWaterFlow(BlockFromToEvent event) {
