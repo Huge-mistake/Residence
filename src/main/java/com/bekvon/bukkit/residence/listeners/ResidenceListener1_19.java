@@ -3,6 +3,7 @@ package com.bekvon.bukkit.residence.listeners;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -88,7 +89,7 @@ public class ResidenceListener1_19 implements Listener {
         }
     }
 
-    private void breakHopper(InventoryHolder actor) {
+    private void breakActor(InventoryHolder actor) {
 
         if (actor == null) {
             return;
@@ -98,6 +99,20 @@ public class ResidenceListener1_19 implements Listener {
                 Hopper hopper = (Hopper) actor;
                 hopper.getBlock().breakNaturally();
             }
+        }, 1);
+    }
+
+    private void breakSource(Inventory hopperInventory) {
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            Location hopperLoc = hopperInventory.getLocation();
+            if (hopperLoc == null)
+                return;
+            Block block = hopperLoc.getBlock();
+            // Only hopper
+            if (block.getType() != Material.HOPPER)
+                return;
+            block.breakNaturally();
         }, 1);
     }
 
@@ -116,19 +131,19 @@ public class ResidenceListener1_19 implements Listener {
         // source & dest not in Same Residence
         if (sourceRes != null && destRes != null && !sourceRes.equals(destRes)) {
             event.setCancelled(true);
-            breakHopper(actor);
+            breakActor(actor);
             return;
         }
         // source in Res, dest not in Res
         if (sourceRes != null && destRes == null) {
             event.setCancelled(true);
-            breakHopper(actor);
+            breakActor(actor);
             return;
         }
         // dest in Res, source not in Res
         if (sourceRes == null && destRes != null) {
             event.setCancelled(true);
-            breakHopper(actor);
+            breakSource(source);
         }
         // ignore source & dest not in Res
     }
