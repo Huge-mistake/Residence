@@ -203,7 +203,7 @@ public class ResidenceListener1_09 implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onFrostWalker(EntityBlockFormEvent event) {
 
         Entity entity = event.getEntity();
