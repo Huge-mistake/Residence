@@ -3,7 +3,7 @@ package com.bekvon.bukkit.residence.listeners;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Hopper;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,7 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -88,17 +87,18 @@ public class ResidenceListener1_19 implements Listener {
         }
     }
 
-    private void breakHopper(InventoryHolder actor) {
+    private void breakHopper(Inventory hopperInventory) {
 
-        if (actor == null) {
-            return;
-        }
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            if (actor instanceof Hopper) {
-                Hopper hopper = (Hopper) actor;
-                hopper.getBlock().breakNaturally();
-            }
-        }, 1);
+            Location hopperLoc = hopperInventory.getLocation();
+            if (hopperLoc == null)
+                return;
+            Block block = hopperLoc.getBlock();
+            // Only hopper
+            if (block.getType() != Material.HOPPER)
+                return;
+            block.breakNaturally();
+        }, 100);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -111,24 +111,22 @@ public class ResidenceListener1_19 implements Listener {
 
         ClaimedResidence sourceRes = ClaimedResidence.getByLoc(source.getLocation());
         ClaimedResidence destRes = ClaimedResidence.getByLoc(dest.getLocation());
-        InventoryHolder actor = event.getInitiator().getHolder();
 
         // source & dest not in Same Residence
         if (sourceRes != null && destRes != null && !sourceRes.equals(destRes)) {
             event.setCancelled(true);
-            breakHopper(actor);
             return;
         }
         // source in Res, dest not in Res
         if (sourceRes != null && destRes == null) {
             event.setCancelled(true);
-            breakHopper(actor);
+            breakHopper(dest);
             return;
         }
         // dest in Res, source not in Res
         if (sourceRes == null && destRes != null) {
             event.setCancelled(true);
-            breakHopper(actor);
+            breakHopper(source);
         }
         // ignore source & dest not in Res
     }
