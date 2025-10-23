@@ -2,7 +2,7 @@ package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
+import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.event.EventHandler;
@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -87,51 +88,53 @@ public class ResidenceListener1_19 implements Listener {
         }
     }
 
-    private void breakHopper(Inventory hopperInventory) {
+    private void breakHopper(InventoryHolder actor) {
 
-        // Only hopper_minecart
-        if (hopperInventory.getHolder() instanceof HopperMinecart) {
-            HopperMinecart entity = (HopperMinecart) hopperInventory.getHolder();
-            entity.remove();
+        if (actor == null) {
             return;
         }
 
-        Location hopperLoc = hopperInventory.getLocation();
-        if (hopperLoc == null)
+        if (actor instanceof Hopper) {
+            Hopper hopper = (Hopper) actor;
+            hopper.getBlock().breakNaturally();
             return;
+        }
 
-        Block block = hopperLoc.getBlock();
-        // Only hopper
-        if (block.getType() != Material.HOPPER)
-            return;
-
-        block.breakNaturally();
+        if (actor instanceof HopperMinecart) {
+            HopperMinecart hopperMinecart = (HopperMinecart) actor;
+            hopperMinecart.remove();
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHopperCrossRes(InventoryMoveItemEvent event) {
 
-        Inventory chest = event.getSource();
-        Inventory hopper = event.getDestination();
-        if (chest == null || hopper == null)
+        Inventory source = event.getSource();
+        Inventory dest = event.getDestination();
+        InventoryHolder actor = event.getInitiator().getHolder();
+        if (source == null || dest == null || actor == null)
             return;
 
-        ClaimedResidence chestRes = ClaimedResidence.getByLoc(chest.getLocation());
-        // Container not in Residence
-        if (chestRes == null)
-            return;
+        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(source.getLocation());
+        ClaimedResidence destRes = ClaimedResidence.getByLoc(dest.getLocation());
 
-        ClaimedResidence hopperRes = ClaimedResidence.getByLoc(hopper.getLocation());
-        // Hopper not in Residence
-        if (hopperRes == null) {
+        // source & dest not in Same Residence
+        if (sourceRes != null && destRes != null && !sourceRes.equals(destRes)) {
             event.setCancelled(true);
+            breakHopper(actor);
             return;
         }
-        // Container & Hopper in Same Residence
-        if (chestRes == hopperRes)
+        // source in Res, dest not in Res
+        if (sourceRes != null && destRes == null) {
+            event.setCancelled(true);
+            breakHopper(actor);
             return;
-
-        // Not in Same Residence
-        event.setCancelled(true);
+        }
+        // dest in Res, source not in Res
+        if (sourceRes == null && destRes != null) {
+            event.setCancelled(true);
+            breakHopper(actor);
+        }
+        // ignore source & dest not in Res
     }
 }
