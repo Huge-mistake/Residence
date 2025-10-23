@@ -1,10 +1,10 @@
 package com.bekvon.bukkit.residence.listeners;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -93,17 +93,12 @@ public class ResidenceListener1_19 implements Listener {
         if (actor == null) {
             return;
         }
-
-        if (actor instanceof Hopper) {
-            Hopper hopper = (Hopper) actor;
-            hopper.getBlock().breakNaturally();
-            return;
-        }
-
-        if (actor instanceof HopperMinecart) {
-            HopperMinecart hopperMinecart = (HopperMinecart) actor;
-            hopperMinecart.remove();
-        }
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+            if (actor instanceof Hopper) {
+                Hopper hopper = (Hopper) actor;
+                hopper.getBlock().breakNaturally();
+            }
+        }, 1);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -111,12 +106,12 @@ public class ResidenceListener1_19 implements Listener {
 
         Inventory source = event.getSource();
         Inventory dest = event.getDestination();
-        InventoryHolder actor = event.getInitiator().getHolder();
-        if (source == null || dest == null || actor == null)
+        if (source == null || dest == null)
             return;
 
         ClaimedResidence sourceRes = ClaimedResidence.getByLoc(source.getLocation());
         ClaimedResidence destRes = ClaimedResidence.getByLoc(dest.getLocation());
+        InventoryHolder actor = event.getInitiator().getHolder();
 
         // source & dest not in Same Residence
         if (sourceRes != null && destRes != null && !sourceRes.equals(destRes)) {
