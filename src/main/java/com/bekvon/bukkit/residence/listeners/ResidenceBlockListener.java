@@ -950,14 +950,24 @@ public class ResidenceBlockListener implements Listener {
 
         if ((sourceres == null && targetres != null || sourceres != null && targetres == null || sourceres != null && targetres != null && !sourceres.getName().equals(
                 targetres.getName())) &&
-                (cmat == CMIMaterial.LAVA_BUCKET ||
+                (cmat == CMIMaterial.BUCKET ||
+                 cmat == CMIMaterial.LAVA_BUCKET ||
                  cmat == CMIMaterial.WATER_BUCKET ||
                  cmat == CMIMaterial.COD_BUCKET ||
                  cmat == CMIMaterial.SALMON_BUCKET ||
                  cmat == CMIMaterial.TROPICAL_FISH_BUCKET ||
                  cmat == CMIMaterial.PUFFERFISH_BUCKET ||
                  cmat == CMIMaterial.AXOLOTL_BUCKET ||
-                 cmat == CMIMaterial.TADPOLE_BUCKET)) {
+                 cmat == CMIMaterial.TADPOLE_BUCKET ||
+                 cmat == CMIMaterial.POWDER_SNOW_BUCKET ||
+                 cmat == CMIMaterial.MINECART ||
+                 cmat == CMIMaterial.HOPPER_MINECART ||
+                 cmat == CMIMaterial.CHEST_MINECART ||
+                 cmat == CMIMaterial.FURNACE_MINECART ||
+                 cmat == CMIMaterial.TNT_MINECART ||
+                 cmat == CMIMaterial.TNT ||
+                 cmat == CMIMaterial.BONE_MEAL ||
+                 cmat.isBoots())) {
             event.setCancelled(true);
         }
     }
