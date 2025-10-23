@@ -125,7 +125,6 @@ public class ResidenceListener1_19 implements Listener {
         // Hopper not in Residence
         if (hopperRes == null) {
             event.setCancelled(true);
-            breakHopper(hopper);
             return;
         }
         // Container & Hopper in Same Residence
@@ -134,6 +133,5 @@ public class ResidenceListener1_19 implements Listener {
 
         // Not in Same Residence
         event.setCancelled(true);
-        breakHopper(hopper);
     }
 }
