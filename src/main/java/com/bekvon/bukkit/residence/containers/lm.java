@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 
 import com.bekvon.bukkit.residence.Residence;
 
+import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Colors.CMIChatColor;
 
 public enum lm {
@@ -605,7 +606,7 @@ public enum lm {
         if (Residence.getInstance().getLM().containsKey(getPath())) {
             String msg = Residence.getInstance().getLM().getMessage(this, variables);
             if (msg.length() > 0)
-                sender.sendMessage(msg);
+                CMIActionBar.send(sender, msg);
         } else {
             String msg = getPath();
             if (msg.length() > 0)
@@ -629,4 +630,5 @@ public enum lm {
     public static void consoleMessage(String message, boolean prefix) {
         Bukkit.getConsoleSender().sendMessage(CMIChatColor.translate((prefix ? Residence.getInstance().getPrefix() + " &f" : "") + message));
     }
+
 }
