@@ -2391,4 +2391,5 @@ public class ConfigManager {
 //    public boolean isTownEnabled() {
 //	return TownEnabled;
 //    }
+
 }
