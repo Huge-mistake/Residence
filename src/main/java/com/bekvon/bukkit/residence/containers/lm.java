@@ -613,7 +613,7 @@ public enum lm {
                         return;
                     }
                     Player player = (Player) sender;
-                    switch (Residence.getInstance().getConfigManager().getEnterLeaveMessageType()) {
+                    switch (Residence.getInstance().getConfigManager().getFlagDenyMessageType()) {
                         case ActionBar:
                             CMIActionBar.send(player, msg);
                             break;
