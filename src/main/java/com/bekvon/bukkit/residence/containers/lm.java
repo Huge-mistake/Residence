@@ -662,4 +662,3 @@ public enum lm {
         Bukkit.getConsoleSender().sendMessage(CMIChatColor.translate((prefix ? Residence.getInstance().getPrefix() + " &f" : "") + message));
     }
 }
-
