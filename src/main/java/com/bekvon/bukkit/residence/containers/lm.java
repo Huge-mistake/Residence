@@ -609,7 +609,6 @@ public enum lm {
 
             if (msg.length() > 0) {
                 if (this == lm.Flag_Deny || this == lm.Residence_FlagDeny) {
-
                     // only player trigger FlagDeny msg
                     Player player = (Player) sender;
                     if (player.hasMetadata("NPC"))
