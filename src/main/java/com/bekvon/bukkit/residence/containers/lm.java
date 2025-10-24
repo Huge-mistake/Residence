@@ -607,7 +607,32 @@ public enum lm {
             String msg = Residence.getInstance().getLM().getMessage(this, variables);
             if (msg.length() > 0) {
                 if (this == lm.Flag_Deny || this == lm.Residence_FlagDeny) {
-                    CMIActionBar.send(sender, msg);
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(msg);
+                        return;
+                    }
+                    Player player = (Player) sender;
+                    switch (Residence.getInstance().getConfigManager().getEnterLeaveMessageType()) {
+                        case ActionBar:
+                            CMIActionBar.send(player, msg);
+                            break;
+                        case ChatBox:
+                            player.sendMessage(msg);
+                            break;
+                        case TitleBar:
+                            String title = msg;
+                            String subtitle = "";
+                            if (title.contains("\\n")) {
+                                String[] parts = title.split("\\\\n", 2);
+                                title = parts[0];
+                                subtitle = parts.length > 1 ? parts[1] : "";
+                            }
+                            CMITitleMessage.send(player, title, subtitle);
+                            break;
+                        default:
+                            player.sendMessage(msg);
+                            break;
+                    }
                 } else {
                     sender.sendMessage(msg);
                 }
