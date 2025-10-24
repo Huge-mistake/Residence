@@ -1215,6 +1215,7 @@ public class ConfigManager {
         if (EnterLeaveMessageType == null || Version.isCurrentEqualOrLower(Version.v1_7_R4))
             EnterLeaveMessageType = ELMessageType.ActionBar;
 
+        c.addComment("Global.Messages.FlagDenyMessages", "Defines where you want to send residence FlagDeny messages. Possible options: " + ELMessageType.getAllValuesAsString());
         FlagDenyMessageType = ELMessageType.getByName(c.get("Global.Messages.FlagDenyMessages", old.toString()));
         if (FlagDenyMessageType == null || Version.isCurrentEqualOrLower(Version.v1_7_R4))
             FlagDenyMessageType = ELMessageType.ActionBar;
