@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -95,7 +96,7 @@ public class ResidenceListener1_19 implements Listener {
                 return;
             Block block = hopperLoc.getBlock();
             // only hopper
-            if (block.getType() != Material.HOPPER)
+            if (block == null || !(block instanceof Hopper))
                 return;
             block.breakNaturally();
         }, 1);
