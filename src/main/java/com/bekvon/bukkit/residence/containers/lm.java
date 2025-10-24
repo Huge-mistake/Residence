@@ -606,8 +606,7 @@ public enum lm {
         if (Residence.getInstance().getLM().containsKey(getPath())) {
             String msg = Residence.getInstance().getLM().getMessage(this, variables);
             if (msg.length() > 0) {
-                String path = getPath();
-                if ("Flag_Deny".equals(path) || "Residence_FlagDeny".equals(path)) {
+                if (this == lm.Flag_Deny || this == lm.Residence_FlagDeny) {
                     CMIActionBar.send(sender, msg);
                 } else {
                     sender.sendMessage(msg);
