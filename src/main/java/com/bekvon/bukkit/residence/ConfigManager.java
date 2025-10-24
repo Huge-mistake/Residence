@@ -163,6 +163,7 @@ public class ConfigManager {
     protected boolean chatEnable;
     private boolean chatListening;
     private ELMessageType EnterLeaveMessageType;
+    private ELMessageType FlagDenyMessageType;
 
     protected boolean ActionBarOnSelection;
     protected boolean visualizer;
@@ -1213,6 +1214,10 @@ public class ConfigManager {
         EnterLeaveMessageType = ELMessageType.getByName(c.get("Global.Messages.GeneralMessages", old.toString()));
         if (EnterLeaveMessageType == null || Version.isCurrentEqualOrLower(Version.v1_7_R4))
             EnterLeaveMessageType = ELMessageType.ActionBar;
+
+        FlagDenyMessageType = ELMessageType.getByName(c.get("Global.Messages.FlagDenyMessages", old.toString()));
+        if (FlagDenyMessageType == null || Version.isCurrentEqualOrLower(Version.v1_7_R4))
+            FlagDenyMessageType = ELMessageType.ActionBar;
 
         ActionBarOnSelection = c.get("Global.ActionBar.ShowOnSelection", true);
 
@@ -2380,4 +2385,5 @@ public class ConfigManager {
 //    public boolean isTownEnabled() {
 //	return TownEnabled;
 //    }
+
 }
