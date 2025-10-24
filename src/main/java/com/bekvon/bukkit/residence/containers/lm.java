@@ -12,6 +12,7 @@ import com.bekvon.bukkit.residence.Residence;
 
 import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Colors.CMIChatColor;
+import net.Zrips.CMILib.TitleMessages.CMITitleMessage;
 
 public enum lm {
     Invalid_Player("&cInvalid player name..."),
@@ -660,5 +661,4 @@ public enum lm {
     public static void consoleMessage(String message, boolean prefix) {
         Bukkit.getConsoleSender().sendMessage(CMIChatColor.translate((prefix ? Residence.getInstance().getPrefix() + " &f" : "") + message));
     }
-
 }
