@@ -99,7 +99,7 @@ public class ResidenceListener1_19 implements Listener {
             if (block == null || !(block.getType().equals(Material.HOPPER)))
                 return;
             block.breakNaturally();
-        }, 1);
+        }, 100);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
