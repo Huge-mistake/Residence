@@ -661,5 +661,4 @@ public enum lm {
     public static void consoleMessage(String message, boolean prefix) {
         Bukkit.getConsoleSender().sendMessage(CMIChatColor.translate((prefix ? Residence.getInstance().getPrefix() + " &f" : "") + message));
     }
-
 }
