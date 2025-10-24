@@ -1431,6 +1431,7 @@ public class ConfigManager {
         if (Couldroncompatibility) {
             useVisualizer = false;
             EnterLeaveMessageType = ELMessageType.ChatBox;
+            FlagDenyMessageType = ELMessageType.ChatBox;
             ActionBarOnSelection = false;
         }
 
@@ -2252,6 +2253,10 @@ public class ConfigManager {
 
     public ELMessageType getEnterLeaveMessageType() {
         return EnterLeaveMessageType;
+    }
+
+    public ELMessageType getFlagDenyMessageType() {
+        return FlagDenyMessageType;
     }
 
     public boolean isEnterAnimation() {
