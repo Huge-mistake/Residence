@@ -129,34 +129,6 @@ public class ResidenceListener1_17 implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onLandDryPhysics(BlockPhysicsEvent event) {
-
-        // Disabling listener if flag disabled globally
-        if (!Flags.place.isGlobalyEnabled())
-            return;
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
-            return;
-
-        if (!event.getSourceBlock().getType().equals(Material.POWDER_SNOW) || event.getBlock().getType().equals(Material.AIR) || event.getBlock().getType().equals(Material.POWDER_SNOW))
-            return;
-
-        Block block = event.getBlock();
-        if (block == null)
-            return;
-
-        if (block.getLocation().getY() == event.getSourceBlock().getLocation().getY())
-            return;
-
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(block.getLocation());
-        if (res == null)
-            return;
-
-        powder_snow.put(event.getSourceBlock().getLocation().toString(), block.getBlockData().clone());
-
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockFertilizeEvent(BlockFertilizeEvent event) {
 
         // Disabling listener if flag disabled globally
