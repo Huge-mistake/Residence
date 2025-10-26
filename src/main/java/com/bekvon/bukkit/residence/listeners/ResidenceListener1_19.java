@@ -31,18 +31,18 @@ public class ResidenceListener1_19 implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void onSignInteract(PlayerInteractEvent event) {
-
+    public void onUseGoatHorn(PlayerInteractEvent event) {
+        // Disabling listener if flag disabled globally
         if (!Flags.goathorn.isGlobalyEnabled())
             return;
 
-        if (event.getPlayer() == null)
+        Player player = event.getPlayer();
+        if (player == null)
             return;
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(player.getWorld()))
             return;
 
-        Player player = event.getPlayer();
         if (player.hasMetadata("NPC"))
             return;
 
@@ -54,19 +54,12 @@ public class ResidenceListener1_19 implements Listener {
         if (!horn.getType().equals(Material.GOAT_HORN))
             return;
 
-        ClaimedResidence res = ClaimedResidence.getByLoc(event.getPlayer().getLocation());
-        if (res == null)
+        FlagPermissions perms = FlagPermissions.getPerms(player.getLocation(), player);
+        if (perms.playerHas(player, Flags.goathorn, true))
             return;
 
-        if (event.getPlayer().hasMetadata("NPC"))
-            return;
-
-        if (res.getPermissions().playerHas(event.getPlayer(), Flags.goathorn, FlagCombo.TrueOrNone))
-            return;
-
+        lm.Flag_Deny.sendMessage(player, Flags.goathorn);
         event.setCancelled(true);
-
-        lm.Residence_FlagDeny.sendMessage(player, Flags.goathorn, res.getName());
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -104,6 +97,9 @@ public class ResidenceListener1_19 implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHopperCrossRes(InventoryMoveItemEvent event) {
+        // Disabling listener if flag disabled globally
+        if (!Flags.container.isGlobalyEnabled())
+            return;
 
         Inventory source = event.getSource();
         Inventory dest = event.getDestination();
