@@ -128,7 +128,6 @@ public class ResidenceListener1_21 implements Listener {
         // Disabling listener if flag disabled globally
         if (!Flags.copper.isGlobalyEnabled())
             return;
-
         // disabling event on world
         if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
             return;
