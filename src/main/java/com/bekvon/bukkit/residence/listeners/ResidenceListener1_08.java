@@ -32,11 +32,12 @@ public class ResidenceListener1_08 implements Listener {
         // disabling event on world
         if (Residence.getInstance().isDisabledWorldListener(player.getWorld()))
             return;
-        if (ResAdmin.isResAdmin(player))
-            return;
 
         Entity ent = event.getRightClicked();
         if (!Utils.isArmorStandEntity(ent.getType()))
+            return;
+
+        if (ResAdmin.isResAdmin(player))
             return;
 
         FlagPermissions perms = FlagPermissions.getPerms(ent.getLocation(), player);
