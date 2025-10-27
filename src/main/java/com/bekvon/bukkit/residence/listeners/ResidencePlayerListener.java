@@ -2462,7 +2462,7 @@ public class ResidencePlayerListener implements Listener {
 
     private void informOnMoveDeny(Player player, ClaimedResidence res) {
 
-        switch (plugin.getConfigManager().getEnterLeaveMessageType()) {
+        switch (plugin.getConfigManager().getGeneralMessageType()) {
         case ActionBar:
         case TitleBar:
             FlagPermissions perms = res.getPermissions();
@@ -2606,7 +2606,7 @@ public class ResidencePlayerListener implements Listener {
             if (time == null || time + 100L < System.currentTimeMillis()) {
 
                 if (res.getPermissions().has(Flags.title, FlagCombo.TrueOrNone))
-                    switch (plugin.getConfigManager().getEnterLeaveMessageType()) {
+                    switch (plugin.getConfigManager().getGeneralMessageType()) {
                     case ActionBar:
                         CMIActionBar.send(player, (new StringBuilder()).append(ChatColor.YELLOW).append(insertMessages(player, res, message))
                             .toString());

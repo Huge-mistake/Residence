@@ -608,12 +608,21 @@ public enum lm {
             String msg = Residence.getInstance().getLM().getMessage(this, variables);
 
             if (msg.length() > 0) {
-                if (this == lm.Flag_Deny || this == lm.Residence_FlagDeny) {
-                    // only player trigger FlagDeny msg
-                    Player player = (Player) sender;
-                    if (player.hasMetadata("NPC"))
+
+                List<String> MessageType = Residence.getInstance().getConfigManager().getMessageType();
+                if (MessageType != null && MessageType.contains(this.name())) {
+
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(msg);
                         return;
-                    switch (Residence.getInstance().getConfigManager().getFlagDenyMessageType()) {
+                    }
+
+                    Player player = (Player) sender;
+                    if (player.hasMetadata("NPC")) {
+                        return;
+                    }
+
+                    switch (Residence.getInstance().getConfigManager().getGeneralMessageType()) {
                         case ActionBar:
                             CMIActionBar.send(player, msg);
                             break;
@@ -635,7 +644,7 @@ public enum lm {
                     }
                     return;
                 }
-                // not FlagDeny msg
+                // not target MessageType
                 sender.sendMessage(msg);
                 return;
             }
