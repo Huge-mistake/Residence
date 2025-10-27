@@ -80,7 +80,7 @@ public class ResidenceListener1_08 implements Listener {
             return;
 
         Location loc = event.getBlock().getLocation();
-
+        // disabling event on world
         if (Residence.getInstance().isDisabledWorldListener(loc.getWorld()))
             return;
 
