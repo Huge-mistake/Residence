@@ -54,6 +54,9 @@ public class ResidenceListener1_19 implements Listener {
         if (!horn.getType().equals(Material.GOAT_HORN))
             return;
 
+        if (ResAdmin.isResAdmin(player))
+            return;
+
         FlagPermissions perms = FlagPermissions.getPerms(player.getLocation(), player);
         if (perms.playerHas(player, Flags.goathorn, true))
             return;
