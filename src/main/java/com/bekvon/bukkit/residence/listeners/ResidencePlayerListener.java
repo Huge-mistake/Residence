@@ -2386,7 +2386,6 @@ public class ResidencePlayerListener implements Listener {
         }
     }
 
-
     @EventHandler(priority = EventPriority.NORMAL)
     public void PlayerToggleFlightEvent(PlayerToggleFlightEvent event) {
 
