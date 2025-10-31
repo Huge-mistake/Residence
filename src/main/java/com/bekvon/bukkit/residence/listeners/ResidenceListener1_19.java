@@ -118,23 +118,37 @@ public class ResidenceListener1_19 implements Listener {
         if (sourceRes == null && destRes == null) {
             return;
         }
+
         // ignore source & dest in Same Res
         if (sourceRes != null && destRes != null && sourceRes.equals(destRes)) {
             return;
         }
+
         // source & dest not in Same Res
         if (sourceRes != null && destRes != null && !sourceRes.equals(destRes)) {
+            if ((sourceRes.getPermissions().has(Flags.container, true)) &&
+                (destRes.getPermissions().has(Flags.container, true))) {
+                return;
+            }
             event.setCancelled(true);
             return;
         }
+
         // source in Res, dest not in Res
         if (sourceRes != null && destRes == null) {
+            if (sourceRes.getPermissions().has(Flags.container, true)) {
+                return;
+            }
             event.setCancelled(true);
             breakHopper(dest);
             return;
         }
+
         // dest in Res, source not in Res
         if (sourceRes == null && destRes != null) {
+            if (destRes.getPermissions().has(Flags.container, true)) {
+                return;
+            }
             event.setCancelled(true);
             breakHopper(source);
         }
