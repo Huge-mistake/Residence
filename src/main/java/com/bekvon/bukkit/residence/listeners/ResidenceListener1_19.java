@@ -99,7 +99,7 @@ public class ResidenceListener1_19 implements Listener {
         }, 1);
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onHopperCrossRes(InventoryMoveItemEvent event) {
         // Disabling listener if flag disabled globally
         if (!Flags.container.isGlobalyEnabled())
