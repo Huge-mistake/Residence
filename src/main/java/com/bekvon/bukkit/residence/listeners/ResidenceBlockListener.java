@@ -923,12 +923,13 @@ public class ResidenceBlockListener implements Listener {
         if (plugin.isDisabledWorldListener(block.getWorld()))
             return;
 
-        Location location = new Location(block.getWorld(), event.getVelocity().getBlockX(), event.getVelocity().getBlockY(), event.getVelocity().getBlockZ());
+        if (CMIMaterial.get(block) != CMIMaterial.DISPENSER)
+            return;
+
+        // target location
+        Location location = block.getRelative(((Dispenser) block.getBlockData()).getFacing()).getLocation();
 
         ClaimedResidence targetres = plugin.getResidenceManager().getByLoc(location);
-
-        if (CMIMaterial.get(block) == CMIMaterial.DROPPER)
-            return;
 
         CMIMaterial cmat = CMIMaterial.get(event.getItem());
         if (targetres == null && location.getBlockY() >= plugin.getConfigManager().getPlaceLevel() && plugin.getConfigManager().getNoPlaceWorlds().contains(location
@@ -945,16 +946,17 @@ public class ResidenceBlockListener implements Listener {
             }
         }
 
-        ClaimedResidence sourceres = plugin.getResidenceManager().getByLoc(block.getLocation());
-
-        // target not Res area
+        // target not Res
         if (targetres == null) {
             return;
         }
+
+        ClaimedResidence sourceres = plugin.getResidenceManager().getByLoc(block.getLocation());
         // source & target in same Res
         if (sourceres != null && targetres != null && sourceres.getName().equals(targetres.getName())) {
             return;
         }
+
         // check targetRes Flag_build
         if (FlagPermissions.getPerms(location).has(Flags.build, true)) {
             return;
