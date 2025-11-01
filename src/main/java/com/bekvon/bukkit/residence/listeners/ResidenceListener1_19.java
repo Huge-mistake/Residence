@@ -23,6 +23,10 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 
 import net.Zrips.CMILib.Version.Schedulers.CMIScheduler;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import java.util.concurrent.TimeUnit;
+
 public class ResidenceListener1_19 implements Listener {
 
     private Residence plugin;
@@ -99,6 +103,18 @@ public class ResidenceListener1_19 implements Listener {
         }, 1);
     }
 
+    private final Cache<Location, ClaimedResidence> resCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(6, TimeUnit.SECONDS)
+            .maximumSize(2000)
+            .build();
+    private ClaimedResidence getResByCache(Location location) {
+        try {
+            return resCache.get(location, () -> ClaimedResidence.getByLoc(location));
+        } catch (Exception e) {
+            return ClaimedResidence.getByLoc(location);
+        }
+    }
+
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onHopperCrossRes(InventoryMoveItemEvent event) {
         // Disabling listener if flag disabled globally
@@ -111,8 +127,14 @@ public class ResidenceListener1_19 implements Listener {
             return;
         }
 
-        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(source.getLocation());
-        ClaimedResidence destRes = ClaimedResidence.getByLoc(dest.getLocation());
+        Location sourceLoc = source.getLocation();
+        Location destLoc = dest.getLocation();
+        if (sourceLoc == null || destLoc == null) {
+            return;
+        }
+
+        ClaimedResidence sourceRes = getResByCache(sourceLoc);
+        ClaimedResidence destRes = getResByCache(destLoc);
 
         // ignore source & dest not in Res
         if (sourceRes == null && destRes == null) {
