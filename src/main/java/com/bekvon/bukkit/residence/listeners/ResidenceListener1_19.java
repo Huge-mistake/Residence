@@ -103,30 +103,26 @@ public class ResidenceListener1_19 implements Listener {
         }, 1);
     }
 
-    private final Cache<String, ClaimedResidence> resCache = CacheBuilder.newBuilder()
+    private final Cache<String, Boolean> keyCache = CacheBuilder.newBuilder()
             .expireAfterWrite(10, TimeUnit.SECONDS)
             .maximumSize(2000)
             .build();
-    private String getBlockLocKey(Location location) {
-        if (location == null || location.getWorld() == null) {
+
+    private String getKey(Location sourceLoc, Location destLoc) {
+        World sourceWorld = sourceLoc.getWorld();
+        World destWorld = destLoc.getWorld();
+        if (sourceWorld == null || destWorld == null) {
             return null;
         }
-        int blockX = location.getBlockX();
-        int blockY = location.getBlockY();
-        int blockZ = location.getBlockZ();
-        String worldName = location.getWorld().getName();
-        return String.format("%s:%d:%d:%d", worldName, blockX, blockY, blockZ);
-    }
-    private ClaimedResidence getResByCache(Location location) {
-        String cacheKey = getBlockLocKey(location);
-        if (cacheKey == null) {
-            return null;
-        }
-        try {
-            return resCache.get(cacheKey, () -> ClaimedResidence.getByLoc(location));
-        } catch (Exception e) {
-            return ClaimedResidence.getByLoc(location);
-        }
+        return String.format(
+                "%s:%d:%d:%d|%s:%d:%d:%d",
+
+                sourceWorld.getName(),
+                sourceLoc.getBlockX(), sourceLoc.getBlockY(), sourceLoc.getBlockZ(),
+
+                destWorld.getName(),
+                destLoc.getBlockX(), destLoc.getBlockY(), destLoc.getBlockZ()
+        );
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -147,16 +143,28 @@ public class ResidenceListener1_19 implements Listener {
             return;
         }
 
-        ClaimedResidence sourceRes = getResByCache(sourceLoc);
-        ClaimedResidence destRes = getResByCache(destLoc);
+        String key = getKey(sourceLoc, destLoc);
+        Boolean cacheResult = keyCache.getIfPresent(key);
+
+        if (cacheResult != null) {
+            if (!cacheResult) {
+                event.setCancelled(true);
+            }
+            return;
+        }
+
+        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(sourceLoc);
+        ClaimedResidence destRes = ClaimedResidence.getByLoc(destLoc);
 
         // ignore source & dest not in Res
         if (sourceRes == null && destRes == null) {
+            keyCache.put(key, true);
             return;
         }
 
         // ignore source & dest in Same Res
         if (sourceRes != null && destRes != null && sourceRes.equals(destRes)) {
+            keyCache.put(key, true);
             return;
         }
 
@@ -164,29 +172,33 @@ public class ResidenceListener1_19 implements Listener {
         if (sourceRes != null && destRes != null && !sourceRes.equals(destRes)) {
             if ((sourceRes.getPermissions().has(Flags.container, true)) &&
                 (destRes.getPermissions().has(Flags.container, true))) {
+                keyCache.put(key, true);
                 return;
             }
             event.setCancelled(true);
+            keyCache.put(key, false);
             return;
         }
 
         // source in Res, dest not in Res
         if (sourceRes != null && destRes == null) {
             if (sourceRes.getPermissions().has(Flags.container, true)) {
+                keyCache.put(key, true);
                 return;
             }
             event.setCancelled(true);
-            breakHopper(dest);
+            keyCache.put(key, false);
             return;
         }
 
         // dest in Res, source not in Res
         if (sourceRes == null && destRes != null) {
             if (destRes.getPermissions().has(Flags.container, true)) {
+                keyCache.put(key, true);
                 return;
             }
             event.setCancelled(true);
-            breakHopper(source);
+            keyCache.put(key, false);
         }
     }
 }
