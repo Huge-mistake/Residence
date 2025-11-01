@@ -103,13 +103,27 @@ public class ResidenceListener1_19 implements Listener {
         }, 1);
     }
 
-    private final Cache<Location, ClaimedResidence> resCache = CacheBuilder.newBuilder()
-            .expireAfterWrite(6, TimeUnit.SECONDS)
+    private final Cache<String, ClaimedResidence> resCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(10, TimeUnit.SECONDS)
             .maximumSize(2000)
             .build();
+    private String getBlockLocKey(Location location) {
+        if (location == null || location.getWorld() == null) {
+            return null;
+        }
+        int blockX = location.getBlockX();
+        int blockY = location.getBlockY();
+        int blockZ = location.getBlockZ();
+        String worldName = location.getWorld().getName();
+        return String.format("%s:%d:%d:%d", worldName, blockX, blockY, blockZ);
+    }
     private ClaimedResidence getResByCache(Location location) {
+        String cacheKey = getBlockLocKey(location);
+        if (cacheKey == null) {
+            return null;
+        }
         try {
-            return resCache.get(location, () -> ClaimedResidence.getByLoc(location));
+            return resCache.get(cacheKey, () -> ClaimedResidence.getByLoc(location));
         } catch (Exception e) {
             return ClaimedResidence.getByLoc(location);
         }
