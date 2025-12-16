@@ -381,8 +381,7 @@ public class ResidenceBlockListener implements Listener {
         if ((event.getEntityType() != EntityType.FALLING_BLOCK))
             return;
 
-        Material typeTo = event.getTo();
-        if (typeTo.hasGravity() || CMIMaterial.get(typeTo).equals(CMIMaterial.SCAFFOLDING))
+        if (event.getTo().hasGravity())
             return;
 
         Block block = event.getBlock();
@@ -396,10 +395,11 @@ public class ResidenceBlockListener implements Listener {
         if (block.getY() <= plugin.getConfigManager().getBlockFallLevel())
             return;
 
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(block.getLocation());
+        Entity ent = event.getEntity();
+        ClaimedResidence res = plugin.getResidenceManager().getByLoc(ent.getLocation());
 
         if (res != null)
-            event.getEntity().setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, res.getName()));
+            ent.setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, res.getName()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
