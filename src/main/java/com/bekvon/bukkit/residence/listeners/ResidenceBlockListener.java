@@ -400,6 +400,7 @@ public class ResidenceBlockListener implements Listener {
         ClaimedResidence res = plugin.getResidenceManager().getByLoc(ent.getLocation());
         String resName = res == null ? "NULL" : res.getName();
         ent.setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, resName));
+    }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChestPlace(BlockPlaceEvent event) {
