@@ -397,8 +397,9 @@ public class ResidenceBlockListener implements Listener {
             return;
 
         ClaimedResidence res = plugin.getResidenceManager().getByLoc(block.getLocation());
-        String resName = res == null ? "NULL" : res.getName();
-        event.getEntity().setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, resName));
+
+        if (res != null)
+            event.getEntity().setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, res.getName()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
