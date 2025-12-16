@@ -18,7 +18,6 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.Dispenser;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowman;
 import org.bukkit.event.EventHandler;
@@ -336,33 +335,6 @@ public class ResidenceBlockListener implements Listener {
         // Disabling listener if flag disabled globally
         if (!Flags.fallinprotection.isGlobalyEnabled())
             return;
-
-        if (Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_17_R1)) {
-            Entity ent = event.getEntity();
-            if (!(ent instanceof FallingBlock))
-                return;
-
-            Block block = event.getBlock();
-            ClaimedResidence destRes = ClaimedResidence.getByLoc(block.getLocation());
-            if (destRes == null)
-                return;
-
-            Location sourceLoc = ent.getOrigin();
-            if (sourceLoc == null)
-                return;
-
-            ClaimedResidence sourceRes = ClaimedResidence.getByLoc(sourceLoc);
-
-            if (sourceRes != null && (sourceRes.equals(destRes) || destRes.isOwner(sourceRes.getOwner())))
-                return;
-
-            if (destRes.getPermissions().has(Flags.fallinprotection, FlagCombo.OnlyFalse))
-                return;
-
-            event.setCancelled(true);
-            return;
-        }
-
         if (event.getEntityType() != EntityType.FALLING_BLOCK)
             return;
         Entity ent = event.getEntity();
@@ -409,7 +381,8 @@ public class ResidenceBlockListener implements Listener {
         if ((event.getEntityType() != EntityType.FALLING_BLOCK))
             return;
 
-        if (event.getTo().hasGravity())
+        Material typeTo = event.getTo();
+        if (typeTo.hasGravity() || CMIMaterial.get(typeTo).equals(CMIMaterial.SCAFFOLDING))
             return;
 
         Block block = event.getBlock();
