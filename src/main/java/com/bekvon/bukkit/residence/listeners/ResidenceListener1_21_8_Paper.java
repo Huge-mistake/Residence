@@ -1,8 +1,10 @@
 package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -47,6 +49,9 @@ public class ResidenceListener1_21_8_Paper implements Listener {
                 return true;
             return false;
         }
+
+        if (entity instanceof Boat || entity instanceof Minecart)
+            return flagCheck(loc, player, Flags.vehicledestroy);
 
         if (entity.getType().equals(EntityType.ARMOR_STAND))
             return flagCheck(loc, player, Flags.destroy);
