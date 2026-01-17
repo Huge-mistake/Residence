@@ -1860,6 +1860,9 @@ public class ResidenceEntityListener implements Listener {
             return;
 
         Player player = (Player) event.getEntity().getShooter();
+        if (ResAdmin.isResAdmin(player))
+            return;
+
         if (FlagPermissions.has(event.getEntity().getLocation(), player, Flags.build, true))
             return;
 
