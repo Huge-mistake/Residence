@@ -1849,4 +1849,22 @@ public class ResidenceEntityListener implements Listener {
             lm.Flag_Deny.sendMessage(player, Flags.animalkilling);
         }
     }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEggProjectile(ProjectileLaunchEvent event) {
+
+        if (event.getEntityType() != EntityType.EGG)
+            return;
+
+        if (!(event.getEntity().getShooter() instanceof Player))
+            return;
+
+        Player player = (Player) event.getEntity().getShooter();
+        if (FlagPermissions.has(event.getEntity().getLocation(), player, Flags.build, true))
+            return;
+
+        lm.Flag_Deny.sendMessage(player, Flags.build);
+        event.setCancelled(true);
+
+    }
 }
