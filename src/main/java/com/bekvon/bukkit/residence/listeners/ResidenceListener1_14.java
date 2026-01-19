@@ -93,6 +93,7 @@ public class ResidenceListener1_14 implements Listener {
             return;
 
         Entity attacker = event.getAttacker();
+
         if (attacker instanceof Player) {
 
             Player player = (Player) attacker;
@@ -109,7 +110,7 @@ public class ResidenceListener1_14 implements Listener {
         } else if (attacker instanceof LightningStrike) {
 
             Player player = Version.isCurrentEqualOrHigher(Version.v1_20_R2)
-                    ? ((LightningStrike) event.getAttacker()).getCausingPlayer()
+                    ? ((LightningStrike) attacker).getCausingPlayer()
                     : null;
 
             if (player != null) {
