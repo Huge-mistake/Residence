@@ -5,6 +5,7 @@ import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -28,6 +29,7 @@ import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.Logs.CMIDebug;
 import net.Zrips.CMILib.Items.CMIMaterial;
+import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener1_14 implements Listener {
 
@@ -98,11 +100,27 @@ public class ResidenceListener1_14 implements Listener {
             if (ResAdmin.isResAdmin(player))
                 return;
 
-            FlagPermissions perms = FlagPermissions.getPerms(event.getVehicle().getLocation(), player);
-            if (perms.playerHas(player, Flags.vehicledestroy, true))
+            if (FlagPermissions.has(event.getVehicle().getLocation(), player, Flags.vehicledestroy, true))
                 return;
 
             lm.Flag_Deny.sendMessage(player, Flags.vehicledestroy);
+            event.setCancelled(true);
+
+        } else if (attacker instanceof LightningStrike) {
+
+            Player player = Version.isCurrentEqualOrHigher(Version.v1_20_R2)
+                    ? ((LightningStrike) event.getAttacker()).getCausingPlayer()
+                    : null;
+
+            if (player != null) {
+                if (ResAdmin.isResAdmin(player))
+                    return;
+                if (FlagPermissions.has(event.getVehicle().getLocation(), player, Flags.vehicledestroy, true))
+                    return;
+            } else {
+                if (FlagPermissions.has(event.getVehicle().getLocation(), Flags.vehicledestroy, true))
+                    return;
+            }
 
             event.setCancelled(true);
 
