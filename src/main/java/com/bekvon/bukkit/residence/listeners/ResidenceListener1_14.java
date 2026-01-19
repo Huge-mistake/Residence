@@ -6,7 +6,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -93,7 +92,6 @@ public class ResidenceListener1_14 implements Listener {
             return;
 
         Entity attacker = event.getAttacker();
-
         if (attacker instanceof Player) {
 
             Player player = (Player) attacker;
@@ -105,13 +103,6 @@ public class ResidenceListener1_14 implements Listener {
                 return;
 
             lm.Flag_Deny.sendMessage(player, Flags.vehicledestroy);
-            event.setCancelled(true);
-
-        } else if (attacker != null) {
-
-            if (FlagPermissions.has(event.getVehicle().getLocation(), Flags.vehicledestroy, true))
-                return;
-
             event.setCancelled(true);
 
         }
