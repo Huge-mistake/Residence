@@ -5,8 +5,8 @@ import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -107,21 +107,10 @@ public class ResidenceListener1_14 implements Listener {
             lm.Flag_Deny.sendMessage(player, Flags.vehicledestroy);
             event.setCancelled(true);
 
-        } else if (attacker != null && attacker.getType() == EntityType.LIGHTNING_BOLT) {
+        } else if (attacker != null) {
 
-            Player player = Version.isCurrentEqualOrHigher(Version.v1_20_R2)
-                    ? ((LightningStrike) attacker).getCausingPlayer()
-                    : null;
-
-            if (player != null) {
-                if (ResAdmin.isResAdmin(player))
-                    return;
-                if (FlagPermissions.has(event.getVehicle().getLocation(), player, Flags.vehicledestroy, true))
-                    return;
-            } else {
-                if (FlagPermissions.has(event.getVehicle().getLocation(), Flags.vehicledestroy, true))
-                    return;
-            }
+            if (FlagPermissions.has(event.getVehicle().getLocation(), Flags.vehicledestroy, true))
+                return;
 
             event.setCancelled(true);
 
