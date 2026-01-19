@@ -81,37 +81,24 @@ public class ResidenceListener1_16_5_Paper implements Listener {
         if (plugin.isDisabledWorldListener(entity.getWorld()))
             return;
 
+        if (!Utils.isAnimal(entity))
+            return;
+
         Player player = Version.isCurrentEqualOrHigher(Version.v1_20_R2)
                 ? event.getBolt().getCausingPlayer()
                 : null;
 
-        if (ResAdmin.isResAdmin(player))
-            return;
-
-        if (entity instanceof Boat || entity instanceof Minecart) {
-
-            if (player != null) {
-                if (FlagPermissions.has(entity.getLocation(), player, Flags.vehicledestroy, true))
-                    return;
-            } else {
-                if (FlagPermissions.has(entity.getLocation(), Flags.vehicledestroy, true))
-                    return;
-            }
-
-            event.setCancelled(true);
-
-        } else if (Utils.isAnimal(entity)) {
-
-            if (player != null) {
-                if (FlagPermissions.has(entity.getLocation(), player, Flags.animalkilling, true))
-                    return;
-            } else {
-                if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, true))
-                    return;
-            }
-
-            event.setCancelled(true);
-
+        if (player != null) {
+            if (ResAdmin.isResAdmin(player))
+                return;
+            if (FlagPermissions.has(entity.getLocation(), player, Flags.animalkilling, true))
+                return;
+        } else {
+            if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, true))
+                return;
         }
+
+        event.setCancelled(true);
+
     }
 }
