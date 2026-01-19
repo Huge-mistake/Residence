@@ -107,7 +107,7 @@ public class ResidenceListener1_14 implements Listener {
             lm.Flag_Deny.sendMessage(player, Flags.vehicledestroy);
             event.setCancelled(true);
 
-        } else if (attacker instanceof LightningStrike) {
+        } else if (attacker != null && attacker.getType() == EntityType.LIGHTNING_BOLT) {
 
             Player player = Version.isCurrentEqualOrHigher(Version.v1_20_R2)
                     ? ((LightningStrike) attacker).getCausingPlayer()
