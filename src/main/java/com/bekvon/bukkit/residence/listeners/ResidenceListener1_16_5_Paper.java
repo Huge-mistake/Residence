@@ -70,49 +70,34 @@ public class ResidenceListener1_16_5_Paper implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityZapEvent(EntityZapEvent event) {
+        // Disabling listener if flag disabled globally
+        if (!Flags.animalkilling.isGlobalyEnabled())
+            return;
 
         Entity entity = event.getEntity();
         // disabling event on world
         if (plugin.isDisabledWorldListener(entity.getWorld()))
             return;
 
+        if (!Utils.isAnimal(entity))
+            return;
+
         Player player = Version.isCurrentEqualOrHigher(Version.v1_20_R2)
                 ? event.getBolt().getCausingPlayer()
                 : null;
 
-        if (ResAdmin.isResAdmin(player))
-            return;
-
-        if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(entity)) {
-
-            if (player != null) {
-                if (FlagPermissions.has(entity.getLocation(), player, Flags.animalkilling, true))
-                    return;
-
-                lm.Flag_Deny.sendMessage(player, Flags.animalkilling);
-
-            } else {
-                if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, true))
-                    return;
-            }
-
-            event.setCancelled(true);
-
-        } else if (Flags.mobkilling.isGlobalyEnabled() && ResidenceEntityListener.isMonster(entity)) {
-
-            if (player != null) {
-                if (FlagPermissions.has(entity.getLocation(), player, Flags.mobkilling, true))
-                    return;
-
-                lm.Flag_Deny.sendMessage(player, Flags.mobkilling);
-
-            } else {
-                if (FlagPermissions.has(entity.getLocation(), Flags.mobkilling, true))
-                    return;
-            }
-
-            event.setCancelled(true);
-
+        if (player != null) {
+            if (ResAdmin.isResAdmin(player))
+                return;
+            if (FlagPermissions.has(entity.getLocation(), player, Flags.animalkilling, true))
+                return;
+            lm.Flag_Deny.sendMessage(player, Flags.animalkilling);
+        } else {
+            if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, true))
+                return;
         }
+
+        event.setCancelled(true);
+
     }
 }
