@@ -365,7 +365,7 @@ Global:
     trample: true
     # Applies to: Both
     # Allows or denys use of doors, lever, buttons, etc...
-    use: false
+    use: true
     # Applies to: Both
     # Allows or denys vehicle destroy
     vehicledestroy: true
