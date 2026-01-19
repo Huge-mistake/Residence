@@ -1,9 +1,7 @@
 package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.block.Block;
-import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
