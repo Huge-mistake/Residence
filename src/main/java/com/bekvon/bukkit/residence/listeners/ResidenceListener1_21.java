@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -159,13 +161,13 @@ public class ResidenceListener1_21 implements Listener {
             }
         }
         // Copper_golem has no item in hand
-        CMIMaterial hand = CMIMaterial.get(player.getInventory().getItemInMainHand());
 
-        if (event.getHand() == EquipmentSlot.OFF_HAND) {
-            hand = CMIMaterial.get(player.getInventory().getItemInOffHand());
-        }
+        Material held = (event.getHand() == EquipmentSlot.OFF_HAND)
+                ? player.getInventory().getItemInOffHand().getType()
+                : player.getInventory().getItemInMainHand().getType();
+
         // Avoid overwriting Leash Flag, Lead Shears
-        if (hand != CMIMaterial.HONEYCOMB && !hand.toString().contains("_AXE"))
+        if (held != Material.HONEYCOMB && !isItemTag(held, "axes"))
             return;
 
         FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
@@ -207,5 +209,150 @@ public class ResidenceListener1_21 implements Listener {
 
         lm.Flag_Deny.sendMessage(player, Flags.hook);
         event.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onAnimalFeeding(PlayerInteractEntityEvent event) {
+        // Disabling listener if flag disabled globally
+        if (!Flags.animalfeeding.isGlobalyEnabled())
+            return;
+
+        Entity entity = event.getRightClicked();
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(entity.getWorld()))
+            return;
+
+        if (!(entity instanceof Animals))
+            return;
+
+        Player player = event.getPlayer();
+
+        Material held = event.getHand() == EquipmentSlot.OFF_HAND
+                ? player.getInventory().getItemInOffHand().getType()
+                : player.getInventory().getItemInMainHand().getType();
+
+        CMIEntityType type = CMIEntityType.get(entity.getType());
+
+        if (!isFeedingAnimal(type, held))
+            return;
+
+        if (ResAdmin.isResAdmin(player))
+            return;
+
+        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
+        if (perms.playerHas(player, Flags.animalfeeding, perms.playerHas(player, Flags.animalkilling, true)))
+            return;
+
+        lm.Flag_Deny.sendMessage(player, Flags.animalfeeding);
+        event.setCancelled(true);
+
+    }
+
+    private boolean isFeedingAnimal(CMIEntityType type, Material held) {
+        switch (type) {
+            case ARMADILLO:
+                if (isItemTag(held, "armadillo_food")) return true;
+                break;
+            case AXOLOTL:
+                if (isItemTag(held, "axolotl_food")) return true;
+                break;
+            case BEE:
+                if (isItemTag(held, "bee_food")) return true;
+                break;
+            case CAMEL:
+                if (isItemTag(held, "camel_food")) return true;
+                break;
+            case CAMEL_HUSK:
+                if (isItemTag(held, "camel_husk_food")) return true;
+                break;
+            case CAT:
+                if (isItemTag(held, "cat_food")) return true;
+                break;
+            case CHICKEN:
+                if (isItemTag(held, "chicken_food")) return true;
+                break;
+            case COW:
+                if (isItemTag(held, "cow_food")) return true;
+                break;
+            case DONKEY:
+                if (isItemTag(held, "horse_food")) return true;
+                break;
+            case FOX:
+                if (isItemTag(held, "fox_food")) return true;
+                break;
+            case FROG:
+                if (isItemTag(held, "frog_food")) return true;
+                break;
+            case GOAT:
+                if (isItemTag(held, "goat_food")) return true;
+                break;
+            case HAPPY_GHAST:
+                if (isItemTag(held, "happy_ghast_food")) return true;
+                break;
+            case HOGLIN:
+                if (isItemTag(held, "hoglin_food")) return true;
+                break;
+            case HORSE:
+                if (isItemTag(held, "horse_food")) return true;
+                break;
+            case LLAMA:
+                if (isItemTag(held, "llama_food")) return true;
+                break;
+            case MOOSHROOM:
+                if (isItemTag(held, "cow_food")) return true;
+                break;
+            case MULE:
+                if (isItemTag(held, "horse_food")) return true;
+                break;
+            case NAUTILUS:
+                if (isItemTag(held, "nautilus_food")) return true;
+                break;
+            case OCELOT:
+                if (isItemTag(held, "ocelot_food")) return true;
+                break;
+            case PANDA:
+                if (isItemTag(held, "panda_food")) return true;
+                break;
+            case PARROT:
+                if (isItemTag(held, "parrot_food")) return true;
+                break;
+            case PIG:
+                if (isItemTag(held, "pig_food")) return true;
+                break;
+            case RABBIT:
+                if (isItemTag(held, "rabbit_food")) return true;
+                break;
+            case SHEEP:
+                if (isItemTag(held, "sheep_food")) return true;
+                break;
+            case SNIFFER:
+                if (isItemTag(held, "sniffer_food")) return true;
+                break;
+            case STRIDER:
+                if (isItemTag(held, "strider_food")) return true;
+                break;
+            case TRADER_LLAMA:
+                if (isItemTag(held, "llama_food")) return true;
+                break;
+            case TURTLE:
+                if (isItemTag(held, "turtle_food")) return true;
+                break;
+            case WOLF:
+                if (isItemTag(held, "wolf_food")) return true;
+                break;
+            case ZOMBIE_HORSE:
+                if (held == Material.RED_MUSHROOM) return true;
+                break;
+            case ZOMBIE_NAUTILUS:
+                if (isItemTag(held, "nautilus_food")) return true;
+                break;
+            default:
+                break;
+        }
+        return false;
+    }
+
+    private static boolean isItemTag(Material item, String tagName) {
+        return ResidenceListener1_14.isItemTag(item, tagName);
     }
 }
