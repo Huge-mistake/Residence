@@ -397,6 +397,7 @@ Global:
   FlagGui:
     admin: BEDROCK
     anchor: RESPAWN_ANCHOR
+    animalfeeding: CARROT
     animalkilling: CHICKEN
     animals: PIG_SPAWN_EGG
     anvil: ANVIL
