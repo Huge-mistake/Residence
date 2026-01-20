@@ -250,106 +250,40 @@ public class ResidenceListener1_21 implements Listener {
 
     private boolean isFeedingAnimal(CMIEntityType type, Material held) {
         switch (type) {
-            case ARMADILLO:
-                if (isItemTag(held, "armadillo_food")) return true;
-                break;
-            case AXOLOTL:
-                if (isItemTag(held, "axolotl_food")) return true;
-                break;
-            case BEE:
-                if (isItemTag(held, "bee_food")) return true;
-                break;
-            case CAMEL:
-                if (isItemTag(held, "camel_food")) return true;
-                break;
-            case CAMEL_HUSK:
-                if (isItemTag(held, "camel_husk_food")) return true;
-                break;
-            case CAT:
-                if (isItemTag(held, "cat_food")) return true;
-                break;
-            case CHICKEN:
-                if (isItemTag(held, "chicken_food")) return true;
-                break;
-            case COW:
-                if (isItemTag(held, "cow_food")) return true;
-                break;
-            case DONKEY:
-                if (isItemTag(held, "horse_food")) return true;
-                break;
-            case FOX:
-                if (isItemTag(held, "fox_food")) return true;
-                break;
-            case FROG:
-                if (isItemTag(held, "frog_food")) return true;
-                break;
-            case GOAT:
-                if (isItemTag(held, "goat_food")) return true;
-                break;
-            case HAPPY_GHAST:
-                if (isItemTag(held, "happy_ghast_food")) return true;
-                break;
-            case HOGLIN:
-                if (isItemTag(held, "hoglin_food")) return true;
-                break;
-            case HORSE:
-                if (isItemTag(held, "horse_food")) return true;
-                break;
-            case LLAMA:
-                if (isItemTag(held, "llama_food")) return true;
-                break;
-            case MOOSHROOM:
-                if (isItemTag(held, "cow_food")) return true;
-                break;
-            case MULE:
-                if (isItemTag(held, "horse_food")) return true;
-                break;
-            case NAUTILUS:
-                if (isItemTag(held, "nautilus_food")) return true;
-                break;
-            case OCELOT:
-                if (isItemTag(held, "ocelot_food")) return true;
-                break;
-            case PANDA:
-                if (isItemTag(held, "panda_food")) return true;
-                break;
-            case PARROT:
-                if (isItemTag(held, "parrot_food")) return true;
-                break;
-            case PIG:
-                if (isItemTag(held, "pig_food")) return true;
-                break;
-            case RABBIT:
-                if (isItemTag(held, "rabbit_food")) return true;
-                break;
-            case SHEEP:
-                if (isItemTag(held, "sheep_food")) return true;
-                break;
-            case SNIFFER:
-                if (isItemTag(held, "sniffer_food")) return true;
-                break;
-            case STRIDER:
-                if (isItemTag(held, "strider_food")) return true;
-                break;
-            case TRADER_LLAMA:
-                if (isItemTag(held, "llama_food")) return true;
-                break;
-            case TURTLE:
-                if (isItemTag(held, "turtle_food")) return true;
-                break;
-            case WOLF:
-                if (isItemTag(held, "wolf_food")) return true;
-                break;
-            case ZOMBIE_HORSE:
-                if (held == Material.RED_MUSHROOM) return true;
-                break;
-            case ZOMBIE_NAUTILUS:
-                if (isItemTag(held, "nautilus_food")) return true;
-                break;
-            default:
-                break;
+            case ARMADILLO: return isItemTag(held, "armadillo_food");
+            case AXOLOTL: return isItemTag(held, "axolotl_food");
+            case BEE: return isItemTag(held, "bee_food");
+            case CAMEL: return isItemTag(held, "camel_food");
+            case CAMEL_HUSK: return isItemTag(held, "camel_husk_food");
+            case CAT: return isItemTag(held, "cat_food");
+            case CHICKEN: return isItemTag(held, "chicken_food");
+            case COW: return isItemTag(held, "cow_food");
+            case DONKEY: return isItemTag(held, "horse_food");
+            case FOX: return isItemTag(held, "fox_food");
+            case FROG: return isItemTag(held, "frog_food");
+            case GOAT: return isItemTag(held, "goat_food");
+            case HAPPY_GHAST: return isItemTag(held, "happy_ghast_food");
+            case HOGLIN: return isItemTag(held, "hoglin_food");
+            case HORSE: return isItemTag(held, "horse_food");
+            case LLAMA: return isItemTag(held, "llama_food");
+            case MOOSHROOM: return isItemTag(held, "cow_food");
+            case MULE: return isItemTag(held, "horse_food");
+            case NAUTILUS: return isItemTag(held, "nautilus_food");
+            case OCELOT: return isItemTag(held, "ocelot_food");
+            case PANDA: return isItemTag(held, "panda_food");
+            case PARROT: return isItemTag(held, "parrot_food");
+            case PIG: return isItemTag(held, "pig_food");
+            case RABBIT: return isItemTag(held, "rabbit_food");
+            case SHEEP: return isItemTag(held, "sheep_food");
+            case SNIFFER: return isItemTag(held, "sniffer_food");
+            case STRIDER: return isItemTag(held, "strider_food");
+            case TRADER_LLAMA: return isItemTag(held, "llama_food");
+            case TURTLE: return isItemTag(held, "turtle_food");
+            case WOLF: return isItemTag(held, "wolf_food");
+            case ZOMBIE_HORSE: return held == Material.RED_MUSHROOM;
+            case ZOMBIE_NAUTILUS: return isItemTag(held, "nautilus_food");
+            default: return false;
         }
-        return false;
     }
 
     private static boolean isItemTag(Material item, String tagName) {

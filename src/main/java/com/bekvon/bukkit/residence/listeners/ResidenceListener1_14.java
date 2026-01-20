@@ -45,6 +45,7 @@ public class ResidenceListener1_14 implements Listener {
     private static final Map<String, Tag<Material>> BLOCK_TAG_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Tag<Material>> ITEM_TAG_CACHE = new ConcurrentHashMap<>();
 
+    // https://minecraft.wiki/w/Block_tag_(Java_Edition)
     public static boolean isBlockTag(Material block, String tagName) {
         if (block == null || tagName == null) {
             return false;
@@ -55,6 +56,7 @@ public class ResidenceListener1_14 implements Listener {
         return tag != null && tag.isTagged(block);
     }
 
+    // https://minecraft.wiki/w/Item_tag_(Java_Edition)
     public static boolean isItemTag(Material item, String tagName) {
         if (item == null || tagName == null) {
             return false;
