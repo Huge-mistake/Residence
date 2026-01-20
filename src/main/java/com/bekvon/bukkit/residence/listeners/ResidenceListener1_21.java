@@ -279,7 +279,7 @@ public class ResidenceListener1_21 implements Listener {
             case STRIDER: return isItemTag(held, "strider_food");
             case TRADER_LLAMA: return isItemTag(held, "llama_food");
             case TURTLE: return isItemTag(held, "turtle_food");
-            case WOLF: return isItemTag(held, "wolf_food");
+            case WOLF: return isItemTag(held, "wolf_food") || held == Material.BONE;
             case ZOMBIE_HORSE: return held == Material.RED_MUSHROOM;
             case ZOMBIE_NAUTILUS: return isItemTag(held, "nautilus_food");
             default: return false;
