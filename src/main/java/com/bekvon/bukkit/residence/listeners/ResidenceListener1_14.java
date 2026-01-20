@@ -1,6 +1,11 @@
 package com.bekvon.bukkit.residence.listeners;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Animals;
@@ -40,6 +45,29 @@ public class ResidenceListener1_14 implements Listener {
 
     public ResidenceListener1_14(Residence plugin) {
         this.plugin = plugin;
+    }
+
+    private static final Map<String, Tag<Material>> BLOCK_TAG_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Tag<Material>> ITEM_TAG_CACHE = new ConcurrentHashMap<>();
+
+    public boolean isBlockTag(Material block, String tagName) {
+        if (block == null || tagName == null) {
+            return false;
+        }
+        Tag<Material> tag = BLOCK_TAG_CACHE.computeIfAbsent(tagName, key ->
+                Bukkit.getTag(Tag.REGISTRY_BLOCKS, NamespacedKey.minecraft(key), Material.class)
+        );
+        return tag != null && tag.isTagged(block);
+    }
+
+    public boolean isItemTag(Material item, String tagName) {
+        if (item == null || tagName == null) {
+            return false;
+        }
+        Tag<Material> tag = ITEM_TAG_CACHE.computeIfAbsent(tagName, key ->
+                Bukkit.getTag(Tag.REGISTRY_ITEMS, NamespacedKey.minecraft(key), Material.class)
+        );
+        return tag != null && tag.isTagged(item);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -204,11 +232,11 @@ public class ResidenceListener1_14 implements Listener {
 
         Material mat = block.getType();
 
-        if (!Tag.CORALS.isTagged(mat) && !Tag.CORAL_BLOCKS.isTagged(mat) && !Tag.WALL_CORALS.isTagged(mat))
-            return;
+        if (isBlockTag(mat, "corals") || isBlockTag(mat, "coral_blocks") || isBlockTag(mat, "wall_corals")) {
 
-        if (FlagPermissions.has(block.getLocation(), Flags.coraldryup, FlagCombo.OnlyFalse)) {
-            event.setCancelled(true);
+            if (FlagPermissions.has(block.getLocation(), Flags.coraldryup, FlagCombo.OnlyFalse))
+                event.setCancelled(true);
+
         }
     }
 
@@ -254,108 +282,106 @@ public class ResidenceListener1_14 implements Listener {
     }
 
     private boolean isFeedingAnimal(CMIEntityType type, Material held) {
-        try {
-            switch (type) {
-                case ARMADILLO:
-                    if (Tag.ITEMS_ARMADILLO_FOOD.isTagged(held)) return true;
-                    break;
-                case AXOLOTL:
-                    if (Tag.ITEMS_AXOLOTL_FOOD.isTagged(held)) return true;
-                    break;
-                case BEE:
-                    if (Tag.ITEMS_BEE_FOOD.isTagged(held)) return true;
-                    break;
-                case CAMEL:
-                    if (Tag.ITEMS_CAMEL_FOOD.isTagged(held)) return true;
-                    break;
-                case CAMEL_HUSK:
-                    if (Tag.ITEMS_CAMEL_HUSK_FOOD.isTagged(held)) return true;
-                    break;
-                case CAT:
-                    if (Tag.ITEMS_CAT_FOOD.isTagged(held)) return true;
-                    break;
-                case CHICKEN:
-                    if (Tag.ITEMS_CHICKEN_FOOD.isTagged(held)) return true;
-                    break;
-                case COW:
-                    if (Tag.ITEMS_COW_FOOD.isTagged(held)) return true;
-                    break;
-                case DONKEY:
-                    if (Tag.ITEMS_HORSE_FOOD.isTagged(held)) return true;
-                    break;
-                case FOX:
-                    if (Tag.ITEMS_FOX_FOOD.isTagged(held)) return true;
-                    break;
-                case FROG:
-                    if (Tag.ITEMS_FROG_FOOD.isTagged(held)) return true;
-                    break;
-                case GOAT:
-                    if (Tag.ITEMS_GOAT_FOOD.isTagged(held)) return true;
-                    break;
-                case HAPPY_GHAST:
-                    if (Tag.ITEMS_HAPPY_GHAST_FOOD.isTagged(held)) return true;
-                    break;
-                case HOGLIN:
-                    if (Tag.ITEMS_HOGLIN_FOOD.isTagged(held)) return true;
-                    break;
-                case HORSE:
-                    if (Tag.ITEMS_HORSE_FOOD.isTagged(held)) return true;
-                    break;
-                case LLAMA:
-                    if (Tag.ITEMS_LLAMA_FOOD.isTagged(held)) return true;
-                    break;
-                case MOOSHROOM:
-                    if (Tag.ITEMS_COW_FOOD.isTagged(held)) return true;
-                    break;
-                case MULE:
-                    if (Tag.ITEMS_HORSE_FOOD.isTagged(held)) return true;
-                    break;
-                case NAUTILUS:
-                    if (Tag.ITEMS_NAUTILUS_FOOD.isTagged(held)) return true;
-                    break;
-                case OCELOT:
-                    if (Tag.ITEMS_OCELOT_FOOD.isTagged(held)) return true;
-                    break;
-                case PANDA:
-                    if (Tag.ITEMS_PANDA_FOOD.isTagged(held)) return true;
-                    break;
-                case PARROT:
-                    if (Tag.ITEMS_PARROT_FOOD.isTagged(held)) return true;
-                    break;
-                case PIG:
-                    if (Tag.ITEMS_PIG_FOOD.isTagged(held)) return true;
-                    break;
-                case RABBIT:
-                    if (Tag.ITEMS_RABBIT_FOOD.isTagged(held)) return true;
-                    break;
-                case SHEEP:
-                    if (Tag.ITEMS_SHEEP_FOOD.isTagged(held)) return true;
-                    break;
-                case SNIFFER:
-                    if (Tag.ITEMS_SNIFFER_FOOD.isTagged(held)) return true;
-                    break;
-                case STRIDER:
-                    if (Tag.ITEMS_STRIDER_FOOD.isTagged(held)) return true;
-                    break;
-                case TRADER_LLAMA:
-                    if (Tag.ITEMS_LLAMA_FOOD.isTagged(held)) return true;
-                    break;
-                case TURTLE:
-                    if (Tag.ITEMS_TURTLE_FOOD.isTagged(held)) return true;
-                    break;
-                case WOLF:
-                    if (Tag.ITEMS_WOLF_FOOD.isTagged(held)) return true;
-                    break;
-                case ZOMBIE_HORSE:
-                    if (held == Material.RED_MUSHROOM) return true;
-                    break;
-                case ZOMBIE_NAUTILUS:
-                    if (Tag.ITEMS_NAUTILUS_FOOD.isTagged(held)) return true;
-                    break;
-                default:
-                    break;
-            }
-        } catch (Throwable e) {
+
+        switch (type) {
+            case ARMADILLO:
+                if (isItemTag(held, "armadillo_food")) return true;
+                break;
+            case AXOLOTL:
+                if (isItemTag(held, "axolotl_food")) return true;
+                break;
+            case BEE:
+                if (isItemTag(held, "bee_food")) return true;
+                break;
+            case CAMEL:
+                if (isItemTag(held, "camel_food")) return true;
+                break;
+            case CAMEL_HUSK:
+                if (isItemTag(held, "camel_husk_food")) return true;
+                break;
+            case CAT:
+                if (isItemTag(held, "cat_food")) return true;
+                break;
+            case CHICKEN:
+                if (isItemTag(held, "chicken_food")) return true;
+                break;
+            case COW:
+                if (isItemTag(held, "cow_food")) return true;
+                break;
+            case DONKEY:
+                if (isItemTag(held, "horse_food")) return true;
+                break;
+            case FOX:
+                if (isItemTag(held, "fox_food")) return true;
+                break;
+            case FROG:
+                if (isItemTag(held, "frog_food")) return true;
+                break;
+            case GOAT:
+                if (isItemTag(held, "goat_food")) return true;
+                break;
+            case HAPPY_GHAST:
+                if (isItemTag(held, "happy_ghast_food")) return true;
+                break;
+            case HOGLIN:
+                if (isItemTag(held, "hoglin_food")) return true;
+                break;
+            case HORSE:
+                if (isItemTag(held, "horse_food")) return true;
+                break;
+            case LLAMA:
+                if (isItemTag(held, "llama_food")) return true;
+                break;
+            case MOOSHROOM:
+                if (isItemTag(held, "cow_food")) return true;
+                break;
+            case MULE:
+                if (isItemTag(held, "horse_food")) return true;
+                break;
+            case NAUTILUS:
+                if (isItemTag(held, "nautilus_food")) return true;
+                break;
+            case OCELOT:
+                if (isItemTag(held, "ocelot_food")) return true;
+                break;
+            case PANDA:
+                if (isItemTag(held, "panda_food")) return true;
+                break;
+            case PARROT:
+                if (isItemTag(held, "parrot_food")) return true;
+                break;
+            case PIG:
+                if (isItemTag(held, "pig_food")) return true;
+                break;
+            case RABBIT:
+                if (isItemTag(held, "rabbit_food")) return true;
+                break;
+            case SHEEP:
+                if (isItemTag(held, "sheep_food")) return true;
+                break;
+            case SNIFFER:
+                if (isItemTag(held, "sniffer_food")) return true;
+                break;
+            case STRIDER:
+                if (isItemTag(held, "strider_food")) return true;
+                break;
+            case TRADER_LLAMA:
+                if (isItemTag(held, "llama_food")) return true;
+                break;
+            case TURTLE:
+                if (isItemTag(held, "turtle_food")) return true;
+                break;
+            case WOLF:
+                if (isItemTag(held, "wolf_food")) return true;
+                break;
+            case ZOMBIE_HORSE:
+                if (held == Material.RED_MUSHROOM) return true;
+                break;
+            case ZOMBIE_NAUTILUS:
+                if (isItemTag(held, "nautilus_food")) return true;
+                break;
+            default:
+                break;
         }
         return false;
     }
