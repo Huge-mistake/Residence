@@ -88,6 +88,7 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagState;
 import com.bekvon.bukkit.residence.protection.ResidenceManager.ChunkRef;
+import com.bekvon.bukkit.residence.selection.VisualizerConfig;
 import com.bekvon.bukkit.residence.signsStuff.Signs;
 import com.bekvon.bukkit.residence.utils.GetTime;
 import com.bekvon.bukkit.residence.utils.Teleporting;
@@ -102,6 +103,7 @@ import net.Zrips.CMILib.Entities.CMIEntityType;
 import net.Zrips.CMILib.Items.CMIItemStack;
 import net.Zrips.CMILib.Items.CMIMC;
 import net.Zrips.CMILib.Items.CMIMaterial;
+import net.Zrips.CMILib.Logs.CMIDebug;
 import net.Zrips.CMILib.TitleMessages.CMITitleMessage;
 import net.Zrips.CMILib.Util.CMIVersionChecker;
 import net.Zrips.CMILib.Version.Version;
@@ -1015,7 +1017,8 @@ public class ResidencePlayerListener implements Listener {
             CMIMaterial bType = CMIMaterial.get(block.getType());
 
             // Dye Interact Sign, change Monster_Spawner or Pumpkin
-            // check Hoe Interact Rooted_Dirt, Fix upstream dupe bug(https://github.com/PaperMC/Paper/issues/13536)
+            // check Hoe Interact Rooted_Dirt, Fix upstream dupe
+            // bug(https://github.com/PaperMC/Paper/issues/13536)
             if ((bType.containsCriteria(CMIMC.SIGN) && heldItem.containsCriteria(CMIMC.DYE))
                     ||
                     ((bType == CMIMaterial.SPAWNER || bType == CMIMaterial.TRIAL_SPAWNER) && heldItem.containsCriteria(CMIMC.SPAWNEGG))
@@ -1245,11 +1248,11 @@ public class ResidencePlayerListener implements Listener {
         CMIMaterial cmat = CMIMaterial.get(mat);
 
         switch (cmat) {
-            case NOTE_BLOCK:
-            case DRAGON_EGG:
-                return true;
-            default:
-                return Residence.getInstance().getConfigManager().getCustomBothClick().contains(block.getType());
+        case NOTE_BLOCK:
+        case DRAGON_EGG:
+            return true;
+        default:
+            return Residence.getInstance().getConfigManager().getCustomBothClick().contains(block.getType());
         }
     }
 
@@ -1257,35 +1260,35 @@ public class ResidencePlayerListener implements Listener {
         CMIMaterial cmat = CMIMaterial.get(mat);
 
         switch (cmat) {
-            case ANVIL:
-            case BEACON:
-            case BELL:
-            case BREWING_STAND:
-            case CAMPFIRE:
-            case CHAIN_COMMAND_BLOCK:
-            case CHIPPED_ANVIL:
-            case COMMAND_BLOCK:
-            case COMPARATOR:
-            case CRAFTER:
-            case CRAFTING_TABLE:
-            case DAMAGED_ANVIL:
-            case DAYLIGHT_DETECTOR:
-            case ENCHANTING_TABLE:
-            case FLOWER_POT:
-            case GLOW_ITEM_FRAME:
-            case ITEM_FRAME:
-            case LECTERN:
-            case LEGACY_DIODE_BLOCK_OFF:
-            case LEGACY_DIODE_BLOCK_ON:
-            case LEGACY_REDSTONE_COMPARATOR_OFF:
-            case LEGACY_REDSTONE_COMPARATOR_ON:
-            case LEVER:
-            case REPEATER:
-            case REPEATING_COMMAND_BLOCK:
-            case SOUL_CAMPFIRE:
-                return true;
-            default:
-                break;
+        case ANVIL:
+        case BEACON:
+        case BELL:
+        case BREWING_STAND:
+        case CAMPFIRE:
+        case CHAIN_COMMAND_BLOCK:
+        case CHIPPED_ANVIL:
+        case COMMAND_BLOCK:
+        case COMPARATOR:
+        case CRAFTER:
+        case CRAFTING_TABLE:
+        case DAMAGED_ANVIL:
+        case DAYLIGHT_DETECTOR:
+        case ENCHANTING_TABLE:
+        case FLOWER_POT:
+        case GLOW_ITEM_FRAME:
+        case ITEM_FRAME:
+        case LECTERN:
+        case LEGACY_DIODE_BLOCK_OFF:
+        case LEGACY_DIODE_BLOCK_ON:
+        case LEGACY_REDSTONE_COMPARATOR_OFF:
+        case LEGACY_REDSTONE_COMPARATOR_ON:
+        case LEVER:
+        case REPEATER:
+        case REPEATING_COMMAND_BLOCK:
+        case SOUL_CAMPFIRE:
+            return true;
+        default:
+            break;
         }
 
         if (cmat.containsCriteria(CMIMC.BED)
@@ -1962,12 +1965,12 @@ public class ResidencePlayerListener implements Listener {
         if (player == null)
             return;
 
-        checkSpecialFlags(player, newRes, oldRes);
+        CMIScheduler.runAtLocation(plugin, player.getLocation(), () -> {
+            checkSpecialFlags(player, newRes, oldRes);
+        });
     }
 
     private void checkSpecialFlags(Player player, ClaimedResidence newRes, ClaimedResidence oldRes) {
-
-        ClaimedResidence res = ClaimedResidence.getByLoc(player.getLocation());
 
         if (newRes == null && oldRes != null) {
             if (Flags.night.isGlobalyEnabled() && oldRes.getPermissions().has(Flags.night, FlagCombo.OnlyTrue)
@@ -2029,14 +2032,18 @@ public class ResidencePlayerListener implements Listener {
             if (Flags.wspeed1.isGlobalyEnabled()) {
                 if (newRes.getPermissions().has(Flags.wspeed1, FlagCombo.OnlyTrue))
                     player.setWalkSpeed(plugin.getConfigManager().getWalkSpeed1().floatValue());
-                else if (oldRes.getPermissions().has(Flags.wspeed1, FlagCombo.OnlyTrue) && !newRes.getPermissions().has(Flags.wspeed1, FlagCombo.OnlyTrue))
+                else if (oldRes.getPermissions().has(Flags.wspeed1, FlagCombo.OnlyTrue)
+                        && !newRes.getPermissions().has(Flags.wspeed1, FlagCombo.OnlyTrue)
+                        && !newRes.getPermissions().has(Flags.wspeed2, FlagCombo.OnlyTrue))
                     player.setWalkSpeed(0.2F);
             }
 
             if (Flags.wspeed2.isGlobalyEnabled()) {
                 if (newRes.getPermissions().has(Flags.wspeed2, FlagCombo.OnlyTrue)) {
                     player.setWalkSpeed(plugin.getConfigManager().getWalkSpeed2().floatValue());
-                } else if (oldRes.getPermissions().has(Flags.wspeed2, FlagCombo.OnlyTrue) && !newRes.getPermissions().has(Flags.wspeed2, FlagCombo.OnlyTrue))
+                } else if (oldRes.getPermissions().has(Flags.wspeed2, FlagCombo.OnlyTrue)
+                        && !newRes.getPermissions().has(Flags.wspeed1, FlagCombo.OnlyTrue)
+                        && !newRes.getPermissions().has(Flags.wspeed2, FlagCombo.OnlyTrue))
                     player.setWalkSpeed(0.2F);
             }
 
@@ -2247,7 +2254,7 @@ public class ResidencePlayerListener implements Listener {
     }
 
     private void bounceAnimation(Player player, ClaimedResidence res) {
-        if (!plugin.getConfigManager().BounceAnimation())
+        if (!VisualizerConfig.isBounceAnimation())
             return;
 
         Visualizer v = new Visualizer(player);
@@ -2407,7 +2414,7 @@ public class ResidencePlayerListener implements Listener {
             Long time = playerTempData.get(player).getLastEnterLeaveInformTime();
             if (time == null || time + 100L < System.currentTimeMillis()) {
 
-                if (res.getPermissions().has(Flags.title, FlagCombo.TrueOrNone))
+                if (res.getPermissions().has(Flags.title, FlagCombo.TrueOrNone)) {
                     switch (plugin.getConfigManager().getGeneralMessageType()) {
                     case ActionBar:
                         CMIActionBar.send(player, (new StringBuilder()).append(CMIChatColor.YELLOW).append(insertMessages(player, res, message))
@@ -2428,13 +2435,13 @@ public class ResidencePlayerListener implements Listener {
                     default:
                         break;
                     }
+                }
                 playerTempData.get(player).setLastEnterLeaveInformTime(System.currentTimeMillis());
             }
         }
 
-        if (to != null && plugin.getConfigManager().isEnterAnimation() && to.isTopArea() && (from == null || from.getTopParent() != to)) {
+        if (to != null && VisualizerConfig.isEnterAnimation() && to.isTopArea() && (from == null || from.getTopParent() != to) && res.getPermissions().has(Flags.visualizer, FlagCombo.TrueOrNone))
             to.showBounds(player, true);
-        }
 
         if (from == null || res == null) {
             return;
