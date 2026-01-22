@@ -1893,14 +1893,14 @@ public class ResidenceEntityListener implements Listener {
                 return;
 
             lm.Flag_Deny.sendMessage(player, Flags.build);
-            egg.remove();
+            event.setCancelled(true);
 
         } else if (egg.getShooter() instanceof org.bukkit.projectiles.BlockProjectileSource) {
 
             if (Utils.isSourceBlockInsideSameResidence(egg, ClaimedResidence.getByLoc(block.getLocation())))
                 return;
 
-            egg.remove();
+            event.setCancelled(true);
 
         }
     }
