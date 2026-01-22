@@ -1870,4 +1870,38 @@ public class ResidenceEntityListener implements Listener {
         event.setCancelled(true);
 
     }
+
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onEggHit(org.bukkit.event.entity.ProjectileHitEvent event) {
+
+        if (event.getEntityType() != EntityType.EGG)
+            return;
+
+        Block block = event.getHitBlock();
+        if (block == null)
+            return;
+
+        Projectile egg = event.getEntity();
+
+        if (egg.getShooter() instanceof Player) {
+
+            Player player = (Player) egg.getShooter();
+            if (ResAdmin.isResAdmin(player))
+                return;
+
+            if (FlagPermissions.has(block.getLocation(), player, Flags.build, true))
+                return;
+
+            lm.Flag_Deny.sendMessage(player, Flags.build);
+            egg.remove();
+
+        } else if (egg.getShooter() instanceof org.bukkit.projectiles.BlockProjectileSource) {
+
+            if (Utils.isSourceBlockInsideSameResidence(egg, ClaimedResidence.getByLoc(block.getLocation())))
+                return;
+
+            egg.remove();
+
+        }
+    }
 }
