@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -32,8 +33,10 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.Entities.CMIEntityType;
+import net.Zrips.CMILib.Items.CMIMC;
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Logs.CMIDebug;
+import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener1_21 implements Listener {
 
@@ -271,7 +274,7 @@ public class ResidenceListener1_21 implements Listener {
             case NAUTILUS: return isItemTag(held, "nautilus_food");
             case OCELOT: return isItemTag(held, "ocelot_food");
             case PANDA: return isItemTag(held, "panda_food");
-            case PARROT: return isItemTag(held, "parrot_food");
+            case PARROT: return isItemTag(held, "parrot_food") || isItemTag(held, "parrot_poisonous_food");
             case PIG: return isItemTag(held, "pig_food");
             case RABBIT: return isItemTag(held, "rabbit_food");
             case SHEEP: return isItemTag(held, "sheep_food");
@@ -288,5 +291,59 @@ public class ResidenceListener1_21 implements Listener {
 
     private static boolean isItemTag(Material item, String tagName) {
         return ResidenceListener1_14.isItemTag(item, tagName);
+    }
+
+    public static boolean isSaddleAnimal1_21_5(CMIMaterial held, CMIEntityType type, Entity entity) {
+
+        if (!(entity instanceof LivingEntity)) {
+            return false;
+        }
+        EntityEquipment entInv = ((LivingEntity) entity).getEquipment();
+        if (entInv == null) {
+            return false;
+        }
+
+        ItemStack body = entInv.getItem(EquipmentSlot.BODY);
+        ItemStack saddle = null;
+
+        if (Version.isCurrentEqualOrHigher(Version.v1_21_R5)) {
+            saddle = entInv.getItem(EquipmentSlot.SADDLE);
+        }
+
+        boolean bodyAir = body.getType() == Material.AIR;
+
+        if (held.containsCriteria(CMIMC.CARPET)) {
+            if (held != CMIMaterial.MOSS_CARPET && held != CMIMaterial.PALE_MOSS_CARPET) {
+                return (type == CMIEntityType.LLAMA || type == CMIEntityType.TRADER_LLAMA) && bodyAir;
+            }
+            return false;
+        }
+        if (held.containsCriteria(CMIMC.HARNESS)) {
+            return type == CMIEntityType.HAPPY_GHAST && bodyAir;
+        }
+        if (held.containsCriteria(CMIMC.HORSEARMOR)) {
+            return (type == CMIEntityType.HORSE || type == CMIEntityType.ZOMBIE_HORSE) && bodyAir;
+        }
+        if (held.containsCriteria(CMIMC.NAUTILUSARMOR)) {
+            return (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) && bodyAir;
+        }
+        if (held == CMIMaterial.SADDLE) {
+            switch (type) {
+                case CAMEL:
+                case CAMEL_HUSK:
+                case DONKEY:
+                case HORSE:
+                case MULE:
+                case NAUTILUS:
+                case PIG:
+                case SKELETON_HORSE:
+                case STRIDER:
+                case ZOMBIE_HORSE:
+                case ZOMBIE_NAUTILUS:
+                    return saddle == null || saddle.getType() == Material.AIR;
+                default: return false;
+            }
+        }
+        return false;
     }
 }

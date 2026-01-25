@@ -1514,7 +1514,7 @@ public class ResidencePlayerListener implements Listener {
 
         if ((player.isSneaking() && canHaveContainer(entity))
                 ||
-                isSaddleAnimal(CMIMaterial.get(item), type)
+                ResidenceListener1_21.isSaddleAnimal1_21_5(CMIMaterial.get(item), type, entity)
                 ||
                 (type == CMIEntityType.CHEST_MINECART ||
                         type == CMIEntityType.FURNACE_MINECART ||
