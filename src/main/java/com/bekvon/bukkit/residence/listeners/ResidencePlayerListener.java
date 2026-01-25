@@ -1453,6 +1453,12 @@ public class ResidencePlayerListener implements Listener {
 
     private static boolean isSaddleAnimal(CMIMaterial held, CMIEntityType type) {
 
+        if (held.containsCriteria(CMIMC.CARPET)) {
+            if (held != CMIMaterial.MOSS_CARPET && held != CMIMaterial.PALE_MOSS_CARPET) {
+                return type == CMIEntityType.LLAMA || type == CMIEntityType.TRADER_LLAMA;
+            }
+            return false;
+        }
         if (held.containsCriteria(CMIMC.HARNESS)) {
             return type == CMIEntityType.HAPPY_GHAST;
         }
