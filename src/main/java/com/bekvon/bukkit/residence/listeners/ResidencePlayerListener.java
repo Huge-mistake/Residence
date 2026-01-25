@@ -1451,6 +1451,39 @@ public class ResidencePlayerListener implements Listener {
         return entity instanceof AbstractHorse;
     }
 
+    private static boolean isSaddleAnimal(CMIMaterial held, CMIEntityType type) {
+        if (held == null || type == null) {
+            return false;
+        }
+        if (held.containsCriteria(CMIMC.HARNESS)) {
+            return type == CMIEntityType.HAPPY_GHAST;
+        }
+        if (held.containsCriteria(CMIMC.HORSEARMOR)) {
+            return type == CMIEntityType.HORSE || type == CMIEntityType.ZOMBIE_HORSE;
+        }
+        if (held.containsCriteria(CMIMC.NAUTILUSARMOR)) {
+            return type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS;
+        }
+        if (held == CMIMaterial.SADDLE) {
+            switch (type) {
+                case CAMEL:
+                case CAMEL_HUSK:
+                case DONKEY:
+                case HORSE:
+                case MULE:
+                case NAUTILUS:
+                case PIG:
+                case SKELETON_HORSE:
+                case STRIDER:
+                case ZOMBIE_HORSE:
+                case ZOMBIE_NAUTILUS:
+                    return true;
+                default: return false;
+            }
+        }
+        return false;
+    }
+
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteractEntityInv(PlayerInteractEntityEvent event) {
         // Disabling listener if flag disabled globally
@@ -1468,7 +1501,16 @@ public class ResidencePlayerListener implements Listener {
         Entity entity = event.getRightClicked();
         CMIEntityType type = CMIEntityType.get(entity);
 
+        ItemStack item = CMIItemStack.getItemInMainHand(player);
+        try {
+            if (event.getHand() == EquipmentSlot.OFF_HAND)
+                item = CMIItemStack.getItemInOffHand(player);
+        } catch (Throwable e) {
+        }
+
         if ((player.isSneaking() && canHaveContainer(entity))
+                ||
+                isSaddleAnimal(CMIMaterial.get(item), type)
                 ||
                 (type == CMIEntityType.CHEST_MINECART ||
                         type == CMIEntityType.FURNACE_MINECART ||
@@ -1483,21 +1525,12 @@ public class ResidencePlayerListener implements Listener {
 
         } else if (CMIEntity.isItemFrame(entity) && (entity instanceof Hanging)) {
 
-            ItemStack item = CMIItemStack.getItemInMainHand(player);
-            try {
-                if (event.getHand() == EquipmentSlot.OFF_HAND)
-                    item = CMIItemStack.getItemInOffHand(player);
-            } catch (Throwable e) {
-            }
-            if (item == null)
-                return;
-
             String world = player.getWorld().getName();
 
             ResidencePlayer resPlayer = plugin.getPlayerManager().getResidencePlayer(player);
             PermissionGroup group = resPlayer.getGroup();
 
-            if (!plugin.getItemManager().isAllowed(item.getType(), group, world)) {
+            if (item != null && !plugin.getItemManager().isAllowed(item.getType(), group, world)) {
                 lm.General_ItemBlacklisted.sendMessage(player);
                 event.setCancelled(true);
                 return;
@@ -1510,22 +1543,11 @@ public class ResidencePlayerListener implements Listener {
             lm.Flag_Deny.sendMessage(player, Flags.container);
             event.setCancelled(true);
 
-        } else if (type == CMIEntityType.COMMAND_BLOCK_MINECART) {
-
-            if (FlagPermissions.has(entity.getLocation(), player, Flags.commandblock, true))
-                return;
-
-            lm.Flag_Deny.sendMessage(player, Flags.commandblock);
-            event.setCancelled(true);
-
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerRideVehicle(PlayerInteractEntityEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.riding.isGlobalyEnabled())
-            return;
 
         Entity entity = event.getRightClicked();
         // disabling event on world
@@ -1535,18 +1557,32 @@ public class ResidencePlayerListener implements Listener {
         if (!(entity instanceof Vehicle))
             return;
 
+        Player player = event.getPlayer();
+        if (ResAdmin.isResAdmin(player))
+            return;
+
         CMIEntityType type = CMIEntityType.get(entity);
+
+        if (Flags.commandblock.isGlobalyEnabled() && type == CMIEntityType.COMMAND_BLOCK_MINECART) {
+
+            if (FlagPermissions.has(entity.getLocation(), player, Flags.commandblock, true))
+                return;
+
+            lm.Flag_Deny.sendMessage(player, Flags.commandblock);
+            event.setCancelled(true);
+            return;
+
+        }
+
+        // Disabling listener if flag disabled globally
+        if (!Flags.riding.isGlobalyEnabled())
+            return;
 
         // Non-rideable Vehicles
         if (type == CMIEntityType.CHEST_MINECART ||
-                type == CMIEntityType.COMMAND_BLOCK_MINECART ||
                 type == CMIEntityType.FURNACE_MINECART ||
                 type == CMIEntityType.HOPPER_MINECART ||
                 type == CMIEntityType.TNT_MINECART)
-            return;
-
-        Player player = event.getPlayer();
-        if (ResAdmin.isResAdmin(player))
             return;
 
         if (FlagPermissions.has(entity.getLocation(), player, Flags.riding, true))
