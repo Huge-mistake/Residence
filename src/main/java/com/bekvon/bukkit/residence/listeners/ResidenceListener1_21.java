@@ -317,7 +317,7 @@ public class ResidenceListener1_21 implements Listener {
 
         // Check if held item and interacted entity match
         // If conditions match, also check if the target entity's slot is empty
-        if (!isEquipmentFitAnimal(entity, CMIMaterial.get(held)))
+        if (!isEquipFitAnimal(entity, CMIMaterial.get(held)))
             return;
 
         if (ResAdmin.isResAdmin(player))
@@ -331,7 +331,7 @@ public class ResidenceListener1_21 implements Listener {
 
     }
 
-    private static boolean isEquipmentFitAnimal(Entity entity, CMIMaterial held) {
+    private static boolean isEquipFitAnimal(Entity entity, CMIMaterial held) {
         if (!(entity instanceof LivingEntity)) {
             return false;
         }
@@ -375,6 +375,7 @@ public class ResidenceListener1_21 implements Listener {
                 return !((Strider) entity).hasSaddle();
             }
             if (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) {
+                // Versions with Nautilus, support EquipmentSlot.SADDLE
                 return entInv.getItem(EquipmentSlot.SADDLE).getType() == Material.AIR;
             }
             // Ensure entity is AbstractHorse
