@@ -1451,43 +1451,6 @@ public class ResidencePlayerListener implements Listener {
         return entity instanceof AbstractHorse;
     }
 
-    private static boolean isSaddleAnimal(CMIMaterial held, CMIEntityType type) {
-
-        if (held.containsCriteria(CMIMC.CARPET)) {
-            if (held != CMIMaterial.MOSS_CARPET && held != CMIMaterial.PALE_MOSS_CARPET) {
-                return type == CMIEntityType.LLAMA || type == CMIEntityType.TRADER_LLAMA;
-            }
-            return false;
-        }
-        if (held.containsCriteria(CMIMC.HARNESS)) {
-            return type == CMIEntityType.HAPPY_GHAST;
-        }
-        if (held.containsCriteria(CMIMC.HORSEARMOR)) {
-            return type == CMIEntityType.HORSE || type == CMIEntityType.ZOMBIE_HORSE;
-        }
-        if (held.containsCriteria(CMIMC.NAUTILUSARMOR)) {
-            return type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS;
-        }
-        if (held == CMIMaterial.SADDLE) {
-            switch (type) {
-                case CAMEL:
-                case CAMEL_HUSK:
-                case DONKEY:
-                case HORSE:
-                case MULE:
-                case NAUTILUS:
-                case PIG:
-                case SKELETON_HORSE:
-                case STRIDER:
-                case ZOMBIE_HORSE:
-                case ZOMBIE_NAUTILUS:
-                    return true;
-                default: return false;
-            }
-        }
-        return false;
-    }
-
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteractEntityInv(PlayerInteractEntityEvent event) {
         // Disabling listener if flag disabled globally
@@ -1505,16 +1468,7 @@ public class ResidencePlayerListener implements Listener {
         Entity entity = event.getRightClicked();
         CMIEntityType type = CMIEntityType.get(entity);
 
-        ItemStack item = CMIItemStack.getItemInMainHand(player);
-        try {
-            if (event.getHand() == EquipmentSlot.OFF_HAND)
-                item = CMIItemStack.getItemInOffHand(player);
-        } catch (Throwable e) {
-        }
-
         if ((player.isSneaking() && canHaveContainer(entity))
-                ||
-                ResidenceListener1_21.isSaddleAnimal1_21_5(CMIMaterial.get(item), type, entity)
                 ||
                 (type == CMIEntityType.CHEST_MINECART ||
                         type == CMIEntityType.FURNACE_MINECART ||
@@ -1528,6 +1482,13 @@ public class ResidencePlayerListener implements Listener {
             event.setCancelled(true);
 
         } else if (CMIEntity.isItemFrame(entity) && (entity instanceof Hanging)) {
+
+            ItemStack item = CMIItemStack.getItemInMainHand(player);
+            try {
+                if (event.getHand() == EquipmentSlot.OFF_HAND)
+                    item = CMIItemStack.getItemInOffHand(player);
+            } catch (Throwable e) {
+            }
 
             String world = player.getWorld().getName();
 

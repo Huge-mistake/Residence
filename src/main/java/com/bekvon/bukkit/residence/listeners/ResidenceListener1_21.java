@@ -8,8 +8,10 @@ import org.bukkit.Material;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Strider;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -293,8 +295,41 @@ public class ResidenceListener1_21 implements Listener {
         return ResidenceListener1_14.isItemTag(item, tagName);
     }
 
-    public static boolean isSaddleAnimal1_21_5(CMIMaterial held, CMIEntityType type, Entity entity) {
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlayerSaddleAnimal(PlayerInteractEntityEvent event) {
+        // Disabling listener if flag disabled globally
+        if (!Flags.container.isGlobalyEnabled())
+            return;
 
+        Entity entity = event.getRightClicked();
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(entity.getWorld()))
+            return;
+
+        if (!(entity instanceof Animals))
+            return;
+
+        Player player = event.getPlayer();
+
+        Material held = event.getHand() == EquipmentSlot.OFF_HAND
+                ? player.getInventory().getItemInOffHand().getType()
+                : player.getInventory().getItemInMainHand().getType();
+
+        if (!isSaddleAnimal(entity, CMIMaterial.get(held)))
+            return;
+
+        if (ResAdmin.isResAdmin(player))
+            return;
+
+        if (FlagPermissions.has(entity.getLocation(), player, Flags.container, true))
+            return;
+
+        lm.Flag_Deny.sendMessage(player, Flags.container);
+        event.setCancelled(true);
+
+    }
+
+    private static boolean isSaddleAnimal(Entity entity, CMIMaterial held) {
         if (!(entity instanceof LivingEntity)) {
             return false;
         }
@@ -302,6 +337,8 @@ public class ResidenceListener1_21 implements Listener {
         if (entInv == null) {
             return false;
         }
+
+        CMIEntityType type = CMIEntityType.get(entity);
 
         boolean noArmor = entInv.getItem(EquipmentSlot.BODY).getType() == Material.AIR;
 
@@ -329,15 +366,14 @@ public class ResidenceListener1_21 implements Listener {
             }
 
         } else if (held == CMIMaterial.SADDLE) {
+            if (entity instanceof Pig) {
+                return !((Pig) entity).hasSaddle();
+            }
+            if (entity instanceof Strider) {
+                return !((Strider) entity).hasSaddle();
+            }
             if (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) {
-                ItemStack nautilusSaddle = ((org.bukkit.entity.AbstractNautilus) entity).getInventory().getItem(0);
-                return nautilusSaddle != null && nautilusSaddle.getType() == Material.AIR;
-            }
-            if (type == CMIEntityType.PIG) {
-                return ((org.bukkit.entity.Pig) entity).hasSaddle();
-            }
-            if (type == CMIEntityType.STRIDER) {
-                return ((org.bukkit.entity.Strider) entity).hasSaddle();
+                return entInv.getItem(EquipmentSlot.SADDLE).getType() == Material.AIR;
             }
             // Ensure entity is AbstractHorse
             switch (type) {
@@ -348,7 +384,7 @@ public class ResidenceListener1_21 implements Listener {
                 case MULE:
                 case SKELETON_HORSE:
                 case ZOMBIE_HORSE:
-                    ItemStack horseSaddle = ((org.bukkit.entity.AbstractHorse) entity).getInventory().getItem(0);
+                    ItemStack horseSaddle = ((org.bukkit.entity.AbstractHorse) entity).getInventory().getSaddle();
                     return horseSaddle != null && horseSaddle.getType() == Material.AIR;
                 default:
                     break;
