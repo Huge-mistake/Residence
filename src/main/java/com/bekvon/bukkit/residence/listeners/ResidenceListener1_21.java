@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -383,7 +384,7 @@ public class ResidenceListener1_21 implements Listener {
                 case MULE:
                 case SKELETON_HORSE:
                 case ZOMBIE_HORSE:
-                    ItemStack horseSaddle = ((org.bukkit.entity.AbstractHorse) entity).getInventory().getSaddle();
+                    ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getSaddle();
                     return horseSaddle != null && horseSaddle.getType() == Material.AIR;
                 default:
                     break;
