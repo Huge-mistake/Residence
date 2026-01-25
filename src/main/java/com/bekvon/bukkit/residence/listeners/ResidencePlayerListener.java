@@ -1452,9 +1452,7 @@ public class ResidencePlayerListener implements Listener {
     }
 
     private static boolean isSaddleAnimal(CMIMaterial held, CMIEntityType type) {
-        if (held == null || type == null) {
-            return false;
-        }
+
         if (held.containsCriteria(CMIMC.HARNESS)) {
             return type == CMIEntityType.HAPPY_GHAST;
         }
