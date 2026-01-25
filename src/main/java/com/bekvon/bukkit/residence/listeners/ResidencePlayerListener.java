@@ -1567,7 +1567,10 @@ public class ResidencePlayerListener implements Listener {
 
         CMIEntityType type = CMIEntityType.get(entity);
 
-        if (Flags.commandblock.isGlobalyEnabled() && type == CMIEntityType.COMMAND_BLOCK_MINECART) {
+        if (type == CMIEntityType.COMMAND_BLOCK_MINECART) {
+            // Disabling listener if flag disabled globally
+            if (!Flags.commandblock.isGlobalyEnabled())
+                return;
 
             if (FlagPermissions.has(entity.getLocation(), player, Flags.commandblock, true))
                 return;

@@ -303,45 +303,55 @@ public class ResidenceListener1_21 implements Listener {
             return false;
         }
 
-        ItemStack body = entInv.getItem(EquipmentSlot.BODY);
-        ItemStack saddle = null;
-
-        if (Version.isCurrentEqualOrHigher(Version.v1_21_R5)) {
-            saddle = entInv.getItem(EquipmentSlot.SADDLE);
-        }
-
-        boolean bodyAir = body.getType() == Material.AIR;
+        boolean noArmor = entInv.getItem(EquipmentSlot.BODY).getType() == Material.AIR;
 
         if (held.containsCriteria(CMIMC.CARPET)) {
-            if (held != CMIMaterial.MOSS_CARPET && held != CMIMaterial.PALE_MOSS_CARPET) {
-                return (type == CMIEntityType.LLAMA || type == CMIEntityType.TRADER_LLAMA) && bodyAir;
+            if (held == CMIMaterial.MOSS_CARPET || held == CMIMaterial.PALE_MOSS_CARPET) {
+                return false;
             }
-            return false;
-        }
-        if (held.containsCriteria(CMIMC.HARNESS)) {
-            return type == CMIEntityType.HAPPY_GHAST && bodyAir;
-        }
-        if (held.containsCriteria(CMIMC.HORSEARMOR)) {
-            return (type == CMIEntityType.HORSE || type == CMIEntityType.ZOMBIE_HORSE) && bodyAir;
-        }
-        if (held.containsCriteria(CMIMC.NAUTILUSARMOR)) {
-            return (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) && bodyAir;
-        }
-        if (held == CMIMaterial.SADDLE) {
+            if (type == CMIEntityType.LLAMA || type == CMIEntityType.TRADER_LLAMA) {
+                return noArmor;
+            }
+
+        } else if (held.containsCriteria(CMIMC.HARNESS)) {
+            if (type == CMIEntityType.HAPPY_GHAST) {
+                return noArmor;
+            }
+
+        } else if (held.containsCriteria(CMIMC.HORSEARMOR)) {
+            if (type == CMIEntityType.HORSE || type == CMIEntityType.ZOMBIE_HORSE) {
+                return noArmor;
+            }
+
+        } else if (held.containsCriteria(CMIMC.NAUTILUSARMOR)) {
+            if (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) {
+                return noArmor;
+            }
+
+        } else if (held == CMIMaterial.SADDLE) {
+            if (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) {
+                ItemStack nautilusSaddle = ((org.bukkit.entity.AbstractNautilus) entity).getInventory().getItem(0);
+                return nautilusSaddle != null && nautilusSaddle.getType() == Material.AIR;
+            }
+            if (type == CMIEntityType.PIG) {
+                return ((org.bukkit.entity.Pig) entity).hasSaddle();
+            }
+            if (type == CMIEntityType.STRIDER) {
+                return ((org.bukkit.entity.Strider) entity).hasSaddle();
+            }
+            // Ensure entity is AbstractHorse
             switch (type) {
                 case CAMEL:
                 case CAMEL_HUSK:
                 case DONKEY:
                 case HORSE:
                 case MULE:
-                case NAUTILUS:
-                case PIG:
                 case SKELETON_HORSE:
-                case STRIDER:
                 case ZOMBIE_HORSE:
-                case ZOMBIE_NAUTILUS:
-                    return saddle == null || saddle.getType() == Material.AIR;
-                default: return false;
+                    ItemStack horseSaddle = ((org.bukkit.entity.AbstractHorse) entity).getInventory().getItem(0);
+                    return horseSaddle != null && horseSaddle.getType() == Material.AIR;
+                default:
+                    break;
             }
         }
         return false;
