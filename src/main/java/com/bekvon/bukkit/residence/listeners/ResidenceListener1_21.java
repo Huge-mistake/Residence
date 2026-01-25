@@ -296,7 +296,7 @@ public class ResidenceListener1_21 implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPlayerSaddleAnimal(PlayerInteractEntityEvent event) {
+    public void onPlayerEquipAnimal(PlayerInteractEntityEvent event) {
         // Disabling listener if flag disabled globally
         if (!Flags.container.isGlobalyEnabled())
             return;
@@ -317,7 +317,7 @@ public class ResidenceListener1_21 implements Listener {
 
         // Check if held item and interacted entity match
         // If conditions match, also check if the target entity's slot is empty
-        if (!isSaddleAnimal(entity, CMIMaterial.get(held)))
+        if (!isEquipmentFitAnimal(entity, CMIMaterial.get(held)))
             return;
 
         if (ResAdmin.isResAdmin(player))
@@ -331,7 +331,7 @@ public class ResidenceListener1_21 implements Listener {
 
     }
 
-    private static boolean isSaddleAnimal(Entity entity, CMIMaterial held) {
+    private static boolean isEquipmentFitAnimal(Entity entity, CMIMaterial held) {
         if (!(entity instanceof LivingEntity)) {
             return false;
         }
@@ -342,29 +342,29 @@ public class ResidenceListener1_21 implements Listener {
 
         CMIEntityType type = CMIEntityType.get(entity);
 
-        boolean noArmor = entInv.getItem(EquipmentSlot.BODY).getType() == Material.AIR;
+        boolean noEquip = entInv.getItem(EquipmentSlot.BODY).getType() == Material.AIR;
 
         if (held.containsCriteria(CMIMC.CARPET)) {
             if (held == CMIMaterial.MOSS_CARPET || held == CMIMaterial.PALE_MOSS_CARPET) {
                 return false;
             }
             if (type == CMIEntityType.LLAMA || type == CMIEntityType.TRADER_LLAMA) {
-                return noArmor;
+                return noEquip;
             }
 
         } else if (held.containsCriteria(CMIMC.HARNESS)) {
             if (type == CMIEntityType.HAPPY_GHAST) {
-                return noArmor;
+                return noEquip;
             }
 
         } else if (held.containsCriteria(CMIMC.HORSEARMOR)) {
             if (type == CMIEntityType.HORSE || type == CMIEntityType.ZOMBIE_HORSE) {
-                return noArmor;
+                return noEquip;
             }
 
         } else if (held.containsCriteria(CMIMC.NAUTILUSARMOR)) {
             if (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) {
-                return noArmor;
+                return noEquip;
             }
 
         } else if (held == CMIMaterial.SADDLE) {
