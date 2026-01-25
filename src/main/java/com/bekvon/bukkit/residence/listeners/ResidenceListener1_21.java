@@ -384,8 +384,8 @@ public class ResidenceListener1_21 implements Listener {
                 case MULE:
                 case SKELETON_HORSE:
                 case ZOMBIE_HORSE:
-                    ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getItem(0);
-                    return horseSaddle != null && horseSaddle.getType() == Material.AIR;
+                    ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getSaddle();
+                    return horseSaddle == null || horseSaddle.getType() == Material.AIR;
                 default:
                     break;
             }
