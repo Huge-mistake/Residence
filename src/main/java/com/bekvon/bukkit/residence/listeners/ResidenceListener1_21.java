@@ -315,6 +315,8 @@ public class ResidenceListener1_21 implements Listener {
                 ? player.getInventory().getItemInOffHand().getType()
                 : player.getInventory().getItemInMainHand().getType();
 
+        // Check if held item and interacted entity match
+        // If conditions match, also check if the target entity's slot is empty
         if (!isSaddleAnimal(entity, CMIMaterial.get(held)))
             return;
 
@@ -385,6 +387,8 @@ public class ResidenceListener1_21 implements Listener {
                 case SKELETON_HORSE:
                 case ZOMBIE_HORSE:
                     ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getSaddle();
+                    // Don't use horseSaddle != null
+                    // No saddle equipped: getSaddle() returns null, result is always false
                     return horseSaddle == null || horseSaddle.getType() == Material.AIR;
                 default:
                     break;
