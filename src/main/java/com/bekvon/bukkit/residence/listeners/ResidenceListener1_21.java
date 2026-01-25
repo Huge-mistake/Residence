@@ -316,7 +316,7 @@ public class ResidenceListener1_21 implements Listener {
                 : player.getInventory().getItemInMainHand().getType();
 
         // Check if held item and interacted entity match
-        // If conditions match, also check if the target entity's slot is empty
+        // If conditions match, also check if the target entity slot is empty
         if (!isEquipFitAnimal(entity, CMIMaterial.get(held)))
             return;
 
