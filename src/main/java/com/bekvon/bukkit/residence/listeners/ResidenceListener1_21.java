@@ -342,29 +342,29 @@ public class ResidenceListener1_21 implements Listener {
 
         CMIEntityType type = CMIEntityType.get(entity);
 
-        boolean noEquip = entInv.getItem(EquipmentSlot.BODY).getType() == Material.AIR;
+        boolean isBodySlotEmpty = entInv.getItem(EquipmentSlot.BODY).isEmpty();
 
         if (held.containsCriteria(CMIMC.CARPET)) {
             if (held == CMIMaterial.MOSS_CARPET || held == CMIMaterial.PALE_MOSS_CARPET) {
                 return false;
             }
             if (type == CMIEntityType.LLAMA || type == CMIEntityType.TRADER_LLAMA) {
-                return noEquip;
+                return isBodySlotEmpty;
             }
 
         } else if (held.containsCriteria(CMIMC.HARNESS)) {
             if (type == CMIEntityType.HAPPY_GHAST) {
-                return noEquip;
+                return isBodySlotEmpty;
             }
 
         } else if (held.containsCriteria(CMIMC.HORSEARMOR)) {
             if (type == CMIEntityType.HORSE || type == CMIEntityType.ZOMBIE_HORSE) {
-                return noEquip;
+                return isBodySlotEmpty;
             }
 
         } else if (held.containsCriteria(CMIMC.NAUTILUSARMOR)) {
             if (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) {
-                return noEquip;
+                return isBodySlotEmpty;
             }
 
         } else if (held == CMIMaterial.SADDLE) {
@@ -375,8 +375,8 @@ public class ResidenceListener1_21 implements Listener {
                 return !((Strider) entity).hasSaddle();
             }
             if (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) {
-                // Versions with Nautilus, support EquipmentSlot.SADDLE
-                return entInv.getItem(EquipmentSlot.SADDLE).getType() == Material.AIR;
+                // Has Nautilus version, also supports EquipmentSlot.SADDLE
+                return entInv.getItem(EquipmentSlot.SADDLE).isEmpty();
             }
             // Ensure entity is AbstractHorse
             switch (type) {
@@ -393,7 +393,7 @@ public class ResidenceListener1_21 implements Listener {
                     ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getSaddle();
                     // Do not use horseSaddle != null
                     // Saddle slot empty, getSaddle() returns null, result always false
-                    return horseSaddle == null || horseSaddle.getType() == Material.AIR;
+                    return horseSaddle == null || horseSaddle.isEmpty();
                 default:
                     break;
             }
