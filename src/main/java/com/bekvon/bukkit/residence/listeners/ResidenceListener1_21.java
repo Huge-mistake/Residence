@@ -155,7 +155,8 @@ public class ResidenceListener1_21 implements Listener {
 
             EntityEquipment gloemInv = ((LivingEntity) entity).getEquipment();
             // Right-click to remove items from holding copper_golem
-            if (gloemInv != null && (!gloemInv.getItemInMainHand().isEmpty() || !gloemInv.getItemInOffHand().isEmpty())) {
+            if (gloemInv != null && (gloemInv.getItemInMainHand().getType() != Material.AIR ||
+                    gloemInv.getItemInOffHand().getType() != Material.AIR)) {
 
                 if (FlagPermissions.has(entity.getLocation(), player, Flags.container, true))
                     return;
@@ -340,20 +341,20 @@ public class ResidenceListener1_21 implements Listener {
             return false;
 
         CMIEntityType type = CMIEntityType.get(entity);
-        boolean isBodySlotEmpty = entInv.getItem(EquipmentSlot.BODY).isEmpty();
+        boolean isBodySlotAir = entInv.getItem(EquipmentSlot.BODY).getType() == Material.AIR;
 
         if (held.containsCriteria(CMIMC.CARPET))
-            return (type == CMIEntityType.LLAMA || type == CMIEntityType.TRADER_LLAMA) && isBodySlotEmpty &&
+            return (type == CMIEntityType.LLAMA || type == CMIEntityType.TRADER_LLAMA) && isBodySlotAir &&
                     held != CMIMaterial.MOSS_CARPET && held != CMIMaterial.PALE_MOSS_CARPET;
 
         if (held.containsCriteria(CMIMC.HARNESS))
-            return type == CMIEntityType.HAPPY_GHAST && isBodySlotEmpty;
+            return type == CMIEntityType.HAPPY_GHAST && isBodySlotAir;
 
         if (held.containsCriteria(CMIMC.HORSEARMOR))
-            return (type == CMIEntityType.HORSE || type == CMIEntityType.ZOMBIE_HORSE) && isBodySlotEmpty;
+            return (type == CMIEntityType.HORSE || type == CMIEntityType.ZOMBIE_HORSE) && isBodySlotAir;
 
         if (held.containsCriteria(CMIMC.NAUTILUSARMOR))
-            return (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) && isBodySlotEmpty;
+            return (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS) && isBodySlotAir;
 
         if (held == CMIMaterial.SADDLE) {
 
@@ -365,7 +366,7 @@ public class ResidenceListener1_21 implements Listener {
 
             // Has Nautilus version, also supports EquipmentSlot.SADDLE
             if (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS)
-                return entInv.getItem(EquipmentSlot.SADDLE).isEmpty();
+                return entInv.getItem(EquipmentSlot.SADDLE).getType() == Material.AIR;
 
             // Ensure entity is AbstractHorse
             switch (type) {
@@ -381,8 +382,8 @@ public class ResidenceListener1_21 implements Listener {
                     }
                     ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getSaddle();
                     // Do not use horseSaddle != null
-                    // Saddle slot empty, getSaddle() returns null, result always false
-                    return horseSaddle == null || horseSaddle.isEmpty();
+                    // Saddle slot Air, getSaddle() returns null, result always false
+                    return horseSaddle == null || horseSaddle.getType() == Material.AIR;
                 default:
                     return false;
             }
