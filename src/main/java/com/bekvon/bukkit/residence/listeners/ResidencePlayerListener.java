@@ -1550,9 +1550,9 @@ public class ResidencePlayerListener implements Listener {
         if (type == CMIEntityType.CHEST_MINECART ||
                 type == CMIEntityType.FURNACE_MINECART ||
                 type == CMIEntityType.HOPPER_MINECART ||
-                type == CMIEntityType.TNT_MINECART)
+                type == CMIEntityType.TNT_MINECART) {
             return;
-
+        }
         if (FlagPermissions.has(entity.getLocation(), player, Flags.riding, true))
             return;
 
