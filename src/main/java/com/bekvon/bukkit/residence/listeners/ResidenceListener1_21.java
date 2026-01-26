@@ -387,6 +387,9 @@ public class ResidenceListener1_21 implements Listener {
                 case MULE:
                 case SKELETON_HORSE:
                 case ZOMBIE_HORSE:
+                    if (!(entity instanceof AbstractHorse)) {
+                        return false;
+                    }
                     ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getSaddle();
                     // Don't use horseSaddle != null
                     // No saddle equipped: getSaddle() returns null, result is always false
