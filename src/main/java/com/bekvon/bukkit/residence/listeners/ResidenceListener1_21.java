@@ -391,8 +391,8 @@ public class ResidenceListener1_21 implements Listener {
                         return false;
                     }
                     ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getSaddle();
-                    // Don't use horseSaddle != null
-                    // No saddle equipped: getSaddle() returns null, result is always false
+                    // Do not use horseSaddle != null
+                    // Saddle slot empty, getSaddle() returns null, result always false
                     return horseSaddle == null || horseSaddle.getType() == Material.AIR;
                 default:
                     break;
