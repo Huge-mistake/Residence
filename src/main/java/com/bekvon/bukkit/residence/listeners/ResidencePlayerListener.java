@@ -1677,7 +1677,18 @@ public class ResidencePlayerListener implements Listener {
         if (ResAdmin.isResAdmin(player))
             return;
 
-        Location loc = event.getBlockClicked().getRelative(event.getBlockFace()).getLocation();
+        Block block = event.getBlockClicked();
+
+        if (CMIMaterial.get(block.getType()) == CMIMaterial.CAULDRON) {
+            if (FlagPermissions.has(block.getLocation(), player, Flags.build, true))
+                return;
+
+            lm.Flag_Deny.sendMessage(player, Flags.build);
+            event.setCancelled(true);
+            return;
+        }
+
+        Location loc = block.getRelative(event.getBlockFace()).getLocation();
 
         CMIMaterial cmat = CMIMaterial.get(event.getBucket());
         ClaimedResidence res = plugin.getResidenceManager().getByLoc(loc);
