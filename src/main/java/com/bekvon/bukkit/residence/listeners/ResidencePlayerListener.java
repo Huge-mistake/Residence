@@ -1679,7 +1679,7 @@ public class ResidencePlayerListener implements Listener {
 
         Block block = event.getBlockClicked();
 
-        if (CMIMaterial.get(block.getType()) == CMIMaterial.CAULDRON) {
+        if (CMIMaterial.get(block.getType()) == CMIMaterial.CAULDRON && !player.isSneaking()) {
             if (FlagPermissions.has(block.getLocation(), player, Flags.build, true))
                 return;
 
