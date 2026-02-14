@@ -1677,20 +1677,7 @@ public class ResidencePlayerListener implements Listener {
         if (ResAdmin.isResAdmin(player))
             return;
 
-        Location loc = event.getBlockClicked().getLocation().clone();
-
-        if (Version.isCurrentHigher(Version.v1_12_R1)) {
-
-            if (Version.isCurrentHigher(Version.v1_13_R1) && event.getBlockClicked().getBlockData() instanceof org.bukkit.block.data.Waterlogged) {
-                org.bukkit.block.data.Waterlogged waterloggedBlock = (org.bukkit.block.data.Waterlogged) event.getBlockClicked().getBlockData();
-                if (waterloggedBlock.isWaterlogged())
-                    loc.add(event.getBlockFace().getDirection());
-            } else
-                try {
-                    loc.add(event.getBlockFace().getDirection());
-                } catch (Throwable e) {
-                }
-        }
+        Location loc = event.getBlockClicked().getRelative(event.getBlockFace()).getLocation();
 
         CMIMaterial cmat = CMIMaterial.get(event.getBucket());
         ClaimedResidence res = plugin.getResidenceManager().getByLoc(loc);
