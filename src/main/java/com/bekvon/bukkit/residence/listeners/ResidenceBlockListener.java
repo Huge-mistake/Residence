@@ -271,7 +271,7 @@ public class ResidenceBlockListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onEntityBlockFormEvent(EntityBlockFormEvent event) {
+    public void onSnowGolemTrailForm(EntityBlockFormEvent event) {
         // Disabling listener if flag disabled globally
         if (!Flags.snowtrail.isGlobalyEnabled())
             return;
