@@ -86,11 +86,4 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         event.setCancelled(true);
 
     }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onEntityKnockbackByEntityEvent(com.destroystokyo.paper.event.entity.EntityKnockbackByEntityEvent event) {
-
-        event.setCancelled(true);
-
-    }
 }
