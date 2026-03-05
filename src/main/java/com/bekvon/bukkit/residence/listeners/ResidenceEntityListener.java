@@ -1853,20 +1853,4 @@ public class ResidenceEntityListener implements Listener {
         event.setCancelled(true);
 
     }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onCopperGolemStatue(EntityChangeBlockEvent event) {
-
-        if (event.getEntityType() != EntityType.COPPER_GOLEM)
-            return;
-
-        if (event.getTo() != Material.OXIDIZED_COPPER_GOLEM_STATUE)
-            return;
-
-        if (FlagPermissions.has(event.getBlock().getLocation(), Flags.build, true))
-            return;
-
-        event.setCancelled(true);
-
-    }
 }
