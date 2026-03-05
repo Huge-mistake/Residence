@@ -47,6 +47,7 @@ public class ResidenceListener1_21_9_Paper implements Listener {
 
     }
 
+    // Prevent external copper golems from forming statues inside Residence
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onCopperGolemStatueForm(EntityChangeBlockEvent event) {
         // Disabling listener if flag disabled globally
