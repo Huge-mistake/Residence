@@ -1853,4 +1853,41 @@ public class ResidenceEntityListener implements Listener {
         event.setCancelled(true);
 
     }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onZombiePickupItemEvent(org.bukkit.event.entity.EntityPickupItemEvent event) {
+
+        switch (event.getEntityType()) {
+            case DROWNED:
+            case HUSK:
+            case ZOMBIE:
+            case ZOMBIE_VILLAGER:
+            case ZOMBIFIED_PIGLIN:
+                event.setCancelled(true);
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEnderManChangeBlockEvent(EntityChangeBlockEvent event) {
+
+        Entity entity = event.getEntity();
+        if (!(entity instanceof Enderman))
+            return;
+
+        if (entity.getWorld().getEnvironment() != org.bukkit.World.Environment.THE_END) {
+            event.setCancelled(true);
+            return;
+        }
+
+        net.Zrips.CMILib.Version.Schedulers.CMIScheduler.runAtEntityLater(plugin, entity, () -> {
+            if (entity.isValid() && !entity.isDead()) {
+                entity.setPersistent(false);
+            }
+        }, 1L);
+
+    }
 }
