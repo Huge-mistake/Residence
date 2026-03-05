@@ -95,9 +95,6 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         if (!(hitBy instanceof org.bukkit.entity.Player))
             return;
 
-        if (event.getCause() != io.papermc.paper.event.entity.EntityKnockbackEvent.Cause.ENTITY_ATTACK)
-            return;
-
         org.bukkit.entity.Player player = (org.bukkit.entity.Player) hitBy;
 
         if (com.bekvon.bukkit.residence.containers.ResAdmin.isResAdmin(player))
