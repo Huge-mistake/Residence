@@ -1860,7 +1860,7 @@ public class ResidenceEntityListener implements Listener {
         if (event.getEntityType() != EntityType.COPPER_GOLEM)
             return;
 
-        if (event.getBlock().getType() != Material.OXIDIZED_COPPER_GOLEM_STATUE)
+        if (event.getTo() != Material.OXIDIZED_COPPER_GOLEM_STATUE)
             return;
 
         if (FlagPermissions.has(event.getBlock().getLocation(), Flags.build, true))
