@@ -86,4 +86,41 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         event.setCancelled(true);
 
     }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEntityKnockbackByEntityEvent(com.destroystokyo.paper.event.entity.EntityKnockbackByEntityEvent event) {
+
+        org.bukkit.entity.Entity hitBy = event.getHitBy();
+
+        if (!(hitBy instanceof org.bukkit.entity.Player))
+            return;
+
+        if (event.getCause() != io.papermc.paper.event.entity.EntityKnockbackEvent.Cause.ENTITY_ATTACK)
+            return;
+
+        org.bukkit.entity.Player player = (org.bukkit.entity.Player) hitBy;
+
+        if (com.bekvon.bukkit.residence.containers.ResAdmin.isResAdmin(player))
+            return;
+
+        org.bukkit.entity.Entity entity = event.getEntity();
+
+        if (com.bekvon.bukkit.residence.utils.Utils.isAnimal(entity)) {
+
+            if (FlagPermissions.has(entity.getLocation(), player, Flags.animalkilling, true))
+                return;
+
+            com.bekvon.bukkit.residence.containers.lm.Flag_Deny.sendMessage(player, Flags.animalkilling);
+            event.setCancelled(true);
+
+        } else if (ResidenceEntityListener.isMonster(entity)) {
+
+            if (FlagPermissions.has(entity.getLocation(), player, Flags.mobkilling, true))
+                return;
+
+            com.bekvon.bukkit.residence.containers.lm.Flag_Deny.sendMessage(player, Flags.mobkilling);
+            event.setCancelled(true);
+
+        }
+    }
 }
