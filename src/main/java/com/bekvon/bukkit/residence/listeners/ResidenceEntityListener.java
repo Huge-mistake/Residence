@@ -1885,7 +1885,7 @@ public class ResidenceEntityListener implements Listener {
 
         net.Zrips.CMILib.Version.Schedulers.CMIScheduler.runAtEntityLater(plugin, entity, () -> {
             if (entity.isValid() && !entity.isDead()) {
-                entity.setPersistent(false);
+                ((Enderman) entity).setRemoveWhenFarAway(true);
             }
         }, 1L);
 
