@@ -3,7 +3,6 @@ package com.bekvon.bukkit.residence.listeners;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,10 +11,8 @@ import org.bukkit.event.entity.EntityChangeBlockEvent;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
-import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
-import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
-import com.bekvon.bukkit.residence.protection.ResidencePermissions;
+import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 
 import io.papermc.paper.event.entity.ItemTransportingEntityValidateTargetEvent;
 
@@ -28,7 +25,7 @@ public class ResidenceListener1_21_9_Paper implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onCopperGolemOpenChest(ItemTransportingEntityValidateTargetEvent event) {
+    public void onCopperGolemInteract(ItemTransportingEntityValidateTargetEvent event) {
 
         if (!event.isAllowed())
             return;
@@ -43,56 +40,12 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         if (event.getEntityType() != EntityType.COPPER_GOLEM)
             return;
 
-        Block block = event.getBlock();
+        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+        if (perms.has(Flags.golemopenchest, perms.has(Flags.container, true)))
+            return;
 
-        ClaimedResidence chestRes = ClaimedResidence.getByLoc(block.getLocation());
+        event.setAllowed(false);
 
-        if (chestRes != null) {
-
-            ResidencePermissions chestPerms = chestRes.getPermissions();
-
-            if (chestPerms.has(Flags.golemopenchest, FlagCombo.OnlyFalse)) {
-                event.setAllowed(false);
-                return;
-            }
-            if (chestPerms.has(Flags.golemopenchest, FlagCombo.OnlyTrue))
-                return;
-
-            if (chestPerms.has(Flags.container, FlagCombo.TrueOrNone))
-                return;
-
-            // When Flags.golemopenchest is None & Flags.container is False
-            // Prevent external Copper Golems from opening chests in Residence
-            // but do not block Copper Golems spawned inside the Residence
-            if (isSameResOrOwner(chestRes, event.getEntity()))
-                return;
-
-            event.setAllowed(false);
-
-        } else {
-
-            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
-            if (perms.has(Flags.golemopenchest, perms.has(Flags.container, true)))
-                return;
-
-            event.setAllowed(false);
-
-        }
-    }
-
-    private boolean isSameResOrOwner(ClaimedResidence blockRes, Entity entity) {
-        if (blockRes == null || entity == null)
-            return false;
-
-        Location entSpawnLoc = entity.getOrigin();
-        if (entSpawnLoc == null)
-            return false;
-
-        ClaimedResidence entSpawnRes = ClaimedResidence.getByLoc(entSpawnLoc);
-        if (entSpawnRes == null)
-            return false;
-
-        return blockRes == entSpawnRes || blockRes.isOwner(entSpawnRes.getOwner());
     }
 
     // Prevent external copper golems from forming statues inside Residence
@@ -114,16 +67,23 @@ public class ResidenceListener1_21_9_Paper implements Listener {
             return;
 
         ClaimedResidence statueRes = ClaimedResidence.getByLoc(block.getLocation());
-        if (statueRes != null) {
+        if (statueRes == null)
+            return;
 
-            if (isSameResOrOwner(statueRes, event.getEntity()))
+        Location entSpawnLoc = event.getEntity().getOrigin();
+        if (entSpawnLoc != null) {
+
+            ClaimedResidence entSpawnRes = ClaimedResidence.getByLoc(entSpawnLoc);
+
+            if (entSpawnRes != null && (entSpawnRes == statueRes || entSpawnRes.isOwner(statueRes.getOwner())))
                 return;
-
-            if (statueRes.getPermissions().has(Flags.build, true))
-                return;
-
-            event.setCancelled(true);
 
         }
+
+        if (statueRes.getPermissions().has(Flags.build, true))
+            return;
+
+        event.setCancelled(true);
+
     }
 }
