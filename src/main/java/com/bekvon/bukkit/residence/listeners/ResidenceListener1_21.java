@@ -365,7 +365,7 @@ public class ResidenceListener1_21 implements Listener {
         }
     }
 
-    private static boolean isItemTag(Material item, String tagName) {
+    private boolean isItemTag(Material item, String tagName) {
         return ResidenceListener1_14.isItemTag(item, tagName);
     }
 
@@ -405,7 +405,7 @@ public class ResidenceListener1_21 implements Listener {
 
     }
 
-    private static boolean isEquipFitAnimal(Entity entity, CMIMaterial held) {
+    private boolean isEquipFitAnimal(Entity entity, CMIMaterial held) {
         if (!(entity instanceof LivingEntity))
             return false;
 
@@ -440,12 +440,12 @@ public class ResidenceListener1_21 implements Listener {
             if (entity instanceof Strider)
                 return !((Strider) entity).hasSaddle();
 
-            // Has Nautilus version, also supports EquipmentSlot.SADDLE
-            if (type == CMIEntityType.NAUTILUS || type == CMIEntityType.ZOMBIE_NAUTILUS)
-                return entInv.getItem(EquipmentSlot.SADDLE).getType() == Material.AIR;
-
-            // Ensure entity is AbstractHorse
             switch (type) {
+            case NAUTILUS:
+            case ZOMBIE_NAUTILUS:
+                // Has Nautilus version, also supports EquipmentSlot.SADDLE
+                return entInv.getItem(EquipmentSlot.SADDLE).getType() == Material.AIR;
+            // Ensure entity is AbstractHorse
             case CAMEL:
             case CAMEL_HUSK:
             case DONKEY:
