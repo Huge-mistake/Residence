@@ -1853,22 +1853,4 @@ public class ResidenceEntityListener implements Listener {
         event.setCancelled(true);
 
     }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onZombiePickupItemEvent(org.bukkit.event.entity.EntityPickupItemEvent event) {
-
-        switch (event.getEntityType()) {
-            case DROWNED:
-            case HUSK:
-            case ZOMBIE:
-            case ZOMBIE_VILLAGER:
-            case ZOMBIFIED_PIGLIN:
-                event.setCancelled(true);
-                event.getItem().setPickupDelay(60);
-                break;
-            default:
-                break;
-        }
-
-    }
 }
