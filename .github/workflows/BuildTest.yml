@@ -32,9 +32,14 @@ jobs:
         run: |
           NAME=$(mvn help:evaluate -Dexpression=project.build.finalName -q -DforceStdout)
           echo "jar=$NAME.jar" >> $GITHUB_OUTPUT
+
+      - name: Get short SHA
+        id: sha
+        run: echo "sha=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_OUTPUT
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Residence
+          name: Residence-${{ steps.sha.outputs.sha }}
           path: target/${{ steps.jar.outputs.jar }}
           retention-days: 30
