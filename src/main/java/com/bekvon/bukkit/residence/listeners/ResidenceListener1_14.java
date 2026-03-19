@@ -111,35 +111,23 @@ public class ResidenceListener1_14 implements Listener {
         // Disabling listener if flag disabled globally
         if (!Flags.vehicledestroy.isGlobalyEnabled())
             return;
-
-        Entity vehicle = event.getVehicle();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(vehicle.getWorld()))
+        if (plugin.isDisabledWorldListener(event.getVehicle().getWorld()))
             return;
 
         Entity attacker = event.getAttacker();
         if (attacker instanceof Player) {
 
             Player player = (Player) attacker;
+
             if (ResAdmin.isResAdmin(player))
                 return;
 
-            if (FlagPermissions.has(vehicle.getLocation(), player, Flags.vehicledestroy, true))
+            FlagPermissions perms = FlagPermissions.getPerms(event.getVehicle().getLocation(), player);
+            if (perms.playerHas(player, Flags.vehicledestroy, true))
                 return;
 
             lm.Flag_Deny.sendMessage(player, Flags.vehicledestroy);
-            event.setCancelled(true);
-
-            // Do not block damage from Cactus and Lava
-        } else if (attacker != null) {
-
-            // Check potential block as a shooter which should be allowed if its inside same
-            // residence
-            if (Utils.isSourceBlockInsideSameResidence(attacker, ClaimedResidence.getByLoc(vehicle.getLocation())))
-                return;
-
-            if (FlagPermissions.has(vehicle.getLocation(), Flags.vehicledestroy, true))
-                return;
 
             event.setCancelled(true);
 
