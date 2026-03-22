@@ -1853,4 +1853,30 @@ public class ResidenceEntityListener implements Listener {
         event.setCancelled(true);
 
     }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onPlayerInteractEndPortalFrame(org.bukkit.event.player.PlayerInteractEvent event) {
+
+        Block block = event.getClickedBlock();
+        if (block == null)
+            return;
+
+        if (block.getType() != Material.END_PORTAL_FRAME)
+            return;
+
+        ItemStack item = event.getItem();
+        if (item == null)
+            return;
+
+        if (item.getType() != Material.ENDER_EYE)
+            return;
+
+        Player player = event.getPlayer();
+        if (ResAdmin.isResAdmin(player))
+            return;
+
+        lm.Flag_Deny.sendMessage(player, Flags.build);
+        event.setCancelled(true);
+
+    }
 }
