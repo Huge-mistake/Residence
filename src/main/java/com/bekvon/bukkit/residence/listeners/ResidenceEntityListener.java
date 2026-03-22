@@ -1857,6 +1857,9 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerInteractEndPortalFrame(org.bukkit.event.player.PlayerInteractEvent event) {
 
+        if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK)
+            return;
+
         Block block = event.getClickedBlock();
         if (block == null)
             return;
