@@ -1370,7 +1370,7 @@ public class ResidencePlayerListener implements Listener {
             Flags result = FlagPermissions.getMaterialUseFlagList().get(mat);
             // Residence assigns Flags internally for Material
             if (result != null) {
-                // Start AbstractFlags Check
+                // Start AbstractBlockClickFlag Check
                 main: if (!perms.playerHas(player, result, hasUse)) {
 
                     if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -1380,16 +1380,16 @@ public class ResidencePlayerListener implements Listener {
                         }
 
                         switch (result) {
+                        case button:
+                            if (ResPerm.bypass_button.hasPermission(player, 10000L))
+                                break main;
+                            break;
                         case container:
                             if (ResPerm.bypass_container.hasPermission(player, 10000L))
                                 break main;
                             break;
                         case door:
                             if (ResPerm.bypass_door.hasPermission(player, 10000L))
-                                break main;
-                            break;
-                        case button:
-                            if (ResPerm.bypass_button.hasPermission(player, 10000L))
                                 break main;
                             break;
                         }
@@ -1408,7 +1408,7 @@ public class ResidencePlayerListener implements Listener {
                     }
                     return;
                 }
-                // End AbstractFlags Check
+                // End AbstractBlockClickFlag Check
             }
         }
         // Restrict custom both-click container use
