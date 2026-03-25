@@ -105,11 +105,12 @@ public class ResidenceListener1_13 implements Listener {
         if (hitBlock == null || event.getHitBlockFace() == null) {
             return;
         }
-        Flags flag = getBlockFlag(hitBlock);
+        Block block = hitBlock.getLocation().clone().add(event.getHitBlockFace().getDirection()).getBlock();
+
+        Flags flag = getBlockFlag(block);
         if (flag == null) {
             return;
         }
-        Block block = hitBlock.getLocation().clone().add(event.getHitBlockFace().getDirection()).getBlock();
 
         Player player = Utils.potentialProjectileToPlayer(event.getEntity());
         if (player == null)
