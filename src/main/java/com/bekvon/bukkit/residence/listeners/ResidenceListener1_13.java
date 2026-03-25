@@ -135,18 +135,17 @@ public class ResidenceListener1_13 implements Listener {
             return null;
         }
         CMIMaterial mat = CMIMaterial.get(block.getType());
-        CMIMC type;
+        Flags flag;
         if (mat.containsCriteria(CMIMC.BUTTON)) {
-            type = CMIMC.BUTTON;
+            flag = Flags.button;
 
         } else if (mat.containsCriteria(CMIMC.PRESSUREPLATE)) {
-            type = CMIMC.PRESSUREPLATE;
+            flag = Flags.pressure;
 
         } else {
             return null;
 
         }
-        Flags flag = (type == CMIMC.BUTTON) ? Flags.button : Flags.pressure;
         // Disabling listener if flag disabled globally
         if (!flag.isGlobalyEnabled()) {
             return null;
