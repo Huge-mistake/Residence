@@ -112,7 +112,7 @@ public class ResidenceListener1_13 implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteractAtFish(PlayerInteractEntityEvent event) {
-
+        // 1.17+ has PlayerBucketEntityEvent
         if (Version.isCurrentEqualOrHigher(Version.v1_17_R1))
             return;
         // Disabling listener if flag disabled globally
