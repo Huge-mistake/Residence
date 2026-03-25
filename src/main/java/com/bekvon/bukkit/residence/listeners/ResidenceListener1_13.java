@@ -7,18 +7,17 @@ import org.bukkit.block.data.type.Farmland;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fish;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -30,8 +29,6 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
-import net.Zrips.CMILib.Items.CMIMC;
-import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener1_13 implements Listener {
@@ -86,18 +83,7 @@ public class ResidenceListener1_13 implements Listener {
         return true;
     }
 
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onTrampleTurtleEgg(PlayerInteractEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.destroy.isGlobalyEnabled())
-            return;
-        Block block = event.getClickedBlock();
-        if (block == null || event.getAction() != Action.PHYSICAL || block.getType() != Material.TURTLE_EGG)
-            return;
-        if (!ResidenceBlockListener.canBreakBlock(event.getPlayer(), block.getLocation(), true))
-            event.setCancelled(true);
-    }
-
+    // Send message when player projectile hitting Button/Pressure_Plate is denied
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityInteractDenyMsg(ProjectileHitEvent event) {
 
@@ -107,8 +93,8 @@ public class ResidenceListener1_13 implements Listener {
         }
         Block hitBlockFace = hitBlock.getLocation().clone().add(event.getHitBlockFace().getDirection()).getBlock();
 
-        Flags flag = getBlockFlag(hitBlockFace);
-        if (flag == null) {
+        Flags flag = FlagPermissions.checkBlockPhysicalFlag(hitBlockFace);
+        if (flag != Flags.button && flag != Flags.pressure) {
             return;
         }
 
@@ -129,50 +115,39 @@ public class ResidenceListener1_13 implements Listener {
 
     }
 
-    private Flags getBlockFlag(Block block) {
-        CMIMaterial mat = CMIMaterial.get(block.getType());
-        Flags flag;
-        if (mat.containsCriteria(CMIMC.BUTTON)) {
-            flag = Flags.button;
-
-        } else if (mat.containsCriteria(CMIMC.PRESSUREPLATE)) {
-            flag = Flags.pressure;
-
-        } else {
-            return null;
-
-        }
-        // Disabling listener if flag disabled globally
-        if (!flag.isGlobalyEnabled()) {
-            return null;
-        }
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld())) {
-            return null;
-        }
-        return flag;
-    }
-
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityInteractEvent(EntityInteractEvent event) {
 
         Block block = event.getBlock();
-        Flags flag = getBlockFlag(block);
+        Flags flag = FlagPermissions.checkBlockPhysicalFlag(block);
         if (flag == null) {
             return;
         }
         Entity entity = event.getEntity();
-
-        if (flag == Flags.button) {
-            // Button: Only projectiles
+        switch (flag) {
+        case destroy:
+            // Turtle Egg: Mob StepOn
+            if (!(entity instanceof LivingEntity)) {
+                return;
+            }
+            if (FlagPermissions.has(block.getLocation(), Flags.destroy, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+            }
+            return;
+        case button:
+            // Button: Projectiles Hit
             if (!(entity instanceof Projectile)) {
                 return;
             }
-        } else {
-            // Pressure Plate: Projectiles and items
+            break;
+        case pressure:
+            // Pressure Plate: Projectile and Item Touch
             if (!(entity instanceof Projectile) && !(entity instanceof Item)) {
                 return;
             }
+            break;
+        default:
+            return;
         }
         Player player = Utils.potentialProjectileToPlayer(entity);
         if (player != null) {
