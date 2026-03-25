@@ -6,16 +6,12 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Farmland;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fish;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -24,7 +20,6 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
-import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
@@ -110,68 +105,8 @@ public class ResidenceListener1_13 implements Listener {
             return;
 
         // The perfect spot, the earlier check sends exactly one deny msg
-        // for the EntityInteractEvent below to avoid chat spam
+        // avoid chat spam
         lm.Flag_Deny.sendMessage(player, flag);
-
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onEntityInteractEvent(EntityInteractEvent event) {
-
-        Block block = event.getBlock();
-        Flags flag = FlagPermissions.checkBlockPhysicalFlag(block);
-        if (flag == null) {
-            return;
-        }
-        Entity entity = event.getEntity();
-        switch (flag) {
-        case destroy:
-            // Turtle Egg: Mob StepOn
-            if (!(entity instanceof LivingEntity)) {
-                return;
-            }
-            if (FlagPermissions.has(block.getLocation(), Flags.destroy, FlagCombo.OnlyFalse)) {
-                event.setCancelled(true);
-            }
-            return;
-        case button:
-            // Button: Projectiles Hit
-            if (!(entity instanceof Projectile)) {
-                return;
-            }
-            break;
-        case pressure:
-            // Pressure Plate: Projectile and Item Touch
-            if (!(entity instanceof Projectile) && !(entity instanceof Item)) {
-                return;
-            }
-            break;
-        default:
-            return;
-        }
-        Player player = Utils.potentialProjectileToPlayer(entity);
-        if (player != null) {
-
-            if (ResAdmin.isResAdmin(player))
-                return;
-
-            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
-            if (perms.playerHas(player, flag, perms.playerHas(player, Flags.use, true)))
-                return;
-
-        } else {
-            // Check potential block as a shooter which should be allowed if its inside same
-            // residence
-            if (Utils.isSourceBlockInsideSameResidence(entity, ClaimedResidence.getByLoc(block.getLocation())))
-                return;
-
-            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
-            if (perms.has(flag, perms.has(Flags.use, true)))
-                return;
-
-        }
-
-        event.setCancelled(true);
 
     }
 
