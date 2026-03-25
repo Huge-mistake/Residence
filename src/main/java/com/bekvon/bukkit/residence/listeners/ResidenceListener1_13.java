@@ -105,9 +105,9 @@ public class ResidenceListener1_13 implements Listener {
         if (hitBlock == null || event.getHitBlockFace() == null) {
             return;
         }
-        Block block = hitBlock.getLocation().clone().add(event.getHitBlockFace().getDirection()).getBlock();
+        Block hitBlockFace = hitBlock.getLocation().clone().add(event.getHitBlockFace().getDirection()).getBlock();
 
-        Flags flag = getBlockFlag(block);
+        Flags flag = getBlockFlag(hitBlockFace);
         if (flag == null) {
             return;
         }
@@ -119,7 +119,7 @@ public class ResidenceListener1_13 implements Listener {
         if (ResAdmin.isResAdmin(player))
             return;
 
-        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
+        FlagPermissions perms = FlagPermissions.getPerms(hitBlockFace.getLocation(), player);
         if (perms.playerHas(player, flag, perms.playerHas(player, Flags.use, true)))
             return;
 
