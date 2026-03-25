@@ -130,10 +130,6 @@ public class ResidenceListener1_13 implements Listener {
     }
 
     private Flags getBlockFlag(Block block) {
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld())) {
-            return null;
-        }
         CMIMaterial mat = CMIMaterial.get(block.getType());
         Flags flag;
         if (mat.containsCriteria(CMIMC.BUTTON)) {
@@ -148,6 +144,10 @@ public class ResidenceListener1_13 implements Listener {
         }
         // Disabling listener if flag disabled globally
         if (!flag.isGlobalyEnabled()) {
+            return null;
+        }
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(block.getWorld())) {
             return null;
         }
         return flag;
