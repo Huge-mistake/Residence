@@ -1111,9 +1111,6 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         Block block = event.getClickedBlock();
-        if (block == null) {
-            return;
-        }
         Flags flag = FlagPermissions.checkBlockPhysicalFlag(block);
         if (flag == null) {
             return;

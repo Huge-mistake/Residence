@@ -363,6 +363,9 @@ public class FlagPermissions {
     }
 
     public static Flags checkBlockPhysicalFlag(Block block) {
+        if (block == null) {
+            return null;
+        }
         CMIMaterial mat = CMIMaterial.get(block.getType());
         Flags flag = null;
         switch (mat) {
