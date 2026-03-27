@@ -435,11 +435,14 @@ public class ResidenceListener1_21 implements Listener {
             // Add new Saddle-Equippable(Non-AbstractHorse) entities here in the future
             case NAUTILUS:
             case ZOMBIE_NAUTILUS:
+
+            case CAMEL:
+            case CAMEL_HUSK:
                 // Has Nautilus version, also supports EquipmentSlot.SADDLE
                 return entInv != null && entInv.getItem(EquipmentSlot.SADDLE).getType() == Material.AIR;
             // Ensure entity is AbstractHorse
-            case CAMEL:
-            case CAMEL_HUSK:
+            //case CAMEL:
+            //case CAMEL_HUSK:
             case DONKEY:
             case HORSE:
             case MULE:
