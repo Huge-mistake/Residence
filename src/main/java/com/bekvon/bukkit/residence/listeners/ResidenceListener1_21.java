@@ -413,36 +413,30 @@ public class ResidenceListener1_21 implements Listener {
 
     }
 
-    private boolean isBodySlotAir(EntityEquipment entInv) {
-        return entInv != null && entInv.getItem(EquipmentSlot.BODY).getType() == Material.AIR;
-    }
-
     private boolean isEquipFitAnimal(Entity entity, CMIMaterial held) {
-        EntityEquipment entInv = null;
-        if (entity instanceof LivingEntity) {
-            entInv = ((LivingEntity) entity).getEquipment();
-        }
         CMIEntityType type = CMIEntityType.get(entity);
         if (type == null) {
             return false;
         }
+        EntityEquipment entInv = null;
+        if (entity instanceof LivingEntity) {
+            entInv = ((LivingEntity) entity).getEquipment();
+        }
         if (held == CMIMaterial.SADDLE) {
             switch (type) {
+            // 1.21.11+ supports EquipmentSlot.SADDLE
+            // Add new Saddle-Equippable entities here in the future
+            case CAMEL_HUSK:
+            case NAUTILUS:
+            case ZOMBIE_NAUTILUS:
+                return entInv != null && entInv.getItem(EquipmentSlot.SADDLE).getType() == Material.AIR;
+
+            // Legacy version compatibility(< 1.21.11)
             case PIG:
                 return entity instanceof Pig && !((Pig) entity).hasSaddle();
             case STRIDER:
                 return entity instanceof Strider && !((Strider) entity).hasSaddle();
-            // Add new Saddle-Equippable(Non-AbstractHorse) entities here in the future
-            case NAUTILUS:
-            case ZOMBIE_NAUTILUS:
-
             case CAMEL:
-            case CAMEL_HUSK:
-                // Has Nautilus version, also supports EquipmentSlot.SADDLE
-                return entInv != null && entInv.getItem(EquipmentSlot.SADDLE).getType() == Material.AIR;
-            // Ensure entity is AbstractHorse
-            //case CAMEL:
-            //case CAMEL_HUSK:
             case DONKEY:
             case HORSE:
             case MULE:
@@ -478,5 +472,9 @@ public class ResidenceListener1_21 implements Listener {
         default:
             return false;
         }
+    }
+
+    private boolean isBodySlotAir(EntityEquipment entInv) {
+        return entInv != null && entInv.getItem(EquipmentSlot.BODY).getType() == Material.AIR;
     }
 }
