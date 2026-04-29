@@ -1877,4 +1877,55 @@ public class ResidenceEntityListener implements Listener {
             }
         }
     }
+
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	public void onEggProjectile(ProjectileLaunchEvent event) {
+
+		if (event.getEntityType() != EntityType.EGG) {
+			return;
+		}
+		Projectile egg = event.getEntity();
+		if (!(egg.getShooter() instanceof Player)) {
+			return;
+		}
+		Player player = (Player) egg.getShooter();
+		if (ResAdmin.isResAdmin(player)) {
+			return;
+		}
+		if (FlagPermissions.has(egg.getLocation(), player, Flags.build, true)) {
+			return;
+		}
+		lm.Flag_Deny.sendMessage(player, Flags.build);
+		event.setCancelled(true);
+
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+	public void onPlayerInteractEndPortalFrame(org.bukkit.event.player.PlayerInteractEvent event) {
+
+		if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
+			return;
+		}
+		Block block = event.getClickedBlock();
+		if (block == null) {
+			return;
+		}
+		if (block.getType() != Material.END_PORTAL_FRAME) {
+			return;
+		}
+		ItemStack item = event.getItem();
+		if (item == null) {
+			return;
+		}
+		if (item.getType() != Material.ENDER_EYE) {
+			return;
+		}
+		Player player = event.getPlayer();
+		if (ResAdmin.isResAdmin(player)) {
+			return;
+		}
+		lm.Flag_Deny.sendMessage(player, Flags.build);
+		event.setCancelled(true);
+
+	}
 }
