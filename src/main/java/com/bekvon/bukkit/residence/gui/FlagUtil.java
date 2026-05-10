@@ -32,6 +32,7 @@ public class FlagUtil {
     }
 
     public void load() {
+        flagData = new FlagData();
         ConfigReader c = null;
         try {
             c = new ConfigReader(Residence.getInstance(), "flags.yml");
@@ -58,7 +59,7 @@ public class FlagUtil {
                     }
                 };
 
-                CMIItemStack i = CMILib.getInstance().getItemManager().getItem(value, ahead);
+                CMIItemStack i = CMIItemStack.deserialize(value, ahead);
 
                 if (i == null || i.getType() == null)
                     i = new CMIItemStack(CMIMaterial.STONE);
