@@ -1941,8 +1941,8 @@ public class ResidenceEntityListener implements Listener {
 			return;
 		}
 		Player closest = null;
-		double dist = 4.5D;
-		double ignoreRange = 2D;
+		double dist = 5D;
+		double ignoreRange = 1D;
 
 		for (Player player : res.getPlayersInResidence()) {
 			double tempDist = player.getLocation().distance(entity.getLocation());
