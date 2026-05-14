@@ -1936,6 +1936,35 @@ public class ResidenceEntityListener implements Listener {
 		if (!(entity instanceof LivingEntity)) {
 			return;
 		}
-		event.setCancelled(true);
+		if (!(entity.getLastDamageCause() instanceof EntityDamageByEntityEvent)) {
+			return;
+		}
+		EntityDamageByEntityEvent eventDamage = (EntityDamageByEntityEvent) entity.getLastDamageCause();
+
+		Entity attacker = eventDamage.getDamager();
+		if (!(attacker instanceof Player)) {
+			return;
+		}
+		Player player = (Player) attacker;
+
+		if (Utils.isAnimal(entity)) {
+
+			if (FlagPermissions.has(entity.getLocation(), player, Flags.animalkilling, FlagCombo.OnlyFalse)) {
+				event.setCancelled(true);
+			}
+
+		} else if (isMonster(entity)) {
+
+			if (FlagPermissions.has(entity.getLocation(), player, Flags.mobkilling, FlagCombo.OnlyFalse)) {
+				event.setCancelled(true);
+			}
+
+		} else if (entity instanceof Player) {
+
+			if (FlagPermissions.has(entity.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+				event.setCancelled(true);
+			}
+
+		}
 	}
 }
