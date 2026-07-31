@@ -18,6 +18,7 @@ public final class EventBlockEntityKey {
     private final int z;
     private final Material material;
     private final UUID entityUuid;
+    private static final UUID ITEM_ENTITY_UUID = new UUID(0L, 0L);
 
     public EventBlockEntityKey(@NotNull Event event, @NotNull Block block, @NotNull Entity entity) {
         this.eventType = event.getClass();
@@ -26,7 +27,11 @@ public final class EventBlockEntityKey {
         this.y = block.getY();
         this.z = block.getZ();
         this.material = block.getType();
-        this.entityUuid = entity.getUniqueId();
+        if (entity instanceof org.bukkit.entity.Item) {
+            this.entityUuid = ITEM_ENTITY_UUID;
+        } else {
+            this.entityUuid = entity.getUniqueId();
+        }
     }
 
     @Override
