@@ -7,6 +7,8 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 
+import org.jetbrains.annotations.NotNull;
+
 public final class EventBlockEntityKey {
 
     private final Class<? extends Event> eventType;
@@ -17,7 +19,7 @@ public final class EventBlockEntityKey {
     private final Material material;
     private final UUID entityUuid;
 
-    public EventBlockEntityKey(Event event, Block block, Entity entity) {
+    public EventBlockEntityKey(@NotNull Event event, @NotNull Block block, @NotNull Entity entity) {
         this.eventType = event.getClass();
         this.world = block.getWorld().getUID();
         this.x = block.getX();

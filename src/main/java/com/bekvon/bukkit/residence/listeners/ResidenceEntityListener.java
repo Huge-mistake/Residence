@@ -187,46 +187,46 @@ public class ResidenceEntityListener implements Listener {
         Entity entity = event.getEntity();
         EventBlockEntityKey key = new EventBlockEntityKey(event, block, entity);
         // Permission check only runs on cache miss
-        boolean shouldCancel = EventBlockEntityCache.get(key, () -> checkEntityInteract(block, entity));
+        boolean shouldDeny = EventBlockEntityCache.get(key, () -> shouldDenyEntityInteract(block, entity));
 
-        if(shouldCancel){
+        if(shouldDeny){
             event.setCancelled(true);
         }
     }
 
-    private boolean checkEntityInteract(Block block, Entity entity) {
+    private boolean shouldDenyEntityInteract(Block block, Entity entity) {
         Flags flag = FlagPermissions.checkBlockPhysicalFlag(block);
         if (flag == null) {
             return false;
         }
         FlagPermissions perms;
         switch (flag) {
-            case destroy:
-                // Turtle Egg: Mob StepOn
-                return !FlagPermissions.has(block.getLocation(), flag, true);
+        case destroy:
+            // Turtle Egg: Mob StepOn
+            return !FlagPermissions.has(block.getLocation(), flag, true);
 
-            case trample:
-                // Farmland: Mob StepOn
-                perms = FlagPermissions.getPerms(block.getLocation());
-                return !perms.has(flag, (perms.has(Flags.build, true)));
+        case trample:
+            // Farmland: Mob StepOn
+            perms = FlagPermissions.getPerms(block.getLocation());
+            return !perms.has(flag, (perms.has(Flags.build, true)));
 
             // Only Button & Pressure_Plate use break(not return) to allow further checks
-            case button:
-                // Button: Projectiles Hit
-                if (!(entity instanceof Projectile)) {
-                    return false;
-                }
-                break;
-
-            case pressure:
-                // Pressure Plate: Projectile and Item Touch
-                if (!(entity instanceof Projectile) && !(entity instanceof Item)) {
-                    return false;
-                }
-                break;
-
-            default:
+        case button:
+            // Button: Projectiles Hit
+            if (!(entity instanceof Projectile)) {
                 return false;
+            }
+            break;
+
+        case pressure:
+            // Pressure Plate: Projectile and Item Touch
+            if (!(entity instanceof Projectile) && !(entity instanceof Item)) {
+                return false;
+            }
+            break;
+
+        default:
+            return false;
         }
         Player player = Utils.potentialProjectileToPlayer(entity);
         if (player != null) {
