@@ -332,6 +332,7 @@
 									<include>com.github.ben-manes.caffeine:caffeine</include>
 								</includes>
 							</artifactSet>
+							<minimizeJar>true</minimizeJar>
 						</configuration>
 					</execution>
 				</executions>
