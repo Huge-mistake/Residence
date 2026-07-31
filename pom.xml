@@ -37,6 +37,11 @@
             <version>7.0.61</version>
 			<scope>provided</scope>
         </dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+			<version>2.9.3</version>
+		</dependency>
 		<!-- LWCX -->
         <dependency>
 		    <groupId>com.griefcraft</groupId>
@@ -310,6 +315,30 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.6.2</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<shadedArtifactAttached>false</shadedArtifactAttached>
+							<relocations>
+								<relocation>
+									<pattern>com.github.benmanes.caffeine</pattern>
+									<shadedPattern>com.bekvon.bukkit.residence._caffeine</shadedPattern>
+								</relocation>
+							</relocations>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>

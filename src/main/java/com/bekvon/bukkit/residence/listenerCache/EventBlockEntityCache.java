@@ -3,8 +3,8 @@ package com.bekvon.bukkit.residence.listenerCache;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
-import libs.com.github.benmanes.caffeine.cache.Cache;
-import libs.com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 /**
  * Intended for high-frequency events to reduce repeated calculations.
