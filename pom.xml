@@ -343,11 +343,9 @@
 								</relocation>
 							</relocations>
 <!--							<minimizeJar>true</minimizeJar>-->
-							<shadedArtifactAttached>false</shadedArtifactAttached>
 <!--							<filters>-->
 <!--								<filter artifact="*:*">-->
 <!--									<includes>-->
-<!--										&lt;!&ndash; 保留你项目自身源码 &ndash;&gt;-->
 <!--										<include>com/bekvon/bukkit/residence/**</include>-->
 <!--									</includes>-->
 <!--									<excludes>-->
