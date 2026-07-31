@@ -14,7 +14,7 @@ public final class EventBlockEntityCache {
 
     private static final Cache<EventBlockEntityKey, Boolean> EVENT_DECISION_CACHE =
             CacheBuilder.newBuilder()
-                    .expireAfterWrite(1000L, TimeUnit.MILLISECONDS)
+                    .expireAfterWrite(1, TimeUnit.SECONDS)
                     .maximumSize(10000)
                     .concurrencyLevel(2)
                     .build();
@@ -22,7 +22,13 @@ public final class EventBlockEntityCache {
     private EventBlockEntityCache() {
     }
 
-    public static boolean get(EventBlockEntityKey key, BooleanSupplier decisionLoader) {
-        return EVENT_DECISION_CACHE.asMap().computeIfAbsent(key, k -> decisionLoader.getAsBoolean());
+    public static boolean get(EventBlockEntityKey key, BooleanSupplier loader) {
+        Boolean cached = EVENT_DECISION_CACHE.getIfPresent(key);
+        if (cached != null) {
+            return cached;
+        }
+        boolean result = loader.getAsBoolean();
+        EVENT_DECISION_CACHE.put(key, result);
+        return result;
     }
 }
