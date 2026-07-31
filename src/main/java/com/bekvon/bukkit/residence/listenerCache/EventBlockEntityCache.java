@@ -13,7 +13,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 public final class EventBlockEntityCache {
 
     private static final Cache<EventBlockEntityKey, Boolean> EVENT_DECISION_CACHE = Caffeine.newBuilder()
-            .expireAfterWrite(1000, TimeUnit.MILLISECONDS)
+            .expireAfterWrite(3, TimeUnit.SECONDS)
             .maximumSize(10000)
             .build();
 
