@@ -35,7 +35,6 @@
             <groupId>com.mojang</groupId>
             <artifactId>authlib</artifactId>
             <version>7.0.61</version>
-            <scope>provided</scope>
         </dependency>
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
