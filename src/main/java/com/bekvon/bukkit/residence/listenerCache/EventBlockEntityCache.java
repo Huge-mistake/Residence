@@ -14,7 +14,7 @@ public final class EventBlockEntityCache {
 
     private static final Cache<EventBlockEntityKey, Boolean> EVENT_DECISION_CACHE = Caffeine.newBuilder()
             .expireAfterWrite(3, TimeUnit.SECONDS)
-            .maximumSize(10000)
+            .maximumSize(100000)
             .build();
 
     private EventBlockEntityCache() {
