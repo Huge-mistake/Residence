@@ -73,8 +73,7 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
-import com.bekvon.bukkit.residence.listenerCache.EventBlockEntityCache;
-import com.bekvon.bukkit.residence.listenerCache.EventBlockEntityKey;
+import com.bekvon.bukkit.residence.listenerCache.EntityInteractCache;
 
 import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Entities.CMIEntity;
@@ -184,12 +183,14 @@ public class ResidenceEntityListener implements Listener {
     public void onEntityInteractEvent(EntityInteractEvent event) {
 
         Block block = event.getBlock();
-        Entity entity = event.getEntity();
-        EventBlockEntityKey key = new EventBlockEntityKey(event, block, entity);
-        // Permission check only runs on cache miss
-        boolean shouldDeny = EventBlockEntityCache.get(key, () -> shouldDenyEntityInteract(block, entity));
+        EntityInteractCache.BlockKey key = new EntityInteractCache.BlockKey(block);
 
-        if(shouldDeny){
+        if (EntityInteractCache.isDenied(key)) {
+            event.setCancelled(true);
+            return;
+        }
+        if (shouldDenyEntityInteract(block, event.getEntity())) {
+            EntityInteractCache.putDenied(key);
             event.setCancelled(true);
         }
     }
