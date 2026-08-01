@@ -1,30 +1,37 @@
 package com.bekvon.bukkit.residence.listenerCache;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
+import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EntityInteractCache {
 
-    private static final Cache<BlockKey, Boolean> CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(3, TimeUnit.SECONDS)
-            .maximumSize(10000)
-            .concurrencyLevel(2)
-            .build();
+    private static final long EXPIRE_TIME = 3000L;
+    private static final Map<BlockKey, Long> CACHE = new ConcurrentHashMap<>();
 
     private EntityInteractCache() {
     }
 
     public static boolean isDenied(BlockKey key) {
-        return Boolean.TRUE.equals(CACHE.getIfPresent(key));
+        Long time = CACHE.get(key);
+        if (time == null) {
+            return false;
+        }
+        if (System.currentTimeMillis() - time > EXPIRE_TIME) {
+            CACHE.remove(key, time);
+            return false;
+        }
+        return true;
     }
 
     public static void putDenied(BlockKey key) {
-        CACHE.put(key, true);
+        if (CACHE.size() >= 10000) {
+            CACHE.clear();
+        }
+        CACHE.put(key, System.currentTimeMillis());
     }
 
     public static final class BlockKey {

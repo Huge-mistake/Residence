@@ -38,17 +38,6 @@
             <version>7.0.61</version>
 			<scope>provided</scope>
         </dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>16.0.1</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.github.ben-manes.caffeine</groupId>
-			<artifactId>caffeine</artifactId>
-			<version>3.2.4</version>
-		</dependency>
 		<!-- LWCX -->
         <dependency>
 		    <groupId>com.griefcraft</groupId>
@@ -325,53 +314,6 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
 			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.6.2</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<artifactSet>
-								<includes>
-									<include>com.github.ben-manes.caffeine:caffeine</include>
-								</includes>
-							</artifactSet>
-							<relocations>
-								<relocation>
-									<pattern>com.github.ben-manes.caffeine</pattern>
-									<shadedPattern>com.bekvon.bukkit.residence._internal.caffeine</shadedPattern>
-								</relocation>
-							</relocations>
-<!--							<minimizeJar>true</minimizeJar>-->
-<!--							<filters>-->
-<!--								<filter artifact="*:*">-->
-<!--									<includes>-->
-<!--										<include>com/bekvon/bukkit/residence/**</include>-->
-<!--									</includes>-->
-<!--									<excludes>-->
-<!--										<exclude>org/yaml/**</exclude>-->
-<!--										<exclude>org/jetbrains/**</exclude>-->
-<!--										<exclude>org/dynmap/**</exclude>-->
-<!--										<exclude>nl/pim16aap2/bigdoors/**</exclude>-->
-<!--										<exclude>org/bukkit/**</exclude>-->
-<!--										<exclude>io/papermc/**</exclude>-->
-<!--										<exclude>org/spigotmc/**</exclude>-->
-<!--										<exclude>com/sk89q/**</exclude>-->
-<!--										<exclude>net/luckperms/**</exclude>-->
-<!--									</excludes>-->
-<!--								</filter>-->
-<!--							</filters>-->
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
 		</plugins>
 	</build>
 </project>
