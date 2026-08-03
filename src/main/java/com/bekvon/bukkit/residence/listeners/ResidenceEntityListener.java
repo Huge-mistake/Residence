@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
+import com.bekvon.bukkit.residence.listenerCache.EventBlockEntityCacheHigh;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -185,14 +186,14 @@ public class ResidenceEntityListener implements Listener {
             Block block = event.getBlock();
             Entity entity = event.getEntity();
 
-            EventBlockEntityCache.EventBlockEntityKey key = new EventBlockEntityCache.EventBlockEntityKey(event, block, entity);
+            EventBlockEntityCacheHigh.EventBlockEntityKey key = new EventBlockEntityCacheHigh.EventBlockEntityKey(event, block, entity);
 
-            if (EventBlockEntityCache.isDenied(key)) {
+            if (EventBlockEntityCacheHigh.isDenied(key)) {
                 event.setCancelled(true);
                 return;
             }
             if (shouldDenyEntityInteract(block, entity)) {
-                EventBlockEntityCache.putDenied(key);
+                EventBlockEntityCacheHigh.putDenied(key);
                 event.setCancelled(true);
             }
         } else if (shouldDenyEntityInteract(event.getBlock(), event.getEntity())) {
