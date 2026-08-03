@@ -30,7 +30,7 @@ public class EventBlockEntityCache {
     }
 
     public static boolean isDenied(EventBlockEntityKey key) {
-        return EVENT_BLOCK_ENTITY_CACHE.getIfPresent(key) != null;//Boolean.TRUE.equals(EVENT_BLOCK_ENTITY_CACHE.getIfPresent(key));
+        return EVENT_BLOCK_ENTITY_CACHE.getIfPresent(key) == Boolean.TRUE;//Boolean.TRUE.equals(EVENT_BLOCK_ENTITY_CACHE.getIfPresent(key));
     }
 
     public static void putDenied(EventBlockEntityKey key) {
