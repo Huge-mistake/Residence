@@ -22,7 +22,7 @@ public class EventBlockEntityCache {
 
     private static final Cache<EventBlockEntityKey, Boolean> EVENT_BLOCK_ENTITY_CACHE = CacheBuilder.newBuilder()
             .expireAfterWrite(3, TimeUnit.SECONDS)
-            .maximumSize(10000)
+            .maximumSize(100000)
             .concurrencyLevel(2)
             .build();
 
