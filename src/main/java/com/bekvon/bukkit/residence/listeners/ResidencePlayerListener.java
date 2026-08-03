@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import com.bekvon.bukkit.residence.listenerCache.EventBlockEntityCache;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -1120,39 +1121,66 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         Block block = event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+        if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
+            Player player = event.getPlayer();
+
+            EventBlockEntityCache.EventBlockEntityKey key = new EventBlockEntityCache.EventBlockEntityKey(event, block, player);
+
+            if (EventBlockEntityCache.isDenied(key)) {
+                event.setCancelled(true);
+                return;
+            }
+            if (shouldDenyPlayerStepOn(block, player)) {
+                EventBlockEntityCache.putDenied(key);
+                event.setCancelled(true);
+            }
+        } else if (shouldDenyPlayerStepOn(block, event.getPlayer())) {
+            event.setCancelled(true);
+        }
+    }
+
+    private boolean shouldDenyPlayerStepOn(Block block, Player player) {
         Flags flag = FlagPermissions.checkBlockPhysicalFlag(block);
         if (flag == null) {
-            return;
+            return false;
         }
-        Player player = event.getPlayer();
         if (player.hasMetadata("NPC") || (flag != Flags.trample && ResAdmin.isResAdmin(player))) {
-            return;
+            return false;
         }
-        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
-
+        FlagPermissions perms;
         switch (flag) {
         case destroy:
             // Turtle Egg
+            perms = FlagPermissions.getPerms(block.getLocation(), player);
             if (perms.playerHas(player, Flags.destroy, true)) {
-                return;
+                return false;
             }
             break;
+
         case pressure:
             // Pressure Plate
+            perms = FlagPermissions.getPerms(block.getLocation(), player);
             if (perms.playerHas(player, Flags.pressure, (perms.playerHas(player, Flags.use, true)))) {
-                return;
+                return false;
             }
             break;
+
         case trample:
             // Farmland
+            perms = FlagPermissions.getPerms(block.getLocation(), player);
             if (perms.playerHas(player, Flags.trample, (perms.playerHas(player, Flags.build, true)))) {
-                return;
+                return false;
             }
             break;
+
         default:
-            return;
+            return false;
         }
-        event.setCancelled(true);
+        lm.Flag_Deny.sendMessage(player, flag);
+        return true;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
