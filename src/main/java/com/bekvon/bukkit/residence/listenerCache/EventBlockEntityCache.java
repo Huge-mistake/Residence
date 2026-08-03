@@ -15,8 +15,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Use case: when the 'EntityInteractEvent' and the
  * 'PlayerInteractEvent-Action.PHYSICAL' are cancelled.
- * These events are high-frequency, so this cache optimizes performance.
- * Allowed events do not require cache storage since they rarely trigger consecutively.
+ * Cancelled events can fire up to 20 times per 20 ticks; this cache avoids repeated checks.
+ * Allowed events are not cached (low-frequency, typically once).
  */
 public class EventBlockEntityCache {
 
