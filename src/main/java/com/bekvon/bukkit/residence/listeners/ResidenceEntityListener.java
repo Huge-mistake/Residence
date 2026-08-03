@@ -182,8 +182,8 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityInteractEvent(EntityInteractEvent event) {
 
-        Block block = event.getBlock();
-        if (Version.isCurrentEqualOrHigher(Version.v1_16_5)) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_16_0)) {
+            Block block = event.getBlock();
             EntityInteractCache.BlockKey key = new EntityInteractCache.BlockKey(block);
             if (EntityInteractCache.isDenied(key)) {
                 event.setCancelled(true);
@@ -193,7 +193,7 @@ public class ResidenceEntityListener implements Listener {
                 EntityInteractCache.putDenied(key);
                 event.setCancelled(true);
             }
-        } else if (shouldDenyEntityInteract(block, event.getEntity())) {
+        } else if (shouldDenyEntityInteract(event.getBlock(), event.getEntity())) {
             event.setCancelled(true);
         }
     }
