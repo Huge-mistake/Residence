@@ -1179,7 +1179,9 @@ public class ResidencePlayerListener implements Listener {
         default:
             return false;
         }
-        lm.Flag_Deny.sendMessage(player, flag);
+        if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
+            lm.Flag_Deny.sendMessage(player, flag);
+        }
         return true;
     }
 
