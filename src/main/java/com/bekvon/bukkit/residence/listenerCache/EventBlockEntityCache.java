@@ -12,10 +12,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Use case: when the 'EntityInteractEvent' and the
+ * 'PlayerInteractEvent-Action.PHYSICAL' are cancelled.
+ * These events are high-frequency, so this cache optimizes performance.
+ * Allowed events do not require cache storage since they rarely trigger consecutively.
+ */
 public class EventBlockEntityCache {
 
     private static final Cache<EventBlockEntityKey, Boolean> EVENT_BLOCK_ENTITY_CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(3, TimeUnit.SECONDS)
+            .expireAfterWrite(1, TimeUnit.SECONDS)
             .maximumSize(10000)
             .concurrencyLevel(2)
             .build();

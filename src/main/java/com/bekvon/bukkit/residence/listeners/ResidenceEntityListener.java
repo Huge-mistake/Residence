@@ -181,7 +181,7 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityInteractEvent(EntityInteractEvent event) {
 
-        if (Version.isCurrentEqualOrHigher(Version.v1_16_0)) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
             Block block = event.getBlock();
             Entity entity = event.getEntity();
             EventBlockEntityCache.EventBlockEntityKey key = new EventBlockEntityCache.EventBlockEntityKey(event, block, entity);
