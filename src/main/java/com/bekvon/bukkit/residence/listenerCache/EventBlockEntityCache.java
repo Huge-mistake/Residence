@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class EventBlockEntityCache {
 
     private static final Cache<EventBlockEntityKey, Boolean> EVENT_BLOCK_ENTITY_CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(1, TimeUnit.SECONDS)
+            .expireAfterWrite(3, TimeUnit.SECONDS)
             .maximumSize(10000)
             .concurrencyLevel(2)
             .build();
