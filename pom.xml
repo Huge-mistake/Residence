@@ -36,6 +36,12 @@
             <artifactId>authlib</artifactId>
             <version>7.0.61</version>
         </dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>33.5.0-jre</version>
+			<scope>provided</scope>
+		</dependency>
 		<!-- LWCX -->
         <dependency>
 		    <groupId>com.griefcraft</groupId>

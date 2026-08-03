@@ -183,14 +183,17 @@ public class ResidenceEntityListener implements Listener {
     public void onEntityInteractEvent(EntityInteractEvent event) {
 
         Block block = event.getBlock();
-        EntityInteractCache.BlockKey key = new EntityInteractCache.BlockKey(block);
-
-        if (EntityInteractCache.isDenied(key)) {
-            event.setCancelled(true);
-            return;
-        }
-        if (shouldDenyEntityInteract(block, event.getEntity())) {
-            EntityInteractCache.putDenied(key);
+        if (Version.isCurrentEqualOrHigher(Version.v1_16_5)) {
+            EntityInteractCache.BlockKey key = new EntityInteractCache.BlockKey(block);
+            if (EntityInteractCache.isDenied(key)) {
+                event.setCancelled(true);
+                return;
+            }
+            if (shouldDenyEntityInteract(block, event.getEntity())) {
+                EntityInteractCache.putDenied(key);
+                event.setCancelled(true);
+            }
+        } else if (shouldDenyEntityInteract(block, event.getEntity())) {
             event.setCancelled(true);
         }
     }
