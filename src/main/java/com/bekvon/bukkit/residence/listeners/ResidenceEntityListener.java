@@ -184,7 +184,9 @@ public class ResidenceEntityListener implements Listener {
         if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
             Block block = event.getBlock();
             Entity entity = event.getEntity();
+
             EventBlockEntityCache.EventBlockEntityKey key = new EventBlockEntityCache.EventBlockEntityKey(event, block, entity);
+
             if (EventBlockEntityCache.isDenied(key)) {
                 event.setCancelled(true);
                 return;
