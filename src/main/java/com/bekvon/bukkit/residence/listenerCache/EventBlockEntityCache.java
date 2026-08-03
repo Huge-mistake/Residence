@@ -10,7 +10,9 @@ import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 
 /**
  * Use case: when the 'EntityInteractEvent' and the
@@ -21,20 +23,20 @@ import java.util.concurrent.TimeUnit;
 public class EventBlockEntityCache {
 
     private static final Cache<EventBlockEntityKey, Boolean> EVENT_BLOCK_ENTITY_CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(3, TimeUnit.SECONDS)
-            .maximumSize(10000)
-            .concurrencyLevel(2)
+            .expireAfterWrite(1, TimeUnit.SECONDS)
+            .maximumSize(10_000)
             .build();
 
     private EventBlockEntityCache() {
     }
 
-    public static boolean isDenied(EventBlockEntityKey key) {
-        return EVENT_BLOCK_ENTITY_CACHE.getIfPresent(key) == Boolean.TRUE;//Boolean.TRUE.equals(EVENT_BLOCK_ENTITY_CACHE.getIfPresent(key));
-    }
-
-    public static void putDenied(EventBlockEntityKey key) {
-        EVENT_BLOCK_ENTITY_CACHE.put(key, true);
+    public static boolean getOrCompute(EventBlockEntityKey key, BooleanSupplier loader) {
+        try {
+            // On cache miss or expiry, compute via loader and store the result
+            return EVENT_BLOCK_ENTITY_CACHE.get(key, loader::getAsBoolean);
+        } catch (ExecutionException e) {
+            return true;
+        }
     }
 
     public static final class EventBlockEntityKey {

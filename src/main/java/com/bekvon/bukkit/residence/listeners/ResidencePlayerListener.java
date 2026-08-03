@@ -58,8 +58,6 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.util.BoundingBox;
-import org.bukkit.util.Vector;
 
 import com.bekvon.bukkit.residence.ConfigManager;
 import com.bekvon.bukkit.residence.Residence;
@@ -1126,15 +1124,11 @@ public class ResidencePlayerListener implements Listener {
         }
         if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
             Player player = event.getPlayer();
-
+            // Cache reduces repeated expensive checks on frequent physical events
             EventBlockEntityCache.EventBlockEntityKey key = new EventBlockEntityCache.EventBlockEntityKey(event, block, player);
 
-            if (EventBlockEntityCache.isDenied(key)) {
-                event.setCancelled(true);
-                return;
-            }
-            if (shouldDenyPlayerStepOn(block, player)) {
-                EventBlockEntityCache.putDenied(key);
+            boolean shouldDeny = EventBlockEntityCache.getOrCompute(key, () -> shouldDenyPlayerStepOn(block, player));
+            if (shouldDeny) {
                 event.setCancelled(true);
             }
         } else if (shouldDenyPlayerStepOn(block, event.getPlayer())) {
@@ -1180,6 +1174,7 @@ public class ResidencePlayerListener implements Listener {
             return false;
         }
         if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
+            // 1.19+ cache prevents deny messages from being sent too often.
             lm.Flag_Deny.sendMessage(player, flag);
         }
         return true;
