@@ -30,7 +30,7 @@ public class EventBlockEntityCache {
     }
 
     public static boolean isDenied(EventBlockEntityKey key) {
-        return Boolean.TRUE.equals(EVENT_BLOCK_ENTITY_CACHE.getIfPresent(key));
+        return EVENT_BLOCK_ENTITY_CACHE.getIfPresent(key) != null;//Boolean.TRUE.equals(EVENT_BLOCK_ENTITY_CACHE.getIfPresent(key));
     }
 
     public static void putDenied(EventBlockEntityKey key) {
@@ -46,7 +46,6 @@ public class EventBlockEntityCache {
         private final int z;
         private final Material material;
         private final UUID entityUuid;
-        private final int hash;
 
         public EventBlockEntityKey(@NotNull Event event, @NotNull Block block, @NotNull Entity entity) {
             this.eventType = event.getClass();
@@ -56,20 +55,6 @@ public class EventBlockEntityCache {
             this.z = block.getZ();
             this.material = block.getType();
             this.entityUuid = entity.getUniqueId();
-
-            int result = eventType.hashCode();
-            result = 31 * result + world.hashCode();
-            result = 31 * result + x;
-            result = 31 * result + y;
-            result = 31 * result + z;
-            result = 31 * result + material.hashCode();
-            result = 31 * result + entityUuid.hashCode();
-            this.hash = result;
-        }
-
-        @Override
-        public int hashCode() {
-            return this.hash;
         }
 
         @Override
@@ -81,37 +66,25 @@ public class EventBlockEntityCache {
                 return false;
             }
             EventBlockEntityKey other = (EventBlockEntityKey) obj;
-            if (this.hash != other.hash) {
-                return false;
-            }
-            if (this.x != other.x) return false;
-            if (this.y != other.y) return false;
-            if (this.z != other.z) return false;
-            if (this.material != other.material) return false;
-            if (this.eventType != other.eventType) return false;
-            if (!this.world.equals(other.world)) return false;
-
-            return this.entityUuid.equals(other.entityUuid);
-
-//            return x == other.x
-//                    && y == other.y
-//                    && z == other.z
-//                    && material == other.material
-//                    && eventType == other.eventType
-//                    && world.equals(other.world)
-//                    && entityUuid.equals(other.entityUuid);
+            return x == other.x
+                    && y == other.y
+                    && z == other.z
+                    && material == other.material
+                    && eventType == other.eventType
+                    && world.equals(other.world)
+                    && entityUuid.equals(other.entityUuid);
         }
 
-//        @Override
-//        public int hashCode() {
-//            int result = eventType.hashCode();
-//            result = 31 * result + world.hashCode();
-//            result = 31 * result + x;
-//            result = 31 * result + y;
-//            result = 31 * result + z;
-//            result = 31 * result + material.hashCode();
-//            result = 31 * result + entityUuid.hashCode();
-//            return result;
-//        }
+        @Override
+        public int hashCode() {
+            int result = eventType.hashCode();
+            result = 31 * result + world.hashCode();
+            result = 31 * result + x;
+            result = 31 * result + y;
+            result = 31 * result + z;
+            result = 31 * result + material.hashCode();
+            result = 31 * result + entityUuid.hashCode();
+            return result;
+        }
     }
 }
