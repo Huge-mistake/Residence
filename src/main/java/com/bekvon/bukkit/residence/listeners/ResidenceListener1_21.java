@@ -413,35 +413,7 @@ public class ResidenceListener1_21 implements Listener {
             return false;
         }
         if (held == CMIMaterial.SADDLE) {
-            switch (type) {
-            // 1.21.11+ supports EquipmentSlot.SADDLE
-            // Add new Saddle-Equippable entities here in the future
-            case CAMEL_HUSK:
-            case NAUTILUS:
-            case ZOMBIE_NAUTILUS:
-                return isSlotAir(entity, EquipmentSlot.SADDLE);
-
-            // Legacy version compatibility(< 1.21.11)
-            case PIG:
-                return entity instanceof Pig && !((Pig) entity).hasSaddle();
-            case STRIDER:
-                return entity instanceof Strider && !((Strider) entity).hasSaddle();
-            case CAMEL:
-            case DONKEY:
-            case HORSE:
-            case MULE:
-            case SKELETON_HORSE:
-            case ZOMBIE_HORSE:
-                if (entity instanceof AbstractHorse) {
-                    ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getSaddle();
-                    // Do not use horseSaddle != null
-                    // Saddle slot Air, getSaddle() returns null, result always false
-                    return horseSaddle == null || horseSaddle.getType() == Material.AIR;
-                }
-                return false;
-            default:
-                return false;
-            }
+            return isSaddleSlotAir(entity, type);
         }
         // Non-Saddle Equipment check
         switch (type) {
@@ -464,8 +436,84 @@ public class ResidenceListener1_21 implements Listener {
         }
     }
 
+    private boolean isSaddleSlotAir(Animals entity, CMIEntityType type) {
+        if (entity == null || type == null) {
+            return false;
+        }
+        switch (type) {
+        // 1.21.11+ supports EquipmentSlot.SADDLE
+        // Add new Saddle-Equippable Animals here in the future
+        case CAMEL_HUSK:
+        case NAUTILUS:
+        case ZOMBIE_NAUTILUS:
+            return isSlotAir(entity, EquipmentSlot.SADDLE);
+
+        // Legacy version compatibility(< 1.21.11)
+        case PIG:
+            return entity instanceof Pig && !((Pig) entity).hasSaddle();
+        case STRIDER:
+            return entity instanceof Strider && !((Strider) entity).hasSaddle();
+        case CAMEL:
+        case DONKEY:
+        case HORSE:
+        case MULE:
+        case SKELETON_HORSE:
+        case ZOMBIE_HORSE:
+            if (entity instanceof AbstractHorse) {
+                ItemStack horseSaddle = ((AbstractHorse) entity).getInventory().getSaddle();
+                // Do not use horseSaddle != null
+                // Saddle slot Air, getSaddle() returns null, result always false
+                return horseSaddle == null || horseSaddle.getType() == Material.AIR;
+            }
+            return false;
+        default:
+            return false;
+        }
+    }
+
     private boolean isSlotAir(Animals entity, EquipmentSlot slot) {
         EntityEquipment equipment = entity.getEquipment();
         return equipment != null && equipment.getItem(slot).getType() == Material.AIR;
+    }
+
+    // 1.21.6+ shears can remove animal equipment, but do not trigger PlayerShearEntityEvent
+    // https://github.com/PaperMC/Paper/pull/13013
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onPlayerShearAnimals(PlayerInteractEntityEvent event) {
+        if (Version.isCurrentLower(Version.v1_21_6)) {
+            return;
+        }
+        // Disabling listener if flag disabled globally
+        if (!Flags.shear.isGlobalyEnabled()) {
+            return;
+        }
+        Entity entity = event.getRightClicked();
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(entity.getWorld())) {
+            return;
+        }
+        if (!(entity instanceof Animals)) {
+            return;
+        }
+        Material held = ResidenceListener1_09.getHeldMaterial(event);
+        if (held != Material.SHEARS) {
+            return;
+        }
+        Animals animal = (Animals) entity;
+        // Skip check if animal has no equipment
+        if (isSaddleSlotAir(animal, CMIEntityType.get(animal)) || isSlotAir(animal, EquipmentSlot.BODY)) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (ResAdmin.isResAdmin(player)) {
+            return;
+        }
+        FlagPermissions perms = FlagPermissions.getPerms(animal.getLocation(), player);
+        if (perms.playerHas(player, Flags.shear, (perms.playerHas(player, Flags.animalkilling, true)))) {
+            return;
+        }
+        lm.Flag_Deny.sendMessage(player, Flags.shear);
+        event.setCancelled(true);
+
     }
 }
