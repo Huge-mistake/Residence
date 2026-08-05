@@ -73,7 +73,6 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
-import com.bekvon.bukkit.residence.listenerCache.EventBlockEntityCache;
 
 import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Entities.CMIEntity;
@@ -181,72 +180,72 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityInteractEvent(EntityInteractEvent event) {
 
-        if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
-            Block block = event.getBlock();
-            Entity entity = event.getEntity();
-            // Cache reduces repeated expensive checks on frequent physical events
-            EventBlockEntityCache.EventBlockEntityKey key = new EventBlockEntityCache.EventBlockEntityKey(event, block, entity);
-
-            boolean shouldDeny = EventBlockEntityCache.getOrCompute(key, () -> shouldDenyEntityInteract(block, entity));
-            if (shouldDeny) {
-                event.setCancelled(true);
-            }
-        } else if (shouldDenyEntityInteract(event.getBlock(), event.getEntity())) {
-            event.setCancelled(true);
-        }
-    }
-
-    private boolean shouldDenyEntityInteract(Block block, Entity entity) {
+        Block block = event.getBlock();
         Flags flag = FlagPermissions.checkBlockPhysicalFlag(block);
         if (flag == null) {
-            return false;
+            return;
         }
-        FlagPermissions perms;
+        Entity entity = event.getEntity();
         switch (flag) {
         case destroy:
             // Turtle Egg: Mob StepOn
-            return !FlagPermissions.has(block.getLocation(), flag, true);
+            if (FlagPermissions.has(block.getLocation(), Flags.destroy, true)) {
+                return;
+            }
+            event.setCancelled(true);
+            return;
 
         case trample:
             // Farmland: Mob StepOn
-            perms = FlagPermissions.getPerms(block.getLocation());
-            return !perms.has(flag, (perms.has(Flags.build, true)));
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
+            if (perms.has(Flags.trample, (perms.has(Flags.build, true)))) {
+                return;
+            }
+            event.setCancelled(true);
+            return;
 
             // Only Button & Pressure_Plate use break(not return) to allow further checks
         case button:
             // Button: Projectiles Hit
             if (!(entity instanceof Projectile)) {
-                return false;
+                return;
             }
             break;
 
         case pressure:
             // Pressure Plate: Projectile and Item Touch
             if (!(entity instanceof Projectile) && !(entity instanceof Item)) {
-                return false;
+                return;
             }
             break;
 
         default:
-            return false;
+            return;
         }
         Player player = Utils.potentialProjectileToPlayer(entity);
         if (player != null) {
-            if (ResAdmin.isResAdmin(player)) {
-                return false;
-            }
-            perms = FlagPermissions.getPerms(block.getLocation(), player);
-            return !perms.playerHas(player, flag, perms.playerHas(player, Flags.use, true));
 
+            if (ResAdmin.isResAdmin(player)) {
+                return;
+            }
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
+            if (perms.playerHas(player, flag, perms.playerHas(player, Flags.use, true))) {
+                return;
+            }
         } else {
             // Check potential block as a shooter which should be allowed if its inside same
             // residence
             if (Utils.isSourceBlockInsideSameResidence(entity, ClaimedResidence.getByLoc(block.getLocation()))) {
-                return false;
+                return;
             }
-            perms = FlagPermissions.getPerms(block.getLocation());
-            return !perms.has(flag, perms.has(Flags.use, true));
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
+            if (perms.has(flag, perms.has(Flags.use, true))) {
+                return;
+            }
         }
+
+        event.setCancelled(true);
+
     }
 
     public static boolean isMonster(Entity entity) {

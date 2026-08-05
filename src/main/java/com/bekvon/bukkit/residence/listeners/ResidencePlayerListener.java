@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import com.bekvon.bukkit.residence.listenerCache.EventBlockEntityCache;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -58,6 +57,8 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.Vector;
 
 import com.bekvon.bukkit.residence.ConfigManager;
 import com.bekvon.bukkit.residence.Residence;
@@ -103,6 +104,7 @@ import net.Zrips.CMILib.Entities.CMIEntityType;
 import net.Zrips.CMILib.Items.CMIItemStack;
 import net.Zrips.CMILib.Items.CMIMC;
 import net.Zrips.CMILib.Items.CMIMaterial;
+import net.Zrips.CMILib.Logs.CMIDebug;
 import net.Zrips.CMILib.TitleMessages.CMITitleMessage;
 import net.Zrips.CMILib.Util.CMIVersionChecker;
 import net.Zrips.CMILib.Version.Version;
@@ -1119,65 +1121,42 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         Block block = event.getClickedBlock();
-        if (block == null) {
-            return;
-        }
-        if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
-            Player player = event.getPlayer();
-            // Cache reduces repeated expensive checks on frequent physical events
-            EventBlockEntityCache.EventBlockEntityKey key = new EventBlockEntityCache.EventBlockEntityKey(event, block, player);
-
-            boolean shouldDeny = EventBlockEntityCache.getOrCompute(key, () -> shouldDenyPlayerStepOn(block, player));
-            if (shouldDeny) {
-                event.setCancelled(true);
-            }
-        } else if (shouldDenyPlayerStepOn(block, event.getPlayer())) {
-            event.setCancelled(true);
-        }
-    }
-
-    private boolean shouldDenyPlayerStepOn(Block block, Player player) {
         Flags flag = FlagPermissions.checkBlockPhysicalFlag(block);
         if (flag == null) {
-            return false;
+            return;
         }
+        Player player = event.getPlayer();
         if (player.hasMetadata("NPC") || (flag != Flags.trample && ResAdmin.isResAdmin(player))) {
-            return false;
+            return;
         }
         FlagPermissions perms;
+
         switch (flag) {
         case destroy:
             // Turtle Egg
             perms = FlagPermissions.getPerms(block.getLocation(), player);
-            if (perms.playerHas(player, Flags.destroy, true)) {
-                return false;
+            if (perms.playerHas(player, flag, true)) {
+                return;
             }
             break;
-
         case pressure:
             // Pressure Plate
             perms = FlagPermissions.getPerms(block.getLocation(), player);
-            if (perms.playerHas(player, Flags.pressure, (perms.playerHas(player, Flags.use, true)))) {
-                return false;
+            if (perms.playerHas(player, flag, (perms.playerHas(player, Flags.use, true)))) {
+                return;
             }
             break;
-
         case trample:
             // Farmland
             perms = FlagPermissions.getPerms(block.getLocation(), player);
-            if (perms.playerHas(player, Flags.trample, (perms.playerHas(player, Flags.build, true)))) {
-                return false;
+            if (perms.playerHas(player, flag, (perms.playerHas(player, Flags.build, true)))) {
+                return;
             }
             break;
-
         default:
-            return false;
+            return;
         }
-        if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
-            // 1.19+ cache prevents deny messages from being sent too often.
-            lm.Flag_Deny.sendMessage(player, flag);
-        }
-        return true;
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
