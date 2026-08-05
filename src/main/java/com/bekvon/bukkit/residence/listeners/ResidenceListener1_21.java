@@ -480,6 +480,7 @@ public class ResidenceListener1_21 implements Listener {
     // https://github.com/PaperMC/Paper/pull/13013
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerShearAnimals(PlayerInteractEntityEvent event) {
+        // Before 1.21.6, Mojang had not added the feature of removing equipment with shears
         if (Version.isCurrentLower(Version.v1_21_6)) {
             return;
         }
@@ -501,7 +502,7 @@ public class ResidenceListener1_21 implements Listener {
         }
         Animals animal = (Animals) entity;
         // Skip check if animal has no equipment
-        if (isSaddleSlotAir(animal, CMIEntityType.get(animal)) || isSlotAir(animal, EquipmentSlot.BODY)) {
+        if (isSaddleSlotAir(animal, CMIEntityType.get(animal)) && isSlotAir(animal, EquipmentSlot.BODY)) {
             return;
         }
         Player player = event.getPlayer();
