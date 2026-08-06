@@ -1049,7 +1049,7 @@ public class ResidencePlayerListener implements Listener {
         default:
             break;
         }
-        return false;
+        return Version.isCurrentEqualOrHigher(Version.v26_2_0) && held.name().equals("SULFUR_CUBE_BUCKET");
     }
 
     private boolean isBuildClickBlockTop(CMIMaterial block, CMIMaterial held) {
