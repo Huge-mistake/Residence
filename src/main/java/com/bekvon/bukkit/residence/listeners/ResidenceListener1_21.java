@@ -15,7 +15,6 @@ import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Strider;
-import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -468,43 +467,5 @@ public class ResidenceListener1_21 implements Listener {
     private boolean isSlotAir(Animals entity, EquipmentSlot slot) {
         EntityEquipment equipment = entity.getEquipment();
         return equipment != null && equipment.getItem(slot).getType() == Material.AIR;
-    }
-
-    // 1.21.6+ shears can remove animal equipment, but do not trigger PlayerShearEntityEvent
-    // https://github.com/PaperMC/Paper/pull/13013
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPlayerShearAnimals(PlayerInteractEntityEvent event) {
-        // Before 1.21.6, Mojang had not added the feature of removing equipment with shears
-        if (Version.isCurrentLower(Version.v1_21_6)) {
-            return;
-        }
-        // Disabling listener if flag disabled globally
-        if (!Flags.shear.isGlobalyEnabled()) {
-            return;
-        }
-        Entity entity = event.getRightClicked();
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(entity.getWorld())) {
-            return;
-        }
-        // Equippable animals implement Vehicle; filter valid target entities
-        if (!(entity instanceof Animals) || !(entity instanceof Vehicle)) {
-            return;
-        }
-        Material held = ResidenceListener1_09.getHeldMaterial(event);
-        if (held != Material.SHEARS) {
-            return;
-        }
-        Player player = event.getPlayer();
-        if (ResAdmin.isResAdmin(player)) {
-            return;
-        }
-        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
-        if (perms.playerHas(player, Flags.shear, (perms.playerHas(player, Flags.animalkilling, true)))) {
-            return;
-        }
-        lm.Flag_Deny.sendMessage(player, Flags.shear);
-        event.setCancelled(true);
-
     }
 }

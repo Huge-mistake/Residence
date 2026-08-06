@@ -1888,7 +1888,9 @@ public class ResidenceEntityListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEggProjectile(ProjectileLaunchEvent event) {
-
+        if (Version.isCurrentEqualOrLower(Version.v1_21_11)) {
+            return;
+        }
         if (event.getEntityType() != EntityType.EGG) {
             return;
         }
@@ -1918,6 +1920,9 @@ public class ResidenceEntityListener implements Listener {
         if (block == null) {
             return;
         }
+        if (Version.isCurrentEqualOrLower(Version.v1_21_11)) {
+            return;
+        }
         if (block.getType() != Material.END_PORTAL_FRAME) {
             return;
         }
@@ -1933,6 +1938,32 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         lm.Flag_Deny.sendMessage(player, Flags.build);
+        event.setCancelled(true);
+
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onPlayerShearAnimals(PlayerInteractEntityEvent event) {
+        Entity entity = event.getRightClicked();
+        if (!(entity instanceof org.bukkit.entity.Animals) || !(entity instanceof Vehicle)) {
+            return;
+        }
+        if (Version.isCurrentEqualOrLower(Version.v1_21_11)) {
+            return;
+        }
+        Material held = ResidenceListener1_09.getHeldMaterial(event);
+        if (held != Material.SHEARS) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (ResAdmin.isResAdmin(player)) {
+            return;
+        }
+        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
+        if (perms.playerHas(player, Flags.shear, (perms.playerHas(player, Flags.animalkilling, true)))) {
+            return;
+        }
+        lm.Flag_Deny.sendMessage(player, Flags.shear);
         event.setCancelled(true);
 
     }
