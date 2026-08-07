@@ -66,23 +66,23 @@ public class ResidenceListener26_2 implements Listener {
 
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerSpawnSulfurCube(PlayerInteractEntityEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.build.isGlobalyEnabled()) {
-            return;
-        }
-        Entity entity = event.getRightClicked();
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(entity.getWorld())) {
-            return;
-        }
-        Material held = ResidenceListener1_09.getHeldMaterial(event);
-
-        if (shouldDenyPlaceSulfurCube(held, entity.getLocation(), event.getPlayer())) {
-            event.setCancelled(true);
-        }
-    }
+//    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+//    public void onPlayerSpawnSulfurCube(PlayerInteractEntityEvent event) {
+//        // Disabling listener if flag disabled globally
+//        if (!Flags.build.isGlobalyEnabled()) {
+//            return;
+//        }
+//        Entity entity = event.getRightClicked();
+//        // disabling event on world
+//        if (plugin.isDisabledWorldListener(entity.getWorld())) {
+//            return;
+//        }
+//        Material held = ResidenceListener1_09.getHeldMaterial(event);
+//
+//        if (shouldDenyPlaceSulfurCube(held, entity.getLocation(), event.getPlayer())) {
+//            event.setCancelled(true);
+//        }
+//    }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerSpawnSulfurCube(PlayerInteractEvent event) {
@@ -90,12 +90,18 @@ public class ResidenceListener26_2 implements Listener {
         if (!Flags.build.isGlobalyEnabled()) {
             return;
         }
+        Location loc;
         Block block = event.getClickedBlock();
-        if (block == null) {
+        if (block != null) {
+            loc = block.getLocation();
+        } else {
+            loc = event.getInteractionPoint();
+        }
+        if (loc == null) {
             return;
         }
         // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld())) {
+        if (plugin.isDisabledWorldListener(loc.getWorld())) {
             return;
         }
         if (event.getItem() == null) {
@@ -103,7 +109,7 @@ public class ResidenceListener26_2 implements Listener {
         }
         Material held = event.getItem().getType();
 
-        if (shouldDenyPlaceSulfurCube(held, block.getLocation(), event.getPlayer())) {
+        if (shouldDenyPlaceSulfurCube(held, loc, event.getPlayer())) {
             event.setCancelled(true);
         }
     }
