@@ -1,6 +1,5 @@
 package com.bekvon.bukkit.residence.listeners;
 
-import com.bekvon.bukkit.residence.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -18,6 +17,7 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
+import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.Version.Version;
 
