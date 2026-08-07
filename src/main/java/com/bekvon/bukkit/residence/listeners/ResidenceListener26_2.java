@@ -1,13 +1,17 @@
 package com.bekvon.bukkit.residence.listeners;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SulfurCube;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -16,6 +20,8 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.containers.lm;
+
+import org.jetbrains.annotations.NotNull;
 
 public class ResidenceListener26_2 implements Listener {
 
@@ -59,5 +65,61 @@ public class ResidenceListener26_2 implements Listener {
         lm.Flag_Deny.sendMessage(player, Flags.ignite);
         event.setCancelled(true);
 
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPlayerSpawnSulfurCube(PlayerInteractAtEntityEvent event) {
+        // Disabling listener if flag disabled globally
+        if (!Flags.build.isGlobalyEnabled()) {
+            return;
+        }
+        Entity entity = event.getRightClicked();
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(entity.getWorld())) {
+            return;
+        }
+        Material held = ResidenceListener1_09.getHeldMaterial(event);
+
+        if (shouldDenyPlaceSulfurCube(held, entity.getLocation(), event.getPlayer())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPlayerSpawnSulfurCube(PlayerInteractEvent event) {
+        // Disabling listener if flag disabled globally
+        if (!Flags.build.isGlobalyEnabled()) {
+            return;
+        }
+        Block block = event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(block.getWorld())) {
+            return;
+        }
+        if (event.getItem() == null) {
+            return;
+        }
+        Material held = event.getItem().getType();
+
+        if (shouldDenyPlaceSulfurCube(held, block.getLocation(), event.getPlayer())) {
+            event.setCancelled(true);
+        }
+    }
+
+    private boolean shouldDenyPlaceSulfurCube(@NotNull Material held, @NotNull Location location, @NotNull Player player) {
+        if (held != Material.SULFUR_CUBE_BUCKET) {
+            return false;
+        }
+        if (ResAdmin.isResAdmin(player)) {
+            return false;
+        }
+        if (FlagPermissions.has(location,  player, Flags.build, true)) {
+            return false;
+        }
+        lm.Flag_Deny.sendMessage(player, Flags.build);
+        return true;
     }
 }
