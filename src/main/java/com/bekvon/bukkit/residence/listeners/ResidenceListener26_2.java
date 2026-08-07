@@ -9,7 +9,6 @@ import org.bukkit.entity.SulfurCube;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EntityEquipment;
@@ -68,7 +67,7 @@ public class ResidenceListener26_2 implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerSpawnSulfurCube(PlayerInteractAtEntityEvent event) {
+    public void onPlayerSpawnSulfurCube(PlayerInteractEntityEvent event) {
         // Disabling listener if flag disabled globally
         if (!Flags.build.isGlobalyEnabled()) {
             return;
