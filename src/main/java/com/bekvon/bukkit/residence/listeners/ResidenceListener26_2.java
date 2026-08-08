@@ -86,45 +86,39 @@ public class ResidenceListener26_2 implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerSpawnSulfurCube(PlayerInteractEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.build.isGlobalyEnabled()) {
-            return;
-        }
-        Location loc;
-        Block block = event.getClickedBlock();
-        if (block != null) {
-            loc = block.getLocation();
-        } else {
-            loc = event.getInteractionPoint();
-        }
-        if (loc == null) {
-            return;
-        }
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(loc.getWorld())) {
-            return;
-        }
+//        // Disabling listener if flag disabled globally
+//        if (!Flags.build.isGlobalyEnabled()) {
+//            return;
+//        }
+//        Location loc;
+//        Block block = event.getClickedBlock();
+//        if (block != null) {
+//            loc = block.getLocation();
+//        } else {
+//            loc = event.getInteractionPoint();
+//        }
+//        if (loc == null) {
+//            return;
+//        }
+//        // disabling event on world
+//        if (plugin.isDisabledWorldListener(loc.getWorld())) {
+//            return;
+//        }
         if (event.getItem() == null) {
             return;
         }
         Material held = event.getItem().getType();
-
-        if (shouldDenyPlaceSulfurCube(held, loc, event.getPlayer())) {
-            event.setCancelled(true);
-        }
-    }
-
-    private boolean shouldDenyPlaceSulfurCube(@NotNull Material held, @NotNull Location location, @NotNull Player player) {
         if (held != Material.SULFUR_CUBE_BUCKET) {
-            return false;
+            return;
         }
+        Player player = event.getPlayer();
         if (ResAdmin.isResAdmin(player)) {
-            return false;
+            return;
         }
-        if (FlagPermissions.has(location,  player, Flags.build, true)) {
-            return false;
+        if (FlagPermissions.has(player.getLocation(),  player, Flags.build, true)) {
+            return;
         }
         lm.Flag_Deny.sendMessage(player, Flags.build);
-        return true;
+        event.setCancelled(true);
     }
 }
