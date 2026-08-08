@@ -99,4 +99,9 @@ public class ResidenceListener26_2 implements Listener {
         event.setCancelled(true);
 
     }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onTest(PlayerInteractEvent event) {
+        event.setCancelled(true);
+    }
 }
