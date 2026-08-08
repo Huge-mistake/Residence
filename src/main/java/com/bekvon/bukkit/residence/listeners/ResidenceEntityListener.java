@@ -204,7 +204,7 @@ public class ResidenceEntityListener implements Listener {
             event.setCancelled(true);
             return;
 
-            // Only Button & Pressure_Plate use break(not return) to allow further checks
+        // Only Button & Pressure_Plate use break(not return) to allow further checks
         case button:
             // Button: Projectiles Hit
             if (!(entity instanceof Projectile)) {
