@@ -6,6 +6,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SulfurCube;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -103,6 +104,26 @@ public class ResidenceListener26_2 implements Listener {
         }
         Material held = event.getItem().getType();
         if (shouldDenyPlaceSulfurCube(held, block.getLocation(), event.getPlayer())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerSpawnSulfurCube2(PlayerInteractEvent event) {
+        // Disabling listener if flag disabled globally
+        if (!Flags.build.isGlobalyEnabled()) {
+            return;
+        }
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld())) {
+            return;
+        }
+        if (event.getItem() == null) {
+            return;
+        }
+        Material held = event.getItem().getType();
+        if (shouldDenyPlaceSulfurCube(held, event.getPlayer().getLocation(), event.getPlayer())) {
+            event.setUseItemInHand(Event.Result.DENY);
             event.setCancelled(true);
         }
     }
