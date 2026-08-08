@@ -2,17 +2,14 @@ package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SulfurCube;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -68,22 +65,48 @@ public class ResidenceListener26_2 implements Listener {
 
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerSpawnSulfurCube(PlayerItemConsumeEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.build.isGlobalyEnabled()) {
-            return;
-        }
-        Player player = event.getPlayer();
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(player.getWorld())) {
-            return;
-        }
-        Material held = event.getItem().getType();
-        if (shouldDenyPlaceSulfurCube(held, player.getLocation(), player)) {
-            event.setCancelled(true);
-        }
-    }
+//    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+//    public void onPlayerSpawnSulfurCube(PlayerInteractEvent event) {
+//        // Disabling listener if flag disabled globally
+//        if (!Flags.build.isGlobalyEnabled()) {
+//            return;
+//        }
+//        Block block = event.getClickedBlock();
+//        if (block == null) {
+//            return;
+//        }
+//        // disabling event on world
+//        if (plugin.isDisabledWorldListener(block.getWorld())) {
+//            return;
+//        }
+//        if (event.getItem() == null) {
+//            return;
+//        }
+//        Material held = event.getItem().getType();
+//        if (shouldDenyPlaceSulfurCube(held, block.getLocation(), event.getPlayer())) {
+//            event.setCancelled(true);
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onPlayerSpawnSulfurCube2(PlayerInteractEvent event) {
+//        // Disabling listener if flag disabled globally
+//        if (!Flags.build.isGlobalyEnabled()) {
+//            return;
+//        }
+//        // disabling event on world
+//        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld())) {
+//            return;
+//        }
+//        if (event.getItem() == null) {
+//            return;
+//        }
+//        Material held = event.getItem().getType();
+//        if (shouldDenyPlaceSulfurCube(held, event.getPlayer().getLocation(), event.getPlayer())) {
+//            event.setUseItemInHand(Event.Result.DENY);
+//            event.setCancelled(true);
+//        }
+//    }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerSpawnSulfurCube(PlayerInteractEvent event) {
@@ -91,44 +114,23 @@ public class ResidenceListener26_2 implements Listener {
         if (!Flags.build.isGlobalyEnabled()) {
             return;
         }
-        Block block = event.getClickedBlock();
-        if (block == null) {
-            return;
-        }
+        Location loc = event.getClickedBlock() != null
+                ? event.getClickedBlock().getLocation()
+                : event.getPlayer().getLocation();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld())) {
+        if (plugin.isDisabledWorldListener(loc.getWorld())) {
             return;
         }
         if (event.getItem() == null) {
             return;
         }
         Material held = event.getItem().getType();
-        if (shouldDenyPlaceSulfurCube(held, block.getLocation(), event.getPlayer())) {
+        if (shouldDenySpawnSulfurCube(held, loc, event.getPlayer())) {
             event.setCancelled(true);
         }
     }
 
-    @EventHandler
-    public void onPlayerSpawnSulfurCube2(PlayerInteractEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.build.isGlobalyEnabled()) {
-            return;
-        }
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld())) {
-            return;
-        }
-        if (event.getItem() == null) {
-            return;
-        }
-        Material held = event.getItem().getType();
-        if (shouldDenyPlaceSulfurCube(held, event.getPlayer().getLocation(), event.getPlayer())) {
-            event.setUseItemInHand(Event.Result.DENY);
-            event.setCancelled(true);
-        }
-    }
-
-    private boolean shouldDenyPlaceSulfurCube(@NotNull Material held, @NotNull Location location, @NotNull Player player) {
+    private boolean shouldDenySpawnSulfurCube(@NotNull Material held, @NotNull Location location, @NotNull Player player) {
         if (held != Material.SULFUR_CUBE_BUCKET) {
             return false;
         }
