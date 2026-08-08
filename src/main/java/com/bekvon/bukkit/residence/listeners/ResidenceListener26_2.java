@@ -1,11 +1,11 @@
 package com.bekvon.bukkit.residence.listeners;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SulfurCube;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -86,24 +86,18 @@ public class ResidenceListener26_2 implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerSpawnSulfurCube(PlayerInteractEvent event) {
-//        // Disabling listener if flag disabled globally
-//        if (!Flags.build.isGlobalyEnabled()) {
-//            return;
-//        }
-//        Location loc;
-//        Block block = event.getClickedBlock();
-//        if (block != null) {
-//            loc = block.getLocation();
-//        } else {
-//            loc = event.getInteractionPoint();
-//        }
-//        if (loc == null) {
-//            return;
-//        }
-//        // disabling event on world
-//        if (plugin.isDisabledWorldListener(loc.getWorld())) {
-//            return;
-//        }
+        // Disabling listener if flag disabled globally
+        if (!Flags.build.isGlobalyEnabled()) {
+            return;
+        }
+        Block block = event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(block.getWorld())) {
+            return;
+        }
         if (event.getItem() == null) {
             return;
         }
@@ -119,6 +113,7 @@ public class ResidenceListener26_2 implements Listener {
             return;
         }
         lm.Flag_Deny.sendMessage(player, Flags.build);
-        event.setCancelled(true);
+        event.setUseItemInHand(Event.Result.DENY);
+
     }
 }
