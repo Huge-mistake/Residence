@@ -95,4 +95,15 @@ public class ResidenceListener26_2 implements Listener {
         event.setUseItemInHand(Event.Result.DENY);
 
     }
+
+//    @EventHandler
+//    public void onTest1(PlayerInteractEvent event) {
+//        event.setUseItemInHand(Event.Result.DENY);
+//        event.setUseInteractedBlock(Event.Result.DENY);
+//    }
+
+    @EventHandler
+    public void onTest2(PlayerInteractEvent event) {
+        event.setCancelled(true);
+    }
 }
