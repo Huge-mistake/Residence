@@ -9,6 +9,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EntityEquipment;
@@ -77,6 +78,9 @@ public class ResidenceListener26_2 implements Listener {
         if (block == null) {
             return;
         }
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
         // disabling event on world
         if (plugin.isDisabledWorldListener(block.getWorld())) {
             return;
@@ -94,16 +98,5 @@ public class ResidenceListener26_2 implements Listener {
         lm.Flag_Deny.sendMessage(player, Flags.build);
         event.setUseItemInHand(Event.Result.DENY);
 
-    }
-
-//    @EventHandler
-//    public void onTest1(PlayerInteractEvent event) {
-//        event.setUseItemInHand(Event.Result.DENY);
-//        event.setUseInteractedBlock(Event.Result.DENY);
-//    }
-
-    @EventHandler
-    public void onTest2(PlayerInteractEvent event) {
-        event.setCancelled(true);
     }
 }
