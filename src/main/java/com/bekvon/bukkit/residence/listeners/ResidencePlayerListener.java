@@ -1338,7 +1338,7 @@ public class ResidencePlayerListener implements Listener {
         return isCanUseEntity_BothClick(mat, block) || isCanUseEntity_RClickOnly(mat, block);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
 
         Block block = event.getClickedBlock();
