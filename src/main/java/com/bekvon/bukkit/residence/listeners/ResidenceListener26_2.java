@@ -96,7 +96,8 @@ public class ResidenceListener26_2 implements Listener {
             return;
         }
         lm.Flag_Deny.sendMessage(player, Flags.build);
-        event.setUseItemInHand(Event.Result.DENY);
+        //event.setUseItemInHand(Event.Result.DENY);
+        event.setCancelled(true);
 
     }
 }
