@@ -6,13 +6,12 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SulfurCube;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -69,37 +68,18 @@ public class ResidenceListener26_2 implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerSpawnSulfurCube(PlayerInteractEntityEvent event) {
+    public void onPlayerSpawnSulfurCube(PlayerItemConsumeEvent event) {
         // Disabling listener if flag disabled globally
         if (!Flags.build.isGlobalyEnabled()) {
             return;
         }
-        Entity entity = event.getRightClicked();
+        Player player = event.getPlayer();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(entity.getWorld())) {
+        if (plugin.isDisabledWorldListener(player.getWorld())) {
             return;
         }
-        Material held = ResidenceListener1_09.getHeldMaterial(event);
-
-        if (shouldDenyPlaceSulfurCube(held, entity.getLocation(), event.getPlayer())) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerSpawnSulfurCube(PlayerInteractAtEntityEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.build.isGlobalyEnabled()) {
-            return;
-        }
-        Entity entity = event.getRightClicked();
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(entity.getWorld())) {
-            return;
-        }
-        Material held = ResidenceListener1_09.getHeldMaterial(event);
-
-        if (shouldDenyPlaceSulfurCube(held, entity.getLocation(), event.getPlayer())) {
+        Material held = event.getItem().getType();
+        if (shouldDenyPlaceSulfurCube(held, player.getLocation(), player)) {
             event.setCancelled(true);
         }
     }
@@ -123,7 +103,6 @@ public class ResidenceListener26_2 implements Listener {
         }
         Material held = event.getItem().getType();
         if (shouldDenyPlaceSulfurCube(held, block.getLocation(), event.getPlayer())) {
-            event.setUseItemInHand(Event.Result.DENY);
             event.setCancelled(true);
         }
     }
