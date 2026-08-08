@@ -1,7 +1,7 @@
 package com.bekvon.bukkit.residence.listeners;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SulfurCube;
@@ -19,8 +19,6 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.containers.lm;
-
-import org.jetbrains.annotations.NotNull;
 
 public class ResidenceListener26_2 implements Listener {
 
@@ -66,82 +64,35 @@ public class ResidenceListener26_2 implements Listener {
 
     }
 
-//    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-//    public void onPlayerSpawnSulfurCube(PlayerInteractEvent event) {
-//        // Disabling listener if flag disabled globally
-//        if (!Flags.build.isGlobalyEnabled()) {
-//            return;
-//        }
-//        Block block = event.getClickedBlock();
-//        if (block == null) {
-//            return;
-//        }
-//        // disabling event on world
-//        if (plugin.isDisabledWorldListener(block.getWorld())) {
-//            return;
-//        }
-//        if (event.getItem() == null) {
-//            return;
-//        }
-//        Material held = event.getItem().getType();
-//        if (shouldDenyPlaceSulfurCube(held, block.getLocation(), event.getPlayer())) {
-//            event.setCancelled(true);
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onPlayerSpawnSulfurCube2(PlayerInteractEvent event) {
-//        // Disabling listener if flag disabled globally
-//        if (!Flags.build.isGlobalyEnabled()) {
-//            return;
-//        }
-//        // disabling event on world
-//        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld())) {
-//            return;
-//        }
-//        if (event.getItem() == null) {
-//            return;
-//        }
-//        Material held = event.getItem().getType();
-//        if (shouldDenyPlaceSulfurCube(held, event.getPlayer().getLocation(), event.getPlayer())) {
-//            event.setUseItemInHand(Event.Result.DENY);
-//            event.setCancelled(true);
-//        }
-//    }
-
     @EventHandler
     public void onPlayerSpawnSulfurCube(PlayerInteractEvent event) {
+        if (event.useItemInHand() == Event.Result.DENY) {
+            return;
+        }
         // Disabling listener if flag disabled globally
         if (!Flags.build.isGlobalyEnabled()) {
             return;
         }
-        Location loc = event.getClickedBlock() != null
-                ? event.getClickedBlock().getLocation()
-                : event.getPlayer().getLocation();
+        Block block= event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
         // disabling event on world
-        if (plugin.isDisabledWorldListener(loc.getWorld())) {
+        if (plugin.isDisabledWorldListener(block.getWorld())) {
             return;
         }
-        if (event.getItem() == null) {
+        if (event.getItem() == null || event.getItem().getType() != Material.SULFUR_CUBE_BUCKET) {
             return;
         }
-        Material held = event.getItem().getType();
-        if (shouldDenySpawnSulfurCube(held, loc, event.getPlayer())) {
-            event.setUseItemInHand(Event.Result.DENY);
-        }
-    }
-
-    private boolean shouldDenySpawnSulfurCube(@NotNull Material held, @NotNull Location location, @NotNull Player player) {
-        if (held != Material.SULFUR_CUBE_BUCKET) {
-            return false;
-        }
+        Player player = event.getPlayer();
         if (ResAdmin.isResAdmin(player)) {
-            return false;
+            return;
         }
-        if (FlagPermissions.has(location,  player, Flags.build, true)) {
-            return false;
+        if (FlagPermissions.has(block.getLocation(),  player, Flags.build, true)) {
+            return;
         }
         lm.Flag_Deny.sendMessage(player, Flags.build);
-        return true;
+        event.setUseItemInHand(Event.Result.DENY);
+
     }
 }
