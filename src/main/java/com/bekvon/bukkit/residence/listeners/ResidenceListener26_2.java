@@ -88,7 +88,7 @@ public class ResidenceListener26_2 implements Listener {
         if (ResAdmin.isResAdmin(player)) {
             return;
         }
-        if (FlagPermissions.has(block.getLocation(),  player, Flags.build, true)) {
+        if (FlagPermissions.has(block.getRelative(event.getBlockFace()).getLocation(),  player, Flags.build, true)) {
             return;
         }
         lm.Flag_Deny.sendMessage(player, Flags.build);
