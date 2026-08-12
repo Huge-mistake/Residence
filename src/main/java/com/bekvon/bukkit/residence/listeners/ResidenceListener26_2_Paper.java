@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -16,7 +17,7 @@ import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.listenersCache.DenyMessageCache;
 import com.bekvon.bukkit.residence.listenersCache.PlayerCollideWithEntityCache;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
-import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
+import com.bekvon.bukkit.residence.utils.Utils;
 
 import io.papermc.paper.event.entity.EntityCollideWithEntityEvent;
 
@@ -74,6 +75,18 @@ public class ResidenceListener26_2_Paper implements Listener {
         if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
             return false;
         }
-        return FlagPermissions.has(other.getLocation(), player, Flags.push, FlagCombo.OnlyFalse);
+        FlagPermissions perms = FlagPermissions.getPerms(other.getLocation(), player);
+
+        if (Utils.isAnimal(other)) {
+            return !perms.playerHas(player, Flags.push, perms.playerHas(player, Flags.animalkilling, true));
+
+        } else if (ResidenceEntityListener.isMonster(other)) {
+            return !perms.playerHas(player, Flags.push, perms.playerHas(player, Flags.mobkilling, true));
+
+        } else if (other instanceof Vehicle) {
+            return !perms.playerHas(player, Flags.push, perms.playerHas(player, Flags.vehicledestroy, true));
+
+        }
+        return !perms.playerHas(player, Flags.push, true);
     }
 }
