@@ -2,9 +2,7 @@ package com.bekvon.bukkit.residence.listeners;
 
 import java.util.List;
 
-import com.bekvon.bukkit.residence.containers.ResAdmin;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,7 +10,10 @@ import org.bukkit.event.Listener;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
+import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
+import com.bekvon.bukkit.residence.listenersCache.PlayerCollideWithEntityCache;
+import com.bekvon.bukkit.residence.listenersCache.PlayerCollisionDenyMessageCache;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.utils.Utils;
 
@@ -42,36 +43,43 @@ public class ResidenceListener26_2_Paper implements Listener {
         }
         Entity entity2 = entities.get(1);
         Player player;
-        Entity other;
+        Entity entity;
         if (entity1 instanceof Player) {
             player = (Player) entity1;
-            other = entity2;
+            entity = entity2;
         } else if (entity2 instanceof Player) {
             player = (Player) entity2;
-            other = entity1;
+            entity = entity1;
         } else {
             // Only handle collisions involving a player
             return;
         }
-        if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
-            return;
+        PlayerCollideWithEntityCache.PlayerCollideWithEntityKey key
+                = new PlayerCollideWithEntityCache.PlayerCollideWithEntityKey(player, entity);
+
+        if (PlayerCollideWithEntityCache.getOrCompute(key, () -> shouldDenyCollision(player, entity))) {
+            if (PlayerCollisionDenyMessageCache.shouldSendDenyMessage(player)) {
+                lm.Flag_Deny.sendMessage(player, Flags.playercollision);
+            }
+            event.setCancelled(true);
         }
-        FlagPermissions perms = FlagPermissions.getPerms(other.getLocation(), player);
-        boolean shouldDenyCollision;
+    }
 
-        if (Utils.isAnimal(other)) {
-            shouldDenyCollision = !perms.playerHas(player, Flags.playercollision, perms.playerHas(player, Flags.animalkilling, true));
+    private boolean shouldDenyCollision(Player player, Entity entity) {
+        if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
+            return false;
+        }
+        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
 
-        } else if (ResidenceEntityListener.isMonster(other)) {
-            shouldDenyCollision = !perms.playerHas(player, Flags.playercollision, perms.playerHas(player, Flags.mobkilling, true));
+        if (Utils.isAnimal(entity)) {
+            return !perms.playerHas(player, Flags.playercollision, perms.playerHas(player, Flags.animalkilling, true));
+
+        } else if (ResidenceEntityListener.isMonster(entity)) {
+            return !perms.playerHas(player, Flags.playercollision, perms.playerHas(player, Flags.mobkilling, true));
 
         } else {
-            shouldDenyCollision = !perms.playerHas(player, Flags.playercollision, true);
+            return !perms.playerHas(player, Flags.playercollision, true);
 
-        }
-        if (shouldDenyCollision) {
-            lm.Flag_Deny.sendMessage(player, Flags.playercollision);
-            event.setCancelled(true);
         }
     }
 }
