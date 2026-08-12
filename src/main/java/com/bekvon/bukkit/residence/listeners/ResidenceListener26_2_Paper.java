@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
@@ -65,7 +66,7 @@ public class ResidenceListener26_2_Paper implements Listener {
         }
     }
 
-    private boolean shouldDenyCollision(Player player, Entity entity) {
+    private boolean shouldDenyCollision(@NotNull Player player, @NotNull Entity entity) {
         if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
             return false;
         }
