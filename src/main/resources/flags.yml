@@ -521,7 +521,7 @@ Global:
     piston: PISTON
     pistonprotection: STICKY_PISTON
     place: SEA_LANTERN
-    push: SLIME_BLOCK
+    push: COBWEB
     pressure: LIGHT_WEIGHTED_PRESSURE_PLATE
     pvp: WOODEN_SWORD
     raid: CROSSBOW
