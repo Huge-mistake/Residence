@@ -13,10 +13,10 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
+import com.bekvon.bukkit.residence.listenersCache.DenyMessageCache;
 import com.bekvon.bukkit.residence.listenersCache.PlayerCollideWithEntityCache;
-import com.bekvon.bukkit.residence.listenersCache.PlayerCollisionDenyMessageCache;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
-import com.bekvon.bukkit.residence.utils.Utils;
+import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 
 import io.papermc.paper.event.entity.EntityCollideWithEntityEvent;
 
@@ -31,12 +31,14 @@ public class ResidenceListener26_2_Paper implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerCollideWithEntity(EntityCollideWithEntityEvent event) {
         // Disabling listener if flag disabled globally
-        if (!Flags.playercollision.isGlobalyEnabled()) {
+        if (!Flags.push.isGlobalyEnabled()) {
             return;
         }
         // Get the two entities involved in the collision
         List<Entity> entities = event.getEntities();
-
+        if (entities.size() < 2) {
+            return;
+        }
         Entity entity1 = entities.get(0);
         // disabling event on world
         if (plugin.isDisabledWorldListener(entity1.getWorld())) {
@@ -44,43 +46,34 @@ public class ResidenceListener26_2_Paper implements Listener {
         }
         Entity entity2 = entities.get(1);
         Player player;
-        Entity entity;
+        Entity other;
         if (entity1 instanceof Player) {
             player = (Player) entity1;
-            entity = entity2;
+            other = entity2;
+
         } else if (entity2 instanceof Player) {
             player = (Player) entity2;
-            entity = entity1;
+            other = entity1;
+
         } else {
-            // Only handle collisions involving a player
+            // Only handle entity pushes involving a player
             return;
         }
         PlayerCollideWithEntityCache.PlayerCollideWithEntityKey key
-                = new PlayerCollideWithEntityCache.PlayerCollideWithEntityKey(player, entity);
+                = new PlayerCollideWithEntityCache.PlayerCollideWithEntityKey(player, other);
 
-        if (PlayerCollideWithEntityCache.getOrCompute(key, () -> shouldDenyCollision(player, entity))) {
-            if (PlayerCollisionDenyMessageCache.shouldSendDenyMessage(player)) {
-                lm.Flag_Deny.sendMessage(player, Flags.playercollision);
+        if (PlayerCollideWithEntityCache.getOrCompute(key, () -> shouldDenyPush(player, other))) {
+            if (DenyMessageCache.shouldSendDenyMessage(player, Flags.push)) {
+                lm.Flag_Deny.sendMessage(player, Flags.push);
             }
             event.setCancelled(true);
         }
     }
 
-    private boolean shouldDenyCollision(@NotNull Player player, @NotNull Entity entity) {
+    private boolean shouldDenyPush(@NotNull Player player, @NotNull Entity other) {
         if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
             return false;
         }
-        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
-
-        if (Utils.isAnimal(entity)) {
-            return !perms.playerHas(player, Flags.playercollision, perms.playerHas(player, Flags.animalkilling, true));
-
-        } else if (ResidenceEntityListener.isMonster(entity)) {
-            return !perms.playerHas(player, Flags.playercollision, perms.playerHas(player, Flags.mobkilling, true));
-
-        } else {
-            return !perms.playerHas(player, Flags.playercollision, true);
-
-        }
+        return FlagPermissions.has(other.getLocation(), player, Flags.push, FlagCombo.OnlyFalse);
     }
 }

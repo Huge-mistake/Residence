@@ -310,8 +310,8 @@ Global:
     # Allows or denys only placement of blocks, overrides the build flag
     place: true
     # Applies to: Both
-    # Allow or deny player entity collision
-    playercollision: true
+    # Allow or deny players pushing entities
+    push: true
     # Applies to: Both
     # Allows or denys players to use pressure plates
     pressure: true
@@ -521,7 +521,7 @@ Global:
     piston: PISTON
     pistonprotection: STICKY_PISTON
     place: SEA_LANTERN
-    playercollision: SLIME_BLOCK
+    push: SLIME_BLOCK
     pressure: LIGHT_WEIGHTED_PRESSURE_PLATE
     pvp: WOODEN_SWORD
     raid: CROSSBOW
