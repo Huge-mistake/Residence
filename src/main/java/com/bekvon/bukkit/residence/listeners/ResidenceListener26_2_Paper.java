@@ -53,9 +53,6 @@ public class ResidenceListener26_2_Paper implements Listener {
             // Only handle collisions involving a player
             return;
         }
-        if (!(other instanceof LivingEntity)) {
-            return;
-        }
         if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
             return;
         }
