@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 public class PlayerCollisionDenyMessageCache {
 
     private static final Cache<UUID, Boolean> MESSAGE_CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(1, TimeUnit.SECONDS)
+            .expireAfterWrite(3, TimeUnit.SECONDS)
             .maximumSize(1000)
             .build();
 
