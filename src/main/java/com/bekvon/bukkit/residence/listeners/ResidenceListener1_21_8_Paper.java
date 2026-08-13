@@ -1,27 +1,20 @@
 package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.EquipmentSlot;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
-import com.bekvon.bukkit.residence.containers.lm;
-import com.bekvon.bukkit.residence.listenersCache.DenyMessageCache;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import io.papermc.paper.event.entity.EntityPushedByEntityAttackEvent;
-
-import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener1_21_8_Paper implements Listener {
 
@@ -33,10 +26,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
 
     @EventHandler
     public void onKnockback(EntityPushedByEntityAttackEvent event) {
-        // disabling event on world
-        if (Residence.getInstance().isDisabledWorldListener(event.getEntity().getWorld())) {
-            return;
-        }
+
         if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy()))
             event.setCancelled(true);
     }
@@ -46,36 +36,16 @@ public class ResidenceListener1_21_8_Paper implements Listener {
 
         Player player = Utils.potentialProjectileToPlayer(pushedBy);
 
-        if (Utils.isAnimal(entity)) {
-            // Paper 26.2 uses EntityCollideWithEntityEvent
-            // to handle SulfurCube(block-containing) knockback.
-            if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()
-                    && Flags.push.isGlobalyEnabled() && entity instanceof org.bukkit.entity.SulfurCube) {
-
-                EntityEquipment equipment = ((org.bukkit.entity.SulfurCube) entity).getEquipment();
-                // Check if SulfurCube has a block inside
-                if (equipment != null && equipment.getItem(EquipmentSlot.BODY).getType() != Material.AIR) {
-                    if (player != null) {
-                        if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
-                            return false;
-                        }
-                        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
-                        return !perms.playerHas(player, Flags.push, perms.playerHas(player, Flags.animalkilling, true));
-
-                    } else {
-                        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
-                        return !perms.has(Flags.push, perms.has(Flags.animalkilling, true));
-                    }
-                }
-            }
+        if (Utils.isAnimal(entity))
             return flagCheck(loc, player, Flags.animalkilling);
-        }
 
         if (ResidenceEntityListener.isMonster(entity))
             return flagCheck(loc, player, Flags.mobkilling);
 
         if (entity instanceof Player) {
-            return Flags.pvp.isGlobalyEnabled() && FlagPermissions.has(loc, Flags.pvp, FlagCombo.OnlyFalse);
+            if (FlagPermissions.has(loc, Flags.pvp, FlagCombo.OnlyFalse))
+                return true;
+            return false;
         }
         if (entity instanceof org.bukkit.entity.Boat || entity instanceof org.bukkit.entity.Minecart) {
             return flagCheck(loc, player, Flags.vehicledestroy);
@@ -87,21 +57,14 @@ public class ResidenceListener1_21_8_Paper implements Listener {
     }
 
     private static boolean flagCheck(Location loc, Player pushedBy, Flags flag) {
-        // Disabling listener if flag disabled globally
-        if (!flag.isGlobalyEnabled()) {
-            return false;
-        }
         if (pushedBy != null) {
             if (ResAdmin.isResAdmin(pushedBy))
                 return false;
-            if (FlagPermissions.has(loc, pushedBy, flag, FlagCombo.OnlyFalse)) {
-                if (DenyMessageCache.shouldSendDenyMessage(pushedBy, flag)) {
-                    lm.Flag_Deny.sendMessage(pushedBy, flag);
-                }
+            if (FlagPermissions.has(loc, pushedBy, flag, FlagCombo.OnlyFalse))
                 return true;
-            }
         } else {
-            return FlagPermissions.has(loc, flag, FlagCombo.OnlyFalse);
+            if (FlagPermissions.has(loc, flag, FlagCombo.OnlyFalse))
+                return true;
         }
         return false;
     }
