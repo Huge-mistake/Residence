@@ -36,9 +36,12 @@ public class ResidenceListener1_21_8_Paper implements Listener {
 
         Player player = Utils.potentialProjectileToPlayer(pushedBy);
 
-        if (Utils.isAnimal(entity))
+        if (Utils.isAnimal(entity)) {
+            if (entity instanceof org.bukkit.entity.SulfurCube) {
+                return false;
+            }
             return flagCheck(loc, player, Flags.animalkilling);
-
+        }
         if (ResidenceEntityListener.isMonster(entity))
             return flagCheck(loc, player, Flags.mobkilling);
 
