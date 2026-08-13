@@ -47,10 +47,10 @@ public class ResidenceListener1_21_8_Paper implements Listener {
         Player player = Utils.potentialProjectileToPlayer(pushedBy);
 
         if (target instanceof ArmorStand) {
-            return flagCheck(target, player, Flags.destroy);
+            return shouldDeny(target, player, Flags.destroy);
         }
         if (target instanceof Boat || target instanceof Minecart) {
-            return flagCheck(target, player, Flags.vehicledestroy);
+            return shouldDeny(target, player, Flags.vehicledestroy);
         }
         if (target instanceof Player) {
             // Monster-on-player knockback doesn't need to check Flags.pvp
@@ -65,19 +65,19 @@ public class ResidenceListener1_21_8_Paper implements Listener {
                 EntityEquipment equipment = ((org.bukkit.entity.SulfurCube) target).getEquipment();
                 // Check if SulfurCube has a block inside
                 if (equipment != null && !equipment.getItem(EquipmentSlot.BODY).isEmpty()) {
-                    return pushFlagCheck(target, player);
+                    return shouldDenyPush(target, player);
                 }
                 // SulfurCube without blocks still checks Flags.animalkilling
             }
-            return flagCheck(target, player, Flags.animalkilling);
+            return shouldDeny(target, player, Flags.animalkilling);
         }
         if (ResidenceEntityListener.isMonster(target)) {
-            return flagCheck(target, player, Flags.mobkilling);
+            return shouldDeny(target, player, Flags.mobkilling);
         }
         return false;
     }
 
-    private static boolean flagCheck(Entity target, Player pushedBy, Flags flag) {
+    private static boolean shouldDeny(Entity target, Player pushedBy, Flags flag) {
         if (pushedBy != null) {
             if (pushedBy.hasMetadata("NPC") || ResAdmin.isResAdmin(pushedBy)) {
                 return false;
@@ -88,7 +88,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
         }
     }
 
-    private static boolean pushFlagCheck(Entity target, Player pushedBy) {
+    private static boolean shouldDenyPush(Entity target, Player pushedBy) {
         if (pushedBy != null) {
             if (pushedBy.hasMetadata("NPC") || ResAdmin.isResAdmin(pushedBy)) {
                 return false;
