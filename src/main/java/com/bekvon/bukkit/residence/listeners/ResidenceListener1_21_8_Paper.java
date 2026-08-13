@@ -8,10 +8,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
+import com.bekvon.bukkit.residence.containers.lm;
+import com.bekvon.bukkit.residence.listenersCache.DenyMessageCache;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
@@ -42,13 +46,6 @@ public class ResidenceListener1_21_8_Paper implements Listener {
 
         Player player = Utils.potentialProjectileToPlayer(pushedBy);
 
-        if (player != null && Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()) {
-            // Disabling listener if flag disabled globally
-            if (!Flags.push.isGlobalyEnabled()) {
-                return false;
-            }
-            return ResidenceListener26_2_Paper.shouldDenyPush(target, player);
-        }
         if (target instanceof ArmorStand) {
             return flagCheck(target, player, Flags.destroy);
         }
@@ -60,6 +57,18 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             return player != null && FlagPermissions.has(target.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
         }
         if (Utils.isAnimal(target)) {
+            // SulfurCube containing blocks doesn't take damage
+            // preferentially uses Flags.push instead on Paper 26.2+
+            if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()
+                    && target instanceof org.bukkit.entity.SulfurCube) {
+
+                EntityEquipment equipment = ((org.bukkit.entity.SulfurCube) target).getEquipment();
+                // Check if SulfurCube has a block inside
+                if (equipment != null && !equipment.getItem(EquipmentSlot.BODY).isEmpty()) {
+                    return pushFlagCheck(target, player);
+                }
+                // SulfurCube without blocks still checks Flags.animalkilling
+            }
             return flagCheck(target, player, Flags.animalkilling);
         }
         if (ResidenceEntityListener.isMonster(target)) {
@@ -76,6 +85,26 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             return FlagPermissions.has(target.getLocation(), pushedBy, flag, FlagCombo.OnlyFalse);
         } else {
             return FlagPermissions.has(target.getLocation(), flag, FlagCombo.OnlyFalse);
+        }
+    }
+
+    private static boolean pushFlagCheck(Entity target, Player pushedBy) {
+        if (pushedBy != null) {
+            if (pushedBy.hasMetadata("NPC") || ResAdmin.isResAdmin(pushedBy)) {
+                return false;
+            }
+            FlagPermissions perms = FlagPermissions.getPerms(target.getLocation(), pushedBy);
+            if (!perms.playerHas(pushedBy, Flags.push, perms.playerHas(pushedBy, Flags.animalkilling, true))) {
+                if (DenyMessageCache.shouldSendDenyMessage(pushedBy, Flags.push)) {
+                    lm.Flag_Deny.sendMessage(pushedBy, Flags.push);
+                }
+                return true;
+            }
+            return false;
+
+        } else {
+            FlagPermissions perms = FlagPermissions.getPerms(target.getLocation());
+            return !perms.has(Flags.push, perms.has(Flags.animalkilling, true));
         }
     }
 }

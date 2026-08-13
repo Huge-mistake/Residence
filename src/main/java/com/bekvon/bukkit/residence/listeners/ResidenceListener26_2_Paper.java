@@ -2,7 +2,6 @@ package com.bekvon.bukkit.residence.listeners;
 
 import java.util.List;
 
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
@@ -48,8 +47,9 @@ public class ResidenceListener26_2_Paper implements Listener {
             return;
         }
         Entity entity2 = entities.get(1);
-        Player pushedBy;
         Entity target;
+        Player pushedBy;
+
         if (entity1 instanceof Player) {
             pushedBy = (Player) entity1;
             target = entity2;
@@ -77,10 +77,7 @@ public class ResidenceListener26_2_Paper implements Listener {
         FlagPermissions perms = FlagPermissions.getPerms(target.getLocation(), pushedBy);
         boolean fallback = true;
 
-        if (target instanceof ArmorStand) {
-            fallback = perms.playerHas(pushedBy, Flags.destroy, true);
-
-        } else if (target instanceof Boat || target instanceof Minecart) {
+        if (target instanceof Boat || target instanceof Minecart) {
             fallback = perms.playerHas(pushedBy, Flags.vehicledestroy, true);
 
         } else if (target instanceof Player) {
