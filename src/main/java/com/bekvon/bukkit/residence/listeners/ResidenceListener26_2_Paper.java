@@ -70,7 +70,11 @@ public class ResidenceListener26_2_Paper implements Listener {
         }
     }
 
-    public static boolean shouldDenyPush(@NotNull Entity target, @NotNull Player pushedBy) {
+    private boolean shouldDenyPush(@NotNull Entity target, @NotNull Player pushedBy) {
+        // Does not apply to player-player collisions; they are handled client-side
+        if (target instanceof Player) {
+            return false;
+        }
         if (pushedBy.hasMetadata("NPC") || ResAdmin.isResAdmin(pushedBy)) {
             return false;
         }
@@ -79,9 +83,6 @@ public class ResidenceListener26_2_Paper implements Listener {
 
         if (target instanceof Boat || target instanceof Minecart) {
             fallback = perms.playerHas(pushedBy, Flags.vehicledestroy, true);
-
-        } else if (target instanceof Player) {
-            fallback = perms.has(Flags.pvp, true);
 
         } else if (Utils.isAnimal(target)) {
             fallback = perms.playerHas(pushedBy, Flags.animalkilling, true);
