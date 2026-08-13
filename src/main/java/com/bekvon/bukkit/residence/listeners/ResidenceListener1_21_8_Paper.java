@@ -5,9 +5,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.EquipmentSlot;
+import org.jetbrains.annotations.NotNull;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
@@ -30,7 +30,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onKnockback(EntityPushedByEntityAttackEvent event) {
         // disabling event on world
         if (plugin.isDisabledWorldListener(event.getEntity().getWorld())) {
@@ -41,40 +41,16 @@ public class ResidenceListener1_21_8_Paper implements Listener {
     }
 
     public static boolean shouldCancelKnockBack(Entity entity, Entity pushedBy) {
-        Location loc = entity.getLocation();
-
         Player player = Utils.potentialProjectileToPlayer(pushedBy);
 
-        if (Utils.isAnimal(entity)) {
-            // Paper 26.2 uses EntityCollideWithEntityEvent
-            // to handle SulfurCube(block-containing) knockback.
-            if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()
-                    && Flags.push.isGlobalyEnabled() && entity instanceof org.bukkit.entity.SulfurCube) {
-
-                EntityEquipment equipment = ((org.bukkit.entity.SulfurCube) entity).getEquipment();
-                // Check if SulfurCube has a block inside
-                if (equipment != null && !equipment.getItem(EquipmentSlot.BODY).isEmpty()) {
-                    if (player != null) {
-                        if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
-                            return false;
-                        }
-                        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
-                        if (!perms.playerHas(player, Flags.push, perms.playerHas(player, Flags.animalkilling, true))) {
-                            if (DenyMessageCache.shouldSendDenyMessage(player, Flags.push)) {
-                                lm.Flag_Deny.sendMessage(player, Flags.push);
-                            }
-                            return true;
-                        }
-                        return false;
-
-                    } else {
-                        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
-                        return !perms.has(Flags.push, perms.has(Flags.animalkilling, true));
-                    }
-                }
-            }
-            return flagCheck(loc, player, Flags.animalkilling);
+        if (player != null && Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()) {
+            return shouldDenyPlayerPushEntity26_2_Paper(player, entity);
         }
+        Location loc = entity.getLocation();
+
+        if (Utils.isAnimal(entity))
+            return flagCheck(loc, player, Flags.animalkilling);
+
         if (ResidenceEntityListener.isMonster(entity))
             return flagCheck(loc, player, Flags.mobkilling);
 
@@ -83,9 +59,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
                 return true;
             return false;
         }
-        if (entity instanceof org.bukkit.entity.Boat || entity instanceof org.bukkit.entity.Minecart) {
-            return flagCheck(loc, player, Flags.vehicledestroy);
-        }
+
         if (entity.getType().equals(EntityType.ARMOR_STAND))
             return flagCheck(loc, player, Flags.destroy);
 
@@ -93,10 +67,6 @@ public class ResidenceListener1_21_8_Paper implements Listener {
     }
 
     private static boolean flagCheck(Location loc, Player pushedBy, Flags flag) {
-        // Disabling listener if flag disabled globally
-        if (!flag.isGlobalyEnabled()) {
-            return false;
-        }
         if (pushedBy != null) {
             if (ResAdmin.isResAdmin(pushedBy))
                 return false;
@@ -105,6 +75,21 @@ public class ResidenceListener1_21_8_Paper implements Listener {
         } else {
             if (FlagPermissions.has(loc, flag, FlagCombo.OnlyFalse))
                 return true;
+        }
+        return false;
+    }
+
+    private static boolean shouldDenyPlayerPushEntity26_2_Paper(@NotNull Player player, @NotNull Entity entity) {
+        // Disabling listener if flag disabled globally
+        if (!Flags.push.isGlobalyEnabled()) {
+            return false;
+        }
+        if (ResidenceListener26_2_Paper.shouldDenyPush(player, entity)) {
+
+            if (DenyMessageCache.shouldSendDenyMessage(player, Flags.push)) {
+                lm.Flag_Deny.sendMessage(player, Flags.push);
+            }
+            return true;
         }
         return false;
     }

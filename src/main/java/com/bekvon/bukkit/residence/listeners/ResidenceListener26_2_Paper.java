@@ -2,6 +2,7 @@ package com.bekvon.bukkit.residence.listeners;
 
 import java.util.List;
 
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
@@ -71,14 +72,17 @@ public class ResidenceListener26_2_Paper implements Listener {
         }
     }
 
-    private boolean shouldDenyPush(@NotNull Player player, @NotNull Entity other) {
+    public static boolean shouldDenyPush(@NotNull Player player, @NotNull Entity other) {
         if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
             return false;
         }
         FlagPermissions perms = FlagPermissions.getPerms(other.getLocation(), player);
         boolean fallback = true;
 
-        if (Utils.isAnimal(other)) {
+        if (other instanceof Player) {
+            fallback = perms.playerHas(player, Flags.pvp, true);
+
+        } else if (Utils.isAnimal(other)) {
             fallback = perms.playerHas(player, Flags.animalkilling, true);
 
         } else if (ResidenceEntityListener.isMonster(other)) {
@@ -86,6 +90,9 @@ public class ResidenceListener26_2_Paper implements Listener {
 
         } else if (other instanceof Vehicle) {
             fallback = perms.playerHas(player, Flags.vehicledestroy, true);
+
+        } else if (other instanceof ArmorStand) {
+            fallback = perms.playerHas(player, Flags.destroy, true);
 
         }
         return !perms.playerHas(player, Flags.push, fallback);
