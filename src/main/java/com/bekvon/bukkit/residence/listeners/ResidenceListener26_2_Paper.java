@@ -2,15 +2,12 @@ package com.bekvon.bukkit.residence.listeners;
 
 import java.util.List;
 
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.EquipmentSlot;
 import org.jetbrains.annotations.NotNull;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -92,14 +89,5 @@ public class ResidenceListener26_2_Paper implements Listener {
 
         }
         return !perms.playerHas(player, Flags.push, fallback);
-    }
-
-    public static boolean hasBlockInsideBody (Entity entity) {
-        EntityEquipment equipment = ((org.bukkit.entity.SulfurCube) entity).getEquipment();
-        // Check if SulfurCube has a block inside
-        if (equipment != null && equipment.getItem(EquipmentSlot.BODY).getType() != Material.AIR) {
-            return true;
-        }
-        return false;
     }
 }

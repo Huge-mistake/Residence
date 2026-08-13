@@ -340,20 +340,6 @@ public class ResidenceEntityListener implements Listener {
         if (ResAdmin.isResAdmin(cause))
             return;
 
-        // Paper 26.2 uses EntityCollideWithEntityEvent to handle SulfurCube(block-containing) knockback.
-        // SulfurCube with a block inside takes no damage
-        if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()
-                && Flags.push.isGlobalyEnabled() && entity instanceof org.bukkit.entity.SulfurCube
-                && ResidenceListener26_2_Paper.hasBlockInsideBody(entity)) {
-
-            FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), cause);
-            if (!perms.playerHas(cause, Flags.push, perms.playerHas(cause, Flags.animalkilling, true))) {
-                lm.Flag_Deny.sendMessage(cause, Flags.push);
-                event.setCancelled(true);
-                return;
-            }
-            return;
-        }
         if (FlagPermissions.has(entity.getLocation(), cause, Flags.animalkilling, true))
             return;
 
