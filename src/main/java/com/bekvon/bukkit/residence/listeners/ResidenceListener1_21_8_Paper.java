@@ -33,7 +33,10 @@ public class ResidenceListener1_21_8_Paper implements Listener {
 
     @EventHandler
     public void onKnockback(EntityPushedByEntityAttackEvent event) {
-
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(event.getEntity().getWorld())) {
+            return;
+        }
         if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy()))
             event.setCancelled(true);
     }
@@ -63,6 +66,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
                             }
                             return true;
                         }
+                        return false;
 
                     } else {
                         FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
@@ -90,14 +94,22 @@ public class ResidenceListener1_21_8_Paper implements Listener {
     }
 
     private static boolean flagCheck(Location loc, Player pushedBy, Flags flag) {
+        // Disabling listener if flag disabled globally
+        if (!flag.isGlobalyEnabled()) {
+            return false;
+        }
         if (pushedBy != null) {
-            if (ResAdmin.isResAdmin(pushedBy))
+            if (ResAdmin.isResAdmin(pushedBy)) {
                 return false;
-            if (FlagPermissions.has(loc, pushedBy, flag, FlagCombo.OnlyFalse))
+            }
+            if (FlagPermissions.has(loc, pushedBy, flag, FlagCombo.OnlyFalse)) {
+                if (DenyMessageCache.shouldSendDenyMessage(pushedBy, flag)) {
+                    lm.Flag_Deny.sendMessage(pushedBy, flag);
+                }
                 return true;
+            }
         } else {
-            if (FlagPermissions.has(loc, flag, FlagCombo.OnlyFalse))
-                return true;
+            return FlagPermissions.has(loc, flag, FlagCombo.OnlyFalse);
         }
         return false;
     }
