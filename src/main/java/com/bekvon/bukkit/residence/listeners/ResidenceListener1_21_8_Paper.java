@@ -30,15 +30,15 @@ public class ResidenceListener1_21_8_Paper implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onKnockback(EntityPushedByEntityAttackEvent event) {
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getEntity().getWorld())) {
-            return;
-        }
-        if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy()))
-            event.setCancelled(true);
-    }
+//    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+//    public void onKnockback(EntityPushedByEntityAttackEvent event) {
+//        // disabling event on world
+//        if (plugin.isDisabledWorldListener(event.getEntity().getWorld())) {
+//            return;
+//        }
+//        if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy()))
+//            event.setCancelled(true);
+//    }
 
     public static boolean shouldCancelKnockBack(Entity entity, Entity pushedBy) {
         Player player = Utils.potentialProjectileToPlayer(pushedBy);
