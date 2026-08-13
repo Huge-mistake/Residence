@@ -1,11 +1,14 @@
 package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
@@ -15,6 +18,8 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import io.papermc.paper.event.entity.EntityPushedByEntityAttackEvent;
+
+import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener1_21_8_Paper implements Listener {
 
@@ -36,8 +41,28 @@ public class ResidenceListener1_21_8_Paper implements Listener {
 
         Player player = Utils.potentialProjectileToPlayer(pushedBy);
 
-        if (Utils.isAnimal(entity))
+        if (Utils.isAnimal(entity)) {
+            // Paper 26.2 uses EntityCollideWithEntityEvent
+            // to handle SulfurCube(block-containing) knockback.
+            if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch() && entity instanceof org.bukkit.entity.SulfurCube) {
+
+                EntityEquipment equipment = ((org.bukkit.entity.SulfurCube) entity).getEquipment();
+                if (equipment != null && equipment.getItem(EquipmentSlot.BODY).getType() != Material.AIR) {
+                    if (player != null) {
+                        if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
+                            return false;
+                        }
+                        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation(), player);
+                        return !perms.playerHas(player, Flags.push, perms.playerHas(player, Flags.animalkilling, true));
+
+                    } else {
+                        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
+                        return !perms.has(Flags.push, perms.has(Flags.animalkilling, true));
+                    }
+                }
+            }
             return flagCheck(loc, player, Flags.animalkilling);
+        }
 
         if (ResidenceEntityListener.isMonster(entity))
             return flagCheck(loc, player, Flags.mobkilling);
