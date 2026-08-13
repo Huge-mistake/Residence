@@ -3,9 +3,10 @@ package com.bekvon.bukkit.residence.listeners;
 import java.util.List;
 
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -47,54 +48,57 @@ public class ResidenceListener26_2_Paper implements Listener {
             return;
         }
         Entity entity2 = entities.get(1);
-        Player player;
-        Entity other;
+        Player pushedBy;
+        Entity target;
         if (entity1 instanceof Player) {
-            player = (Player) entity1;
-            other = entity2;
+            pushedBy = (Player) entity1;
+            target = entity2;
 
         } else if (entity2 instanceof Player) {
-            player = (Player) entity2;
-            other = entity1;
+            pushedBy = (Player) entity2;
+            target = entity1;
 
         } else {
             // Only handle entity pushes involving a player
             return;
         }
         PlayerCollideWithEntityCache.PlayerCollideWithEntityKey key
-                = new PlayerCollideWithEntityCache.PlayerCollideWithEntityKey(player, other);
+                = new PlayerCollideWithEntityCache.PlayerCollideWithEntityKey(target, pushedBy);
 
-        if (PlayerCollideWithEntityCache.getOrCompute(key, () -> shouldDenyPush(player, other))) {
-            if (DenyMessageCache.shouldSendDenyMessage(player, Flags.push)) {
-                lm.Flag_Deny.sendMessage(player, Flags.push);
-            }
+        if (PlayerCollideWithEntityCache.getOrCompute(key, () -> shouldDenyPush(target, pushedBy))) {
             event.setCancelled(true);
         }
     }
 
-    public static boolean shouldDenyPush(@NotNull Player player, @NotNull Entity other) {
-        if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
+    public static boolean shouldDenyPush(@NotNull Entity target, @NotNull Player pushedBy) {
+        if (pushedBy.hasMetadata("NPC") || ResAdmin.isResAdmin(pushedBy)) {
             return false;
         }
-        FlagPermissions perms = FlagPermissions.getPerms(other.getLocation(), player);
+        FlagPermissions perms = FlagPermissions.getPerms(target.getLocation(), pushedBy);
         boolean fallback = true;
 
-        if (other instanceof Player) {
-            fallback = perms.playerHas(player, Flags.pvp, true);
+        if (target instanceof ArmorStand) {
+            fallback = perms.playerHas(pushedBy, Flags.destroy, true);
 
-        } else if (Utils.isAnimal(other)) {
-            fallback = perms.playerHas(player, Flags.animalkilling, true);
+        } else if (target instanceof Boat || target instanceof Minecart) {
+            fallback = perms.playerHas(pushedBy, Flags.vehicledestroy, true);
 
-        } else if (ResidenceEntityListener.isMonster(other)) {
-            fallback = perms.playerHas(player, Flags.mobkilling, true);
+        } else if (target instanceof Player) {
+            fallback = perms.has(Flags.pvp, true);
 
-        } else if (other instanceof Vehicle) {
-            fallback = perms.playerHas(player, Flags.vehicledestroy, true);
+        } else if (Utils.isAnimal(target)) {
+            fallback = perms.playerHas(pushedBy, Flags.animalkilling, true);
 
-        } else if (other instanceof ArmorStand) {
-            fallback = perms.playerHas(player, Flags.destroy, true);
+        } else if (ResidenceEntityListener.isMonster(target)) {
+            fallback = perms.playerHas(pushedBy, Flags.mobkilling, true);
 
         }
-        return !perms.playerHas(player, Flags.push, fallback);
+        if (!perms.playerHas(pushedBy, Flags.push, fallback)) {
+            if (DenyMessageCache.shouldSendDenyMessage(pushedBy, Flags.push)) {
+                lm.Flag_Deny.sendMessage(pushedBy, Flags.push);
+            }
+            return true;
+        }
+        return false;
     }
 }
