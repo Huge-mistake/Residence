@@ -98,17 +98,13 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             return false;
         }
         if (pushedBy != null) {
-            if (ResAdmin.isResAdmin(pushedBy)) {
+            if (ResAdmin.isResAdmin(pushedBy))
                 return false;
-            }
-            if (FlagPermissions.has(loc, pushedBy, flag, FlagCombo.OnlyFalse)) {
-                if (DenyMessageCache.shouldSendDenyMessage(pushedBy, flag)) {
-                    lm.Flag_Deny.sendMessage(pushedBy, flag);
-                }
+            if (FlagPermissions.has(loc, pushedBy, flag, FlagCombo.OnlyFalse))
                 return true;
-            }
         } else {
-            return FlagPermissions.has(loc, flag, FlagCombo.OnlyFalse);
+            if (FlagPermissions.has(loc, flag, FlagCombo.OnlyFalse))
+                return true;
         }
         return false;
     }
