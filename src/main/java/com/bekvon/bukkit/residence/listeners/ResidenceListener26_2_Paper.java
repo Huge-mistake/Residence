@@ -76,17 +76,18 @@ public class ResidenceListener26_2_Paper implements Listener {
             return false;
         }
         FlagPermissions perms = FlagPermissions.getPerms(other.getLocation(), player);
+        boolean fallback = true;
 
         if (Utils.isAnimal(other)) {
-            return !perms.playerHas(player, Flags.push, perms.playerHas(player, Flags.animalkilling, true));
+            fallback = perms.playerHas(player, Flags.animalkilling, true);
 
         } else if (ResidenceEntityListener.isMonster(other)) {
-            return !perms.playerHas(player, Flags.push, perms.playerHas(player, Flags.mobkilling, true));
+            fallback = perms.playerHas(player, Flags.mobkilling, true);
 
         } else if (other instanceof Vehicle) {
-            return !perms.playerHas(player, Flags.push, perms.playerHas(player, Flags.vehicledestroy, true));
+            fallback = perms.playerHas(player, Flags.vehicledestroy, true);
 
         }
-        return !perms.playerHas(player, Flags.push, true);
+        return !perms.playerHas(player, Flags.push, fallback);
     }
 }
