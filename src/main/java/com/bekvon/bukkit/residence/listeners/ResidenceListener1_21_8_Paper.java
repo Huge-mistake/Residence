@@ -13,6 +13,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
+import com.bekvon.bukkit.residence.containers.lm;
+import com.bekvon.bukkit.residence.listenersCache.DenyMessageCache;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
@@ -31,7 +33,10 @@ public class ResidenceListener1_21_8_Paper implements Listener {
 
     @EventHandler
     public void onKnockback(EntityPushedByEntityAttackEvent event) {
-
+        // disabling event on world
+        if (Residence.getInstance().isDisabledWorldListener(event.getEntity().getWorld())) {
+            return;
+        }
         if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy()))
             event.setCancelled(true);
     }
@@ -44,9 +49,11 @@ public class ResidenceListener1_21_8_Paper implements Listener {
         if (Utils.isAnimal(entity)) {
             // Paper 26.2 uses EntityCollideWithEntityEvent
             // to handle SulfurCube(block-containing) knockback.
-            if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch() && entity instanceof org.bukkit.entity.SulfurCube) {
+            if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()
+                    && Flags.push.isGlobalyEnabled() && entity instanceof org.bukkit.entity.SulfurCube) {
 
                 EntityEquipment equipment = ((org.bukkit.entity.SulfurCube) entity).getEquipment();
+                // Check if SulfurCube has a block inside
                 if (equipment != null && equipment.getItem(EquipmentSlot.BODY).getType() != Material.AIR) {
                     if (player != null) {
                         if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
@@ -68,9 +75,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             return flagCheck(loc, player, Flags.mobkilling);
 
         if (entity instanceof Player) {
-            if (FlagPermissions.has(loc, Flags.pvp, FlagCombo.OnlyFalse))
-                return true;
-            return false;
+            return Flags.pvp.isGlobalyEnabled() && FlagPermissions.has(loc, Flags.pvp, FlagCombo.OnlyFalse);
         }
         if (entity instanceof org.bukkit.entity.Boat || entity instanceof org.bukkit.entity.Minecart) {
             return flagCheck(loc, player, Flags.vehicledestroy);
@@ -82,14 +87,21 @@ public class ResidenceListener1_21_8_Paper implements Listener {
     }
 
     private static boolean flagCheck(Location loc, Player pushedBy, Flags flag) {
+        // Disabling listener if flag disabled globally
+        if (!flag.isGlobalyEnabled()) {
+            return false;
+        }
         if (pushedBy != null) {
             if (ResAdmin.isResAdmin(pushedBy))
                 return false;
-            if (FlagPermissions.has(loc, pushedBy, flag, FlagCombo.OnlyFalse))
+            if (FlagPermissions.has(loc, pushedBy, flag, FlagCombo.OnlyFalse)) {
+                if (DenyMessageCache.shouldSendDenyMessage(pushedBy, flag)) {
+                    lm.Flag_Deny.sendMessage(pushedBy, flag);
+                }
                 return true;
+            }
         } else {
-            if (FlagPermissions.has(loc, flag, FlagCombo.OnlyFalse))
-                return true;
+            return FlagPermissions.has(loc, flag, FlagCombo.OnlyFalse);
         }
         return false;
     }
