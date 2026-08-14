@@ -931,6 +931,15 @@ public class ResidenceEntityListener implements Listener {
             return;
 
         switch (type) {
+        case ENDER_CRYSTAL:
+            // Disabling listener if flag disabled globally
+            if (!Flags.explode.isGlobalyEnabled())
+                break;
+            if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
+                event.setCancelled(true);
+                ent.remove();
+            }
+            break;
         case CREEPER:
 
             // Disabling listener if flag disabled globally
