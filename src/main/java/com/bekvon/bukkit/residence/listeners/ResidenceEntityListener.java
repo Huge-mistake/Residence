@@ -1211,8 +1211,8 @@ public class ResidenceEntityListener implements Listener {
                     continue;
                 case WITHER:
                 case WITHER_SKULL:
-                    if ((Flags.explode.isGlobalyEnabled() && blockperms.has(Flags.explode, FlagCombo.OnlyFalse)) ||
-                            (Flags.witherdestruction.isGlobalyEnabled() && blockperms.has(Flags.witherdestruction, FlagCombo.OnlyFalse))) {
+                    if ((Flags.witherdestruction.isGlobalyEnabled() && !blockperms.has(Flags.witherdestruction, blockperms.has(Flags.destroy, true)))
+                            || (Flags.explode.isGlobalyEnabled() && blockperms.has(Flags.explode, FlagCombo.OnlyFalse))) {
                         preserve.add(block);
                     }
                     continue;
