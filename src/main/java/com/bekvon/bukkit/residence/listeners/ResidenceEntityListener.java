@@ -77,6 +77,7 @@ import com.bekvon.bukkit.residence.utils.Utils;
 import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Entities.CMIEntity;
 import net.Zrips.CMILib.Entities.CMIEntityType;
+import net.Zrips.CMILib.Items.CMIItemStack;
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
 
@@ -931,15 +932,6 @@ public class ResidenceEntityListener implements Listener {
             return;
 
         switch (type) {
-        case ENDER_CRYSTAL:
-            // Disabling listener if flag disabled globally
-            if (!Flags.explode.isGlobalyEnabled())
-                break;
-            if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
-                event.setCancelled(true);
-                ent.remove();
-            }
-            break;
         case CREEPER:
 
             // Disabling listener if flag disabled globally
@@ -961,6 +953,15 @@ public class ResidenceEntityListener implements Listener {
                     event.setCancelled(true);
                     ent.remove();
                 }
+            }
+            break;
+        case ENDER_CRYSTAL:
+            // Disabling listener if flag disabled globally
+            if (!Flags.explode.isGlobalyEnabled())
+                break;
+            if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
+                event.setCancelled(true);
+                ent.remove();
             }
             break;
         case TNT:
@@ -1055,14 +1056,6 @@ public class ResidenceEntityListener implements Listener {
         if (ent != null && ctype != null) {
 
             switch (ctype) {
-            case ENDER_CRYSTAL:
-                // Disabling listener if flag disabled globally
-                if (!Flags.explode.isGlobalyEnabled())
-                    break;
-                if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
-                    cancel = true;
-                }
-                break;
             case CREEPER:
                 // Disabling listener if flag disabled globally
                 if (!Flags.creeper.isGlobalyEnabled())
@@ -1095,6 +1088,14 @@ public class ResidenceEntityListener implements Listener {
                         }
                     } else
                         cancel = true;
+                }
+                break;
+            case ENDER_CRYSTAL:
+                // Disabling listener if flag disabled globally
+                if (!Flags.explode.isGlobalyEnabled())
+                    break;
+                if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
+                    cancel = true;
                 }
                 break;
             case SMALL_FIREBALL:
@@ -1193,11 +1194,10 @@ public class ResidenceEntityListener implements Listener {
                         preserve.add(block);
                     break;
                 case ENDER_CRYSTAL:
-                    // Disabling listener if flag disabled globally
-                    if (!Flags.explode.isGlobalyEnabled())
-                        continue;
-                    if (blockperms.has(Flags.explode, FlagCombo.OnlyFalse) || blockperms.has(Flags.destroy, FlagCombo.OnlyFalse))
+                    if ((Flags.explode.isGlobalyEnabled() && blockperms.has(Flags.explode, FlagCombo.OnlyFalse)) ||
+                            (Flags.destroy.isGlobalyEnabled() && blockperms.has(Flags.destroy, FlagCombo.OnlyFalse))) {
                         preserve.add(block);
+                    }
                     continue;
                 case SMALL_FIREBALL:
                 case FIREBALL:
