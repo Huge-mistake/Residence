@@ -1046,6 +1046,11 @@ public class ResidenceEntityListener implements Listener {
         if (ent != null && ctype != null) {
 
             switch (ctype) {
+            case ENDER_CRYSTAL:
+                if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
+                    cancel = true;
+                }
+                break;
             case CREEPER:
                 // Disabling listener if flag disabled globally
                 if (!Flags.creeper.isGlobalyEnabled())
@@ -1179,7 +1184,7 @@ public class ResidenceEntityListener implements Listener {
                     // Disabling listener if flag disabled globally
                     if (!Flags.explode.isGlobalyEnabled())
                         continue;
-                    if (blockperms.has(Flags.explode, FlagCombo.OnlyFalse))
+                    if (blockperms.has(Flags.explode, FlagCombo.OnlyFalse) || blockperms.has(Flags.destroy, FlagCombo.OnlyFalse))
                         preserve.add(block);
                     continue;
                 case SMALL_FIREBALL:
