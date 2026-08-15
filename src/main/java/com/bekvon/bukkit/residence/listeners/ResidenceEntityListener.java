@@ -1259,19 +1259,18 @@ public class ResidenceEntityListener implements Listener {
         // Disabling listener if flag disabled globally
         if (!Flags.witherdestruction.isGlobalyEnabled())
             return;
-
-        Entity ent = event.getEntity();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(ent.getWorld()))
+        if (plugin.isDisabledWorldListener(event.getEntity().getWorld()))
             return;
 
-        if (ent.getType() != EntityType.WITHER)
+        if (event.getEntityType() != EntityType.WITHER)
             return;
 
-        if (FlagPermissions.has(event.getBlock().getLocation(), Flags.witherdestruction, true))
-            return;
+        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
 
-        event.setCancelled(true);
+        if (!perms.has(Flags.witherdestruction, perms.has(Flags.destroy, true))) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
