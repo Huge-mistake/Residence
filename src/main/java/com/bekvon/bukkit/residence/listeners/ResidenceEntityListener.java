@@ -1075,7 +1075,13 @@ public class ResidenceEntityListener implements Listener {
         if (shooter instanceof Player) {
             Player player = (Player) shooter;
             FlagPermissions playerPerms = FlagPermissions.getPerms(loc, player);
-            if (!playerPerms.playerHas(player, mainFlag, perms.has(subFlag, true))) {
+            boolean result;
+            if (subFlag == Flags.explode) {
+                result = perms.has(subFlag, true);
+            } else {
+                result = playerPerms.playerHas(player, subFlag, true);
+            }
+            if (!playerPerms.playerHas(player, mainFlag, result)) {
                 if (sendDenyMessage){
                     lm.Flag_Deny.sendMessage(player, mainFlag);
                 }
