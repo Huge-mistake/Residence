@@ -1047,8 +1047,9 @@ public class ResidenceEntityListener implements Listener {
             if (!Flags.windexplode.isGlobalyEnabled()) {
                 break;
             }
+            ProjectileSource shooter = ((Projectile) ent).getShooter();
             // Allow sending deny message
-            if (shouldDenyWindChargeExplode(ent.getLocation(), ent, perms, Flags.windexplode, Flags.explode, true)) {
+            if (shouldDenyWindChargeExplode(ent.getLocation(), shooter, perms, Flags.windexplode, Flags.explode, true)) {
                 event.setCancelled(true);
                 ent.remove();
             }
@@ -1068,10 +1069,9 @@ public class ResidenceEntityListener implements Listener {
         }
     }
 
-    private boolean shouldDenyWindChargeExplode(Location triggerLoc, Entity windCharge, FlagPermissions perms,
+    private boolean shouldDenyWindChargeExplode(Location triggerLoc, ProjectileSource shooter, FlagPermissions perms,
                                                 Flags mainFlag, Flags subFlag, boolean sendDenyMessage) {
         boolean sholudDeny = false;
-        ProjectileSource shooter = ((Projectile) windCharge).getShooter();
         if (shooter instanceof Player) {
             Player player = (Player) shooter;
             if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
@@ -1127,10 +1127,22 @@ public class ResidenceEntityListener implements Listener {
         FlagPermissions perms = FlagPermissions.getPerms(loc);
 
         CMIEntityType ctype = CMIEntityType.get(event.getEntityType());
+        ProjectileSource shooter = null;
         // Explosion is prohibited at the source location; cancel the event directly
         if (ent != null && ctype != null) {
 
             switch (ctype) {
+            case BREEZE_WIND_CHARGE:
+            case WIND_CHARGE:
+                shooter = ((Projectile) ent).getShooter();
+                if (!Flags.windexplode.isGlobalyEnabled()) {
+                    break;
+                }
+                // Allow sending deny message
+                if (shouldDenyWindChargeExplode(loc, shooter, perms, Flags.windexplode, Flags.explode, true)) {
+                    cancel = true;
+                }
+                break;
             case CREEPER:
                 // Disabling listener if flag disabled globally
                 if (!Flags.creeper.isGlobalyEnabled())
@@ -1189,16 +1201,6 @@ public class ResidenceEntityListener implements Listener {
                     cancel = true;
                 }
                 break;
-            case BREEZE_WIND_CHARGE:
-            case WIND_CHARGE:
-                if (!Flags.windexplode.isGlobalyEnabled()) {
-                    break;
-                }
-                // Allow sending deny message
-                if (shouldDenyWindChargeExplode(loc, ent, perms, Flags.windexplode, Flags.explode, true)) {
-                    cancel = true;
-                }
-                break;
             case ENDER_DRAGON:
                 remove = false;
                 break;
@@ -1240,7 +1242,7 @@ public class ResidenceEntityListener implements Listener {
                         continue;
                     }
                     // Deny sending deny message – too many interacted blocks
-                    if (shouldDenyWindChargeExplode(block.getLocation(), ent, blockperms, flag, Flags.use, false)) {
+                    if (shouldDenyWindChargeExplode(block.getLocation(), shooter, blockperms, flag, Flags.use, false)) {
                         preserve.add(block);
                     }
                     continue;
