@@ -1047,11 +1047,10 @@ public class ResidenceEntityListener implements Listener {
             if (!Flags.windexplode.isGlobalyEnabled()) {
                 break;
             }
-            Location loc = ent.getLocation();
-            ProjectileSource shooter = ((Projectile) ent).getShooter();
             // Allow sending deny message
-            if (shouldDenyWindChargeExplode(loc, shooter, perms, Flags.windexplode, Flags.explode, true)) {
+            if (shouldDenyWindChargeExplode(ent.getLocation(), ent, perms, Flags.windexplode, Flags.explode, true)) {
                 event.setCancelled(true);
+                ent.remove();
             }
             break;
         case WITHER:
@@ -1069,18 +1068,20 @@ public class ResidenceEntityListener implements Listener {
         }
     }
 
-    private boolean shouldDenyWindChargeExplode(Location loc, ProjectileSource shooter, FlagPermissions perms,
+    private boolean shouldDenyWindChargeExplode(Location triggerLoc, Entity windCharge, FlagPermissions perms,
                                                 Flags mainFlag, Flags subFlag, boolean sendDenyMessage) {
         boolean sholudDeny = false;
+        ProjectileSource shooter = ((Projectile) windCharge).getShooter();
         if (shooter instanceof Player) {
             Player player = (Player) shooter;
-            FlagPermissions playerPerms = FlagPermissions.getPerms(loc, player);
-            boolean result;
-            if (subFlag == Flags.explode) {
-                result = perms.has(subFlag, true);
-            } else {
-                result = playerPerms.playerHas(player, subFlag, true);
+            if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
+                return false;
             }
+            FlagPermissions playerPerms = FlagPermissions.getPerms(triggerLoc, player);
+            // Because Flags.explode is not FlagMode.Both
+            boolean result = (subFlag == Flags.explode)
+                    ? perms.has(subFlag, true)
+                    : playerPerms.playerHas(player, subFlag, true);
             if (!playerPerms.playerHas(player, mainFlag, result)) {
                 if (sendDenyMessage){
                     lm.Flag_Deny.sendMessage(player, mainFlag);
@@ -1193,9 +1194,8 @@ public class ResidenceEntityListener implements Listener {
                 if (!Flags.windexplode.isGlobalyEnabled()) {
                     break;
                 }
-                ProjectileSource shooter = ((Projectile) ent).getShooter();
                 // Allow sending deny message
-                if (shouldDenyWindChargeExplode(loc, shooter, perms, Flags.windexplode, Flags.explode, true)) {
+                if (shouldDenyWindChargeExplode(loc, ent, perms, Flags.windexplode, Flags.explode, true)) {
                     cancel = true;
                 }
                 break;
@@ -1239,9 +1239,8 @@ public class ResidenceEntityListener implements Listener {
                     if (flag == null || !flag.isGlobalyEnabled()) {
                         continue;
                     }
-                    ProjectileSource shooter = ((Projectile) ent).getShooter();
                     // Deny sending deny message – too many interacted blocks
-                    if (shouldDenyWindChargeExplode(block.getLocation(), shooter, blockperms, flag, Flags.use, false)) {
+                    if (shouldDenyWindChargeExplode(block.getLocation(), ent, blockperms, flag, Flags.use, false)) {
                         preserve.add(block);
                     }
                     continue;
