@@ -116,7 +116,7 @@ public class ResidenceEntityListener implements Listener {
         // Use Bukkit's Animals and Monster interfaces
         // should cover the entities that trigger EntityChangeBlockEvent
         if (Flags.animalgriefing.isGlobalyEnabled() && entity instanceof Animals) {
-            // Animals are friendly (villagers farming/sheep grazing).
+            // Animals are friendly (villagers farming/sheep grazing)
             // When Flags.animalgriefing is None, do not fall back to Flags.destroy
             shouldDeny = FlagPermissions.has(block.getLocation(), Flags.animalgriefing, FlagCombo.OnlyFalse);
 
