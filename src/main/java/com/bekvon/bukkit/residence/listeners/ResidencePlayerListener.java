@@ -1515,7 +1515,11 @@ public class ResidencePlayerListener implements Listener {
         return false;
     }
 
-    private boolean canRide(Entity entity) {
+    private boolean canRide(Entity entity, Player player) {
+        // Cannot ride while sneaking
+        if (player.isSneaking()) {
+            return false;
+        }
         if (!(entity instanceof Vehicle)) {
             return false;
         }
@@ -1559,11 +1563,11 @@ public class ResidencePlayerListener implements Listener {
         } else if (Flags.container.isGlobalyEnabled() && entity instanceof ItemFrame) {
             mainFlag = Flags.container;
             subFlag = Flags.use;
-            // canHaveContainer must come before canRide
+
         } else if (Flags.container.isGlobalyEnabled() && canHaveContainer(entity, player)) {
             mainFlag = Flags.container;
 
-        } else if (Flags.riding.isGlobalyEnabled() && canRide(entity)) {
+        } else if (Flags.riding.isGlobalyEnabled() && canRide(entity, player)) {
             mainFlag = Flags.riding;
 
         } else if (Flags.trade.isGlobalyEnabled() && isTrader(entity)) {
