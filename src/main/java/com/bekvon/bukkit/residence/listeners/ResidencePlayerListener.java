@@ -1327,9 +1327,7 @@ public class ResidencePlayerListener implements Listener {
         case ENCHANTING_TABLE:
         case FLETCHING_TABLE:
         case FLOWER_POT:
-        case GLOW_ITEM_FRAME:
         case GRINDSTONE:
-        case ITEM_FRAME:
         case LECTERN:
         case LEGACY_DIODE_BLOCK_OFF:
         case LEGACY_DIODE_BLOCK_ON:
