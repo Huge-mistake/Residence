@@ -2749,4 +2749,106 @@ public class ResidencePlayerListener implements Listener {
     public ClaimedResidence getCurrentResidence(UUID uuid) {
         return playerTempData.getCurrentResidence(uuid);
     }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEggProjectile(org.bukkit.event.entity.ProjectileLaunchEvent event) {
+        if (Version.isCurrentEqualOrLower(Version.v26_2_0)) {
+            return;
+        }
+        if (event.getEntityType() != EntityType.EGG) {
+            return;
+        }
+        org.bukkit.entity.Projectile egg = event.getEntity();
+        if (!(egg.getShooter() instanceof Player)) {
+            return;
+        }
+        Player player = (Player) egg.getShooter();
+        if (ResAdmin.isResAdmin(player)) {
+            return;
+        }
+        if (FlagPermissions.has(egg.getLocation(), player, Flags.build, true)) {
+            return;
+        }
+        lm.Flag_Deny.sendMessage(player, Flags.build);
+        event.setCancelled(true);
+
+    }
+
+    @EventHandler
+    public void onPlayerInteractEndPortalFrame(PlayerInteractEvent event) {
+        if (event.useItemInHand() == Result.DENY) {
+            return;
+        }
+        if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+        Block block = event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+        if (Version.isCurrentEqualOrLower(Version.v26_2_0)) {
+            return;
+        }
+        if (block.getType() != Material.END_PORTAL_FRAME) {
+            return;
+        }
+        ItemStack item = event.getItem();
+        if (item == null || item.getType() != Material.ENDER_EYE) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (ResAdmin.isResAdmin(player)) {
+            return;
+        }
+        lm.Flag_Deny.sendMessage(player, Flags.build);
+        event.setCancelled(true);
+
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onPlayerShearAnimals(PlayerInteractEntityEvent event) {
+        Entity entity = event.getRightClicked();
+        if (!(entity instanceof org.bukkit.entity.Animals) || !(entity instanceof Vehicle)) {
+            return;
+        }
+        if (Version.isCurrentEqualOrLower(Version.v26_2_0)) {
+            return;
+        }
+        if (ResidenceListener1_09.getHeldMaterial(event) != Material.SHEARS) {
+            return;
+        }
+        if (shouldDenyPlayerInteractEntity(event.getPlayer(), entity, Flags.shear, Flags.animalkilling)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerSpawnSulfurCube(PlayerInteractEvent event) {
+        if (event.useItemInHand() == Result.DENY) {
+            return;
+        }
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+        Block block= event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+        if (Version.isCurrentEqualOrLower(Version.v26_2_0)) {
+            return;
+        }
+        if (event.getItem() == null || event.getItem().getType() != Material.SULFUR_CUBE_BUCKET) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (ResAdmin.isResAdmin(player)) {
+            return;
+        }
+        if (FlagPermissions.has(block.getRelative(event.getBlockFace()).getLocation(),  player, Flags.build, true)) {
+            return;
+        }
+        lm.Flag_Deny.sendMessage(player, Flags.build);
+        event.setCancelled(true);
+
+    }
 }
