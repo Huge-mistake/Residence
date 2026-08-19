@@ -133,7 +133,7 @@ public class ResidenceEntityListener implements Listener {
             shouldDeny = shouldDenyPlayerChangeBlock(block, (Player) entity);
 
         } else if (Flags.destroy.isGlobalyEnabled() && entity instanceof Boat) {
-            shouldDeny = shouldDenyBoatBreakLilyPad(entity, block);
+            shouldDeny = shouldDenyBoatBreakLilyPad((Boat) entity, block);
 
         } else if (Flags.destroy.isGlobalyEnabled() && entity instanceof Projectile) {
             // Projectile-triggered EntityChangeBlockEvent always breaks blocks
@@ -169,15 +169,15 @@ public class ResidenceEntityListener implements Listener {
         return false;
     }
 
-    private boolean shouldDenyBoatBreakLilyPad(Entity entity, Block block) {
+    private boolean shouldDenyBoatBreakLilyPad(Boat boat, Block block) {
         if (CMIMaterial.get(block.getType()) != CMIMaterial.LILY_PAD) {
             return false;
         }
         Entity rider = null;
         if (Version.isCurrentLower(Version.v1_11_2)) {
-            rider = entity.getPassenger();
+            rider = boat.getPassenger();
         } else {
-            List<Entity> passengers = entity.getPassengers();
+            List<Entity> passengers = boat.getPassengers();
             if (!passengers.isEmpty()) {
                 // first passenger
                 rider = passengers.get(0);
@@ -331,7 +331,7 @@ public class ResidenceEntityListener implements Listener {
         if (entity == null) {
             return false;
         }
-        if (Version.isCurrentEqualOrHigher(Version.v1_19_3)) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_19_R2)) {
             return entity instanceof org.bukkit.entity.Enemy;
         }
         if (entity instanceof Monster) {
