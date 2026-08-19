@@ -355,11 +355,11 @@ public class ResidenceEntityListener implements Listener {
     }
 
     private static boolean isTamed(Entity ent) {
-        return (ent instanceof Tameable ? ((Tameable) ent).isTamed() : false);
+        return ent instanceof Tameable && ((Tameable) ent).isTamed();
     }
 
     private static boolean damageableProjectile(Entity ent) {
-        if (ent instanceof Projectile && ent.getType().toString().equalsIgnoreCase("Splash_potion")) {
+        if (ent instanceof Projectile && CMIEntityType.get(ent) == CMIEntityType.SPLASH_POTION) {
 
             if (((ThrownPotion) ent).getEffects().isEmpty())
                 return true;
@@ -370,7 +370,7 @@ public class ResidenceEntityListener implements Listener {
                 }
             }
         }
-        return ent instanceof Projectile || ent.getType().toString().equalsIgnoreCase("Trident") || ent.getType().toString().equalsIgnoreCase("Spectral_Arrow");
+        return ent instanceof Projectile;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
