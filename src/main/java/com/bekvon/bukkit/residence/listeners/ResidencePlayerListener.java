@@ -2774,11 +2774,8 @@ public class ResidencePlayerListener implements Listener {
 
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerInteractEndPortalFrame(PlayerInteractEvent event) {
-        if (event.useItemInHand() == Result.DENY) {
-            return;
-        }
         if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
             return;
         }
@@ -2786,7 +2783,7 @@ public class ResidencePlayerListener implements Listener {
         if (block == null) {
             return;
         }
-        if (Version.isCurrentEqualOrLower(Version.v26_2_0)) {
+        if (Version.isCurrentLower(Version.v26_2_0)) {
             return;
         }
         if (block.getType() != Material.END_PORTAL_FRAME) {
@@ -2811,7 +2808,7 @@ public class ResidencePlayerListener implements Listener {
         if (!(entity instanceof org.bukkit.entity.Animals) || !(entity instanceof Vehicle)) {
             return;
         }
-        if (Version.isCurrentEqualOrLower(Version.v26_2_0)) {
+        if (Version.isCurrentLower(Version.v26_2_0)) {
             return;
         }
         if (ResidenceListener1_09.getHeldMaterial(event) != Material.SHEARS) {
@@ -2834,7 +2831,7 @@ public class ResidencePlayerListener implements Listener {
         if (block == null) {
             return;
         }
-        if (Version.isCurrentEqualOrLower(Version.v26_2_0)) {
+        if (Version.isCurrentLower(Version.v26_2_0)) {
             return;
         }
         if (event.getItem() == null || event.getItem().getType() != Material.SULFUR_CUBE_BUCKET) {
