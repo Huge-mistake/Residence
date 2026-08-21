@@ -61,7 +61,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             // SulfurCube containing blocks doesn't take damage
             // preferentially uses Flags.push instead on Paper 26.2+
             if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()
-                    && target instanceof org.bukkit.entity.SulfurCube) {
+                    && Flags.push.isGlobalyEnabled() && target instanceof org.bukkit.entity.SulfurCube) {
 
                 EntityEquipment equipment = ((org.bukkit.entity.SulfurCube) target).getEquipment();
                 // Check if SulfurCube has a block inside
@@ -79,11 +79,21 @@ public class ResidenceListener1_21_8_Paper implements Listener {
     }
 
     private static boolean shouldDeny(Entity target, Player pushedBy, Flags flag) {
+        if (!flag.isGlobalyEnabled()) {
+            return false;
+        }
         if (pushedBy != null) {
             if (pushedBy.hasMetadata("NPC") || ResAdmin.isResAdmin(pushedBy)) {
                 return false;
             }
-            return FlagPermissions.has(target.getLocation(), pushedBy, flag, FlagCombo.OnlyFalse);
+            if (FlagPermissions.has(target.getLocation(), pushedBy, flag, FlagCombo.OnlyFalse)) {
+                if (DenyMessageCache.shouldSendDenyMessage(pushedBy, flag)) {
+                    lm.Flag_Deny.sendMessage(pushedBy, flag);
+                }
+                return true;
+            }
+            return false;
+
         } else {
             return FlagPermissions.has(target.getLocation(), flag, FlagCombo.OnlyFalse);
         }
