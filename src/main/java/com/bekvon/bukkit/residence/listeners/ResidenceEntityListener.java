@@ -851,8 +851,9 @@ public class ResidenceEntityListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
+        Projectile projectile = event.getEntity();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getEntity().getWorld())) {
+        if (plugin.isDisabledWorldListener(projectile.getWorld())) {
             return;
         }
         Flags flag = Flags.shoot;
@@ -876,22 +877,24 @@ public class ResidenceEntityListener implements Listener {
         if (!flag.isGlobalyEnabled()) {
             return;
         }
-        ProjectileSource shooter = event.getEntity().getShooter();
+        ProjectileSource shooter = projectile.getShooter();
+        if (shooter instanceof Player) {
 
-        Player player = null;
-        boolean isPlayer = shooter instanceof Player;
-        if (isPlayer) {
-            player = (Player) shooter;
-            if (ResAdmin.isResAdmin(player)) {
+            Player player = (Player) shooter;
+            if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
                 return;
             }
-        }
-        FlagPermissions perms = FlagPermissions.getPerms(event.getEntity().getLocation());
-        if (perms.has(flag, FlagCombo.OnlyFalse)) {
-            if (isPlayer) {
+            FlagPermissions perms = FlagPermissions.getPerms(projectile.getLocation(), player);
+            if (perms.playerHas(player, flag, FlagCombo.OnlyFalse)) {
                 lm.Flag_Deny.sendMessage(player, flag);
+                event.setCancelled(true);
             }
-            event.setCancelled(true);
+
+        } else {
+            FlagPermissions perms = FlagPermissions.getPerms(projectile.getLocation());
+            if (perms.has(flag, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+            }
         }
     }
 
