@@ -92,10 +92,9 @@ public class ResidenceListener26_2_Paper implements Listener {
 
         }
         if (!perms.playerHas(pushedBy, Flags.push, fallback)) {
-//            if (DenyMessageCache.shouldSendDenyMessage(pushedBy, Flags.push)) {
-//                lm.Flag_Deny.sendMessage(pushedBy, Flags.push);
-//            }
-            lm.Flag_Deny.sendMessage(pushedBy, Flags.push);
+            if (DenyMessageCache.shouldSendDenyMessage(pushedBy, Flags.push)) {
+                lm.Flag_Deny.sendMessage(pushedBy, Flags.push);
+            }
             return true;
         }
         return false;
