@@ -28,6 +28,8 @@ import com.bekvon.bukkit.residence.permissions.PermissionGroup;
 import com.bekvon.bukkit.residence.permissions.PermissionManager.ResPerm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.CuboidArea;
+import com.bekvon.bukkit.residence.selectionVisuals.CuboidDisplayManager;
+import com.bekvon.bukkit.residence.selectionVisuals.CuboidDisplayType;
 
 import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Colors.CMIChatColor;
@@ -542,8 +544,21 @@ public class SelectionManager {
                 ResidenceSelectionVisualizationEvent ev = new ResidenceSelectionVisualizationEvent(player, v.getAreas(), v.getErrorAreas(), v.isOnce());
                 Bukkit.getPluginManager().callEvent(ev);
 
-                if (ev.isCancelled())
+                if (ev.isCancelled()) {
                     return;
+                }
+            }
+
+            if (VisualizerConfig.isUseModernVersion()) {
+                if (v.isOnce()) {
+                    CuboidDisplayManager.add(player,
+                            v.getAreas().isEmpty() ? v.getErrorAreas() : v.getAreas(),
+                            v.getAreas().isEmpty() ? CuboidDisplayType.BOUNCE : CuboidDisplayType.ENTER_EXIT,
+                            1, 3, 1);
+                } else {
+                    CuboidDisplayManager.show(player, v.getAreas(), v.getErrorAreas());
+                }
+                return;
             }
 
             Visualizer tv = vMap.get(player.getUniqueId());
