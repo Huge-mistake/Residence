@@ -159,7 +159,7 @@ public class CuboidDisplayManager implements Listener {
         }
 
         data.lastUpdateLocation = to.clone();
-
+        player.sendMessage("§a[调试] 触发更新！距离平方: " + distanceSquared(data.lastUpdateLocation, to));
         updatePlayer(player);
     }
 
