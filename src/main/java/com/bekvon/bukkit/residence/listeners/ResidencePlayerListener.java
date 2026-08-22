@@ -2803,7 +2803,7 @@ public class ResidencePlayerListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerShearAnimals(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
-        if (!(entity instanceof org.bukkit.entity.Animals) || !(entity instanceof Vehicle)) {
+        if (!(entity instanceof org.bukkit.entity.Animals)) {
             return;
         }
         if (Version.isCurrentLower(Version.v26_2_0)) {
