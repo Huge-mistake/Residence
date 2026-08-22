@@ -41,16 +41,15 @@ public class VisualizerConfig {
 
     public static void loadConfig(ConfigReader c) {
 
-        if (VisualizerConfig.isUseModernVersion()) {
-            CuboidDisplayManager.removeAllPlayerDisplays();
-        }
-
         c.addComment("Global.Visualizer.Use", "With this enabled player will see particle effects to mark selection boundaries");
         setShow(c.get("Global.Visualizer.Use", true));
 
         if (Version.isCurrentEqualOrHigher(Version.v1_19_4)) {
             c.addComment("Global.Visualizer.Type", "Which type of visualization we should use. Particle or Modern.");
             setUseModernVersion(c.get("Global.Visualizer.Type", "Modern").equalsIgnoreCase("Modern"));
+            if (!isUseModernVersion()) {
+                CuboidDisplayManager.removeAllPlayerDisplays();
+            }
         } else {
             setUseModernVersion(false);
         }
