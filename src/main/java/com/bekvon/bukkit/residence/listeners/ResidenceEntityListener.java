@@ -1040,7 +1040,6 @@ public class ResidenceEntityListener implements Listener {
             }
             if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
                 event.setCancelled(true);
-                ent.remove();
             }
             break;
         }
@@ -1189,7 +1188,7 @@ public class ResidenceEntityListener implements Listener {
                     if (!Flags.windexplode.isGlobalyEnabled()) {
                         break;
                     }
-                    if (shouldDenyWindChargeExplode(loc, null, perms, Flags.windexplode, Flags.explode, false)) {
+                    if (shouldDenyWindChargeExplode(loc, ((ProjectileSource) ent), perms, Flags.windexplode, Flags.explode, false)) {
                         cancel = true;
                         remove = false;
                     }
