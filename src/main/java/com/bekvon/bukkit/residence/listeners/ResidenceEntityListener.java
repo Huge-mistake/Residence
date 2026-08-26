@@ -1074,7 +1074,7 @@ public class ResidenceEntityListener implements Listener {
     }
 
     @Nullable
-    private static Flags getWindChargeExplodeInteractBlockFlag(Block block) {
+    private Flags getWindChargeExplodeInteractBlockFlag(Block block) {
         Flags flag = null;
         CMIMaterial mat = CMIMaterial.get(block.getType());
         if (mat.containsCriteria(CMIMC.BUTTON)) {
@@ -1182,6 +1182,19 @@ public class ResidenceEntityListener implements Listener {
                 remove = false;
                 break;
             default:
+                if (Version.isCurrentEqualOrHigher(Version.v1_21_0)
+                        && event.getExplosionResult() == org.bukkit.ExplosionResult.TRIGGER_BLOCK) {
+                    // TRIGGER_BLOCK = no block destruction; usually Wind Charged effect, interacts with blocks
+                    // Any entity with this buff triggers a wind explosion on death
+                    if (!Flags.windexplode.isGlobalyEnabled()) {
+                        break;
+                    }
+                    if (shouldDenyWindChargeExplode(loc, null, perms, Flags.windexplode, Flags.explode, false)) {
+                        cancel = true;
+                        remove = false;
+                    }
+                    break;
+                }
                 // Disabling listener if flag disabled globally
                 if (!Flags.explode.isGlobalyEnabled()) {
                     break;
@@ -1205,6 +1218,7 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         // Source allows explosion, so check each affected block for destruction
+        Flags flag;
         List<Block> preserve = new ArrayList<Block>();
         for (Block block : event.blockList()) {
             FlagPermissions blockperms = FlagPermissions.getPerms(block.getLocation());
@@ -1214,7 +1228,7 @@ public class ResidenceEntityListener implements Listener {
                 case BREEZE_WIND_CHARGE:
                 case WIND_CHARGE:
                     // Wind Charge explosions don't destroy blocks, only interact with specific ones
-                    Flags flag = getWindChargeExplodeInteractBlockFlag(block);
+                    flag = getWindChargeExplodeInteractBlockFlag(block);
                     if (flag == null || !flag.isGlobalyEnabled()) {
                         continue;
                     }
@@ -1283,6 +1297,20 @@ public class ResidenceEntityListener implements Listener {
                     }
                     continue;
                 default:
+                    if (Version.isCurrentEqualOrHigher(Version.v1_21_0)
+                            && event.getExplosionResult() == org.bukkit.ExplosionResult.TRIGGER_BLOCK) {
+                        // TRIGGER_BLOCK = no block destruction; usually Wind Charged effect, interacts with blocks
+                        // Any entity with this buff triggers a wind explosion on death
+                        flag = getWindChargeExplodeInteractBlockFlag(block);
+                        if (flag == null || !flag.isGlobalyEnabled()) {
+                            continue;
+                        }
+                        // Deny sending deny message – too many interacted blocks
+                        if (shouldDenyWindChargeExplode(block.getLocation(), ((ProjectileSource) ent), blockperms, flag, Flags.use, false)) {
+                            preserve.add(block);
+                        }
+                        continue;
+                    }
                     if ((Flags.destroy.isGlobalyEnabled() && blockperms.has(Flags.destroy, FlagCombo.OnlyFalse)) ||
                             (Flags.explode.isGlobalyEnabled() && blockperms.has(Flags.explode, FlagCombo.OnlyFalse))) {
                         preserve.add(block);

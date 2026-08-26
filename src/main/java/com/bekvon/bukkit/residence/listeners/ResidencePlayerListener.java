@@ -1621,17 +1621,14 @@ public class ResidencePlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerPlaceVehicle(PlayerInteractEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.vehicleplacing.isGlobalyEnabled())
-            return;
 
         Block block = event.getClickedBlock();
         if (block == null)
             return;
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld()))
-            return;
 
+        if (FlagPermissions.shouldIgnoreCheck(Flags.vehicleplacing, block)) {
+            return;
+        }
         Location loc = null;
 
         CMIMaterial heldItem = CMIMaterial.get(event.getItem());
