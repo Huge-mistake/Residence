@@ -2705,7 +2705,7 @@ public class ResidencePlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEggProjectile(org.bukkit.event.entity.ProjectileLaunchEvent event) {
-        if (Version.isCurrentEqualOrLower(Version.v26_2_0)) {
+        if (Version.isCurrentLower(Version.v26_2_0)) {
             return;
         }
         if (event.getEntityType() != EntityType.EGG) {
