@@ -1,7 +1,13 @@
 package com.bekvon.bukkit.residence.listeners;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.AbstractHorse;
+import org.bukkit.entity.AbstractWindCharge;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Boat;
@@ -15,7 +21,9 @@ import org.bukkit.entity.Strider;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
@@ -23,6 +31,7 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.projectiles.ProjectileSource;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
@@ -410,5 +419,71 @@ public class ResidenceListener1_21 implements Listener {
     private boolean isSlotAir(Animals entity, EquipmentSlot slot) {
         EntityEquipment equipment = entity.getEquipment();
         return equipment != null && equipment.getItem(slot).getType() == Material.AIR;
+    }
+
+    public static void onWindExplode(BlockExplodeEvent event) {
+
+        Block originBlock = event.getBlock();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.windexplode, originBlock)) {
+            return;
+        }
+        FlagPermissions originBlockPerms = FlagPermissions.getPerms(originBlock.getLocation());
+        // Explosion is prohibited at the source location; cancel the event directly
+        if (!originBlockPerms.has(Flags.windexplode, originBlockPerms.has(Flags.explode, true))) {
+            event.setCancelled(true);
+            return;
+        }
+        // Source allows explosion, so check each affected block for destruction
+        List<Block> preserve = new ArrayList<Block>();
+        for (Block block : event.blockList()) {
+            Flags flag = ResidenceEntityListener.getWindChargeExplodeInteractBlockFlag(block);
+            if (flag == null || !flag.isGlobalyEnabled()) {
+                continue;
+            }
+            FlagPermissions blockPerms = FlagPermissions.getPerms(block.getLocation());
+            if (!blockPerms.has(flag, blockPerms.has(Flags.use, true))) {
+                preserve.add(block);
+            }
+        }
+        event.blockList().removeAll(preserve);
+    }
+
+    public static void onWindExplode(EntityExplodeEvent event) {
+
+        Entity originEntity = event.getEntity();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.windexplode, originEntity)) {
+            return;
+        }
+        ProjectileSource cause;
+
+        if (originEntity instanceof AbstractWindCharge) {
+            cause = ((Projectile) originEntity).getShooter();
+        } else {
+            // Any entity with Wind-Charged-Effect triggers a wind explosion on death
+            cause = ((ProjectileSource) originEntity);
+        }
+        Location originLoc = event.getLocation();
+        FlagPermissions originPerms = FlagPermissions.getPerms(originLoc);
+        // Explosion is prohibited at the source location; cancel the event directly
+        if (ResidenceEntityListener.shouldDenyWindChargeExplode(originLoc, cause, originPerms, Flags.windexplode, Flags.explode, true)) {
+            event.setCancelled(true);
+            return;
+        }
+        // Source allows explosion, so check each affected block for destruction
+        List<Block> preserve = new ArrayList<>();
+        for (Block block : event.blockList()) {
+            Flags flag = ResidenceEntityListener.getWindChargeExplodeInteractBlockFlag(block);
+            if (flag == null || !flag.isGlobalyEnabled()) {
+                continue;
+            }
+            FlagPermissions blockPerms = FlagPermissions.getPerms(block.getLocation());
+            // Deny sending deny message – too many interacted blocks
+            if (ResidenceEntityListener.shouldDenyWindChargeExplode(block.getLocation(), cause, blockPerms, flag, Flags.use, false)) {
+                preserve.add(block);
+            }
+        }
+        event.blockList().removeAll(preserve);
     }
 }
