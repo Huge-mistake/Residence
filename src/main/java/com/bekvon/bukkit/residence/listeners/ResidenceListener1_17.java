@@ -151,9 +151,9 @@ public class ResidenceListener1_17 implements Listener {
         // check build permission for spread blocks
         ClaimedResidence originRes = ClaimedResidence.getByLoc(block.getLocation());
 
-        List<BlockState> blocks = new ArrayList<BlockState>(event.getBlocks());
+        List<BlockState> denySpread = new ArrayList<>();
 
-        for (BlockState oneBlock : blocks) {
+        for (BlockState oneBlock : event.getBlocks()) {
             ClaimedResidence spreadRes = ClaimedResidence.getByLoc(oneBlock.getLocation());
             // spread-block not in Res, skip check
             // origin & spread-block in Same Res, or have Same Res owner, skip check
@@ -164,14 +164,17 @@ public class ResidenceListener1_17 implements Listener {
             // origin & spread-block not in Same Res, not Same Res owner
 
             if (player != null) {
-                if (spreadRes.getPermissions().playerHas(player, Flags.build, FlagCombo.OnlyFalse))
-                    event.getBlocks().remove(oneBlock);
-
-            } else if (spreadRes.getPermissions().has(Flags.build, FlagCombo.OnlyFalse)) {
-                event.getBlocks().remove(oneBlock);
-
+                if (spreadRes.getPermissions().playerHas(player, Flags.build, FlagCombo.OnlyFalse)) {
+                    denySpread.add(oneBlock);
+                }
+            } else {
+                if (spreadRes.getPermissions().has(Flags.build, FlagCombo.OnlyFalse)) {
+                    denySpread.add(oneBlock);
+                }
             }
         }
-
+        if (!denySpread.isEmpty()) {
+            event.getBlocks().removeAll(denySpread);
+        }
     }
 }

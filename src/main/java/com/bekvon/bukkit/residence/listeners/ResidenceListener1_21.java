@@ -425,17 +425,19 @@ public class ResidenceListener1_21 implements Listener {
 
         Block originBlock = event.getBlock();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.windexplode, originBlock)) {
+        if (Residence.getInstance().isDisabledWorldListener(originBlock.getWorld())) {
             return;
         }
-        FlagPermissions originBlockPerms = FlagPermissions.getPerms(originBlock.getLocation());
-        // Explosion is prohibited at the source location; cancel the event directly
-        if (!originBlockPerms.has(Flags.windexplode, originBlockPerms.has(Flags.explode, true))) {
-            event.setCancelled(true);
-            return;
+        if (Flags.windexplode.isGlobalyEnabled()) {
+            FlagPermissions originPerms = FlagPermissions.getPerms(originBlock.getLocation());
+            // Wind-Explode is prohibited at the origin location; cancel the event directly
+            if (!originPerms.has(Flags.windexplode, originPerms.has(Flags.explode, true))) {
+                event.setCancelled(true);
+                return;
+            }
         }
-        // Source allows explosion, so check each affected block for destruction
-        List<Block> preserve = new ArrayList<Block>();
+        // Origin allows Wind-Explode, so check each affected block for interaction
+        List<Block> denyInteraction = new ArrayList<>();
         for (Block block : event.blockList()) {
             Flags flag = ResidenceEntityListener.getWindChargeExplodeInteractBlockFlag(block);
             if (flag == null || !flag.isGlobalyEnabled()) {
@@ -443,36 +445,40 @@ public class ResidenceListener1_21 implements Listener {
             }
             FlagPermissions blockPerms = FlagPermissions.getPerms(block.getLocation());
             if (!blockPerms.has(flag, blockPerms.has(Flags.use, true))) {
-                preserve.add(block);
+                denyInteraction.add(block);
             }
         }
-        event.blockList().removeAll(preserve);
+        if (!denyInteraction.isEmpty()) {
+            event.blockList().removeAll(denyInteraction);
+        }
     }
 
     public static void onWindExplode(EntityExplodeEvent event) {
 
         Entity originEntity = event.getEntity();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.windexplode, originEntity)) {
+        if (Residence.getInstance().isDisabledWorldListener(originEntity.getWorld())) {
             return;
         }
         ProjectileSource cause;
 
         if (originEntity instanceof AbstractWindCharge) {
-            cause = ((Projectile) originEntity).getShooter();
+            cause = ((AbstractWindCharge) originEntity).getShooter();
         } else {
-            // Any entity with Wind-Charged-Effect triggers a wind explosion on death
+            // Any entity with Wind-Charged-Effect triggers a Wind-Explode on death
             cause = ((ProjectileSource) originEntity);
         }
-        Location originLoc = event.getLocation();
-        FlagPermissions originPerms = FlagPermissions.getPerms(originLoc);
-        // Explosion is prohibited at the source location; cancel the event directly
-        if (ResidenceEntityListener.shouldDenyWindChargeExplode(originLoc, cause, originPerms, Flags.windexplode, Flags.explode, true)) {
-            event.setCancelled(true);
-            return;
+        if (Flags.windexplode.isGlobalyEnabled()) {
+            Location originLoc = event.getLocation();
+            FlagPermissions originPerms = FlagPermissions.getPerms(originLoc);
+            // Wind-Explode is prohibited at the origin location; cancel the event directly
+            if (ResidenceEntityListener.shouldDenyWindChargeExplode(originLoc, cause, originPerms, Flags.windexplode, Flags.explode, true)) {
+                event.setCancelled(true);
+                return;
+            }
         }
-        // Source allows explosion, so check each affected block for destruction
-        List<Block> preserve = new ArrayList<>();
+        // Origin allows Wind-Explode, so check each affected block for interaction
+        List<Block> denyInteraction = new ArrayList<>();
         for (Block block : event.blockList()) {
             Flags flag = ResidenceEntityListener.getWindChargeExplodeInteractBlockFlag(block);
             if (flag == null || !flag.isGlobalyEnabled()) {
@@ -481,9 +487,11 @@ public class ResidenceListener1_21 implements Listener {
             FlagPermissions blockPerms = FlagPermissions.getPerms(block.getLocation());
             // Deny sending deny message – too many interacted blocks
             if (ResidenceEntityListener.shouldDenyWindChargeExplode(block.getLocation(), cause, blockPerms, flag, Flags.use, false)) {
-                preserve.add(block);
+                denyInteraction.add(block);
             }
         }
-        event.blockList().removeAll(preserve);
+        if (!denyInteraction.isEmpty()) {
+            event.blockList().removeAll(denyInteraction);
+        }
     }
 }

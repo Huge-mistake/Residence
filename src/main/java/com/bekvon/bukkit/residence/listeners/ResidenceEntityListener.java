@@ -1090,7 +1090,8 @@ public class ResidenceEntityListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
-        // TRIGGER_BLOCK = no block destruction
+        // ExplosionResult.TRIGGER_BLOCK does not destroy blocks
+        // it is triggered by (WindCharge and Wind Charged Effect)
         if (Version.isCurrentEqualOrHigher(Version.v1_21_0)
                 && event.getExplosionResult() == org.bukkit.ExplosionResult.TRIGGER_BLOCK) {
             ResidenceListener1_21.onWindExplode(event);
@@ -1301,8 +1302,8 @@ public class ResidenceEntityListener implements Listener {
             }
         }
 
-        for (Block block : preserve) {
-            event.blockList().remove(block);
+        if (!preserve.isEmpty()) {
+            event.blockList().removeAll(preserve);
         }
     }
 
