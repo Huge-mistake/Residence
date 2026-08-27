@@ -61,7 +61,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.projectiles.ProjectileSource;
-import org.jetbrains.annotations.Nullable;
 
 import com.bekvon.bukkit.residence.ConfigManager;
 import com.bekvon.bukkit.residence.Residence;
@@ -1019,18 +1018,9 @@ public class ResidenceEntityListener implements Listener {
                 ent.remove();
             }
             break;
+        // These entity explosions are handled by EntityExplodeEvent
         case BREEZE_WIND_CHARGE:
         case WIND_CHARGE:
-            if (!Flags.windexplode.isGlobalyEnabled()) {
-                break;
-            }
-            ProjectileSource shooter = ((Projectile) ent).getShooter();
-            // Allow sending deny message
-            if (shouldDenyWindChargeExplode(ent.getLocation(), shooter, perms, Flags.windexplode, Flags.explode, true)) {
-                event.setCancelled(true);
-                ent.remove();
-            }
-            break;
         case WITHER:
             break;
         default:
@@ -1043,49 +1033,6 @@ public class ResidenceEntityListener implements Listener {
             }
             break;
         }
-    }
-
-    public static boolean shouldDenyWindChargeExplode(Location triggerLoc, ProjectileSource shooter, FlagPermissions perms,
-                                                Flags mainFlag, Flags subFlag, boolean sendDenyMessage) {
-        boolean sholudDeny = false;
-        if (shooter instanceof Player) {
-            Player player = (Player) shooter;
-            if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
-                return false;
-            }
-            FlagPermissions playerPerms = FlagPermissions.getPerms(triggerLoc, player);
-            // Because Flags.explode is not FlagMode.Both
-            boolean result = (subFlag == Flags.explode)
-                    ? perms.has(subFlag, true)
-                    : playerPerms.playerHas(player, subFlag, true);
-            if (!playerPerms.playerHas(player, mainFlag, result)) {
-                if (sendDenyMessage){
-                    lm.Flag_Deny.sendMessage(player, mainFlag);
-                }
-                sholudDeny = true;
-            }
-        } else {
-            if (!perms.has(mainFlag, perms.has(subFlag, true))) {
-                sholudDeny = true;
-            }
-        }
-        return sholudDeny;
-    }
-
-    @Nullable
-    public static Flags getWindChargeExplodeInteractBlockFlag(Block block) {
-        Flags flag = null;
-        CMIMaterial mat = CMIMaterial.get(block.getType());
-        if (mat.containsCriteria(CMIMC.BUTTON)) {
-            flag = Flags.button;
-        } else if (mat.containsCriteria(CMIMC.DOOR) || mat.containsCriteria(CMIMC.FENCEGATE) || mat.containsCriteria(CMIMC.TRAPDOOR)) {
-            flag = Flags.door;
-        } else if (mat == CMIMaterial.BELL || mat.containsCriteria(CMIMC.CANDLE) || mat.containsCriteria(CMIMC.CANDLECAKE)) {
-            flag = Flags.use;
-        } else if (mat == CMIMaterial.LEVER) {
-            flag = Flags.lever;
-        }
-        return flag;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -1114,17 +1061,6 @@ public class ResidenceEntityListener implements Listener {
         if (ent != null && ctype != null) {
 
             switch (ctype) {
-            case BREEZE_WIND_CHARGE:
-            case WIND_CHARGE:
-                shooter = ((Projectile) ent).getShooter();
-                if (!Flags.windexplode.isGlobalyEnabled()) {
-                    break;
-                }
-                // Allow sending deny message
-                if (shouldDenyWindChargeExplode(loc, shooter, perms, Flags.windexplode, Flags.explode, true)) {
-                    cancel = true;
-                }
-                break;
             case CREEPER:
                 // Disabling listener if flag disabled globally
                 if (!Flags.creeper.isGlobalyEnabled())
@@ -1216,18 +1152,6 @@ public class ResidenceEntityListener implements Listener {
 
             if (ent != null && ctype != null) {
                 switch (ctype) {
-                case BREEZE_WIND_CHARGE:
-                case WIND_CHARGE:
-                    // Wind Charge explosions don't destroy blocks, only interact with specific ones
-                    Flags flag = getWindChargeExplodeInteractBlockFlag(block);
-                    if (flag == null || !flag.isGlobalyEnabled()) {
-                        continue;
-                    }
-                    // Deny sending deny message – too many interacted blocks
-                    if (shouldDenyWindChargeExplode(block.getLocation(), shooter, blockperms, flag, Flags.use, false)) {
-                        preserve.add(block);
-                    }
-                    continue;
                 case CREEPER:
                     // Disabling listener if flag disabled globally
                     if (!Flags.creeper.isGlobalyEnabled())
