@@ -1043,9 +1043,10 @@ public class ResidenceBlockListener implements Listener {
         if (!CMIMaterial.get(block.getType()).equals(CMIMaterial.TNT))
             return;
 
-        if (event.getItem() == null || !CMIMaterial.get(event.getItem()).equals(CMIMaterial.FLINT_AND_STEEL))
+        CMIMaterial held = CMIMaterial.get(event.getItem());
+        if (held != CMIMaterial.FLINT_AND_STEEL && held != CMIMaterial.FIRE_CHARGE) {
             return;
-
+        }
         Player player = event.getPlayer();
 
         if (FlagPermissions.shouldDenyAndNotify(player, block, Flags.ignite, null)) {
