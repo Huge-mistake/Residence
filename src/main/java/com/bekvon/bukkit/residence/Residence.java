@@ -606,10 +606,6 @@ public class Residence extends JavaPlugin {
                     pm.registerEvents(new ResidenceListener1_15(this), this);
                 }
                 if (Version.isCurrentEqualOrHigher(Version.v1_16_0)) {
-                    int cooldownSeconds = Residence.getInstance().getConfigManager().getFlagDenyMessageCooldown();
-                    if (cooldownSeconds > 0) {
-                        DenyMessageCache.reloadDenyMessageCache(cooldownSeconds);
-                    }
                     pm.registerEvents(new ResidenceListener1_16(this), this);
                 }
                 if ((Version.isCurrentEqualOrHigher(Version.v1_16_R3) && Version.isCurrentSubEqualOrHigher(5)) || Version.isCurrentEqualOrHigher(Version.v1_17_0)) {
