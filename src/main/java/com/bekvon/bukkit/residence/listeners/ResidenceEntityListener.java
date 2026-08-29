@@ -300,8 +300,8 @@ public class ResidenceEntityListener implements Listener {
                 if (perms.playerHas(player, flag, perms.playerHas(player, Flags.use, true))) {
                     return;
                 }
-                //lm.Flag_Deny.sendMessage((org.bukkit.command.CommandSender) player, flag);
-                lm.Flag_Deny.sendMessage(player, flag);
+                lm.Flag_Deny.sendMessage((org.bukkit.command.CommandSender) player, flag);
+                //lm.Flag_Deny.sendMessage(player, flag);
             } else {
                 // Check potential block as a shooter which should be allowed if its inside same
                 // residence
