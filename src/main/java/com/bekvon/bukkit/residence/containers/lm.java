@@ -630,6 +630,21 @@ public enum lm {
         }
     }
 
+    public void sendMessage(Player player, Flags flag, String string) {
+        if (player == null || flag == null) {
+            return;
+        }
+        if (Version.isCurrentLower(Version.v1_16_0)) {
+            lm.Residence_FlagDeny.sendMessage((CommandSender) player, flag, string);
+
+        } else {
+            int cooldownSeconds = Residence.getInstance().getConfigManager().getFlagDenyMessageCooldown();
+            if (cooldownSeconds <= 0 || DenyMessageCache.shouldSendDenyMessage(player, flag)) {
+                lm.Residence_FlagDeny.sendMessage((CommandSender) player, flag, string);
+            }
+        }
+    }
+
     public void sendMessage(CommandSender sender, Object... variables) {
 
         if (sender == null)

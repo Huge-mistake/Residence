@@ -38,7 +38,6 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
-import com.bekvon.bukkit.residence.listenersCache.DenyMessageCache;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
@@ -114,9 +113,7 @@ public class ResidenceListener1_21 implements Listener {
             return;
         }
         if (res.getPermissions().playerHas(closest, Flags.leash, FlagCombo.OnlyFalse)) {
-            if (DenyMessageCache.shouldSendDenyMessage(closest, Flags.leash)) {
-                lm.Residence_FlagDeny.sendMessage(closest, Flags.leash, res.getName());
-            }
+            lm.Residence_FlagDeny.sendMessage(closest, Flags.leash, res.getName());
             event.setCancelled(true);
         }
     }
@@ -524,9 +521,7 @@ public class ResidenceListener1_21 implements Listener {
                     ? perms.has(subFlag, true)
                     : playerPerms.playerHas(player, subFlag, true);
             if (!playerPerms.playerHas(player, mainFlag, result)) {
-                if (DenyMessageCache.shouldSendDenyMessage(player, mainFlag)) {
-                    lm.Flag_Deny.sendMessage(player, mainFlag);
-                }
+                lm.Flag_Deny.sendMessage(player, mainFlag);
                 sholudDeny = true;
             }
         } else {

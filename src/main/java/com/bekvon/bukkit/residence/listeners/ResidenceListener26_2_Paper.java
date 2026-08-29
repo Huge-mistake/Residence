@@ -15,7 +15,6 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
-import com.bekvon.bukkit.residence.listenersCache.DenyMessageCache;
 import com.bekvon.bukkit.residence.listenersCache.PlayerCollideWithEntityCache;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.utils.Utils;
@@ -88,9 +87,7 @@ public class ResidenceListener26_2_Paper implements Listener {
 
         }
         if (!perms.playerHas(pushedBy, Flags.push, fallback)) {
-            if (DenyMessageCache.shouldSendDenyMessage(pushedBy, Flags.push)) {
-                lm.Flag_Deny.sendMessage(pushedBy, Flags.push);
-            }
+            lm.Flag_Deny.sendMessage(pushedBy, Flags.push);
             return true;
         }
         return false;

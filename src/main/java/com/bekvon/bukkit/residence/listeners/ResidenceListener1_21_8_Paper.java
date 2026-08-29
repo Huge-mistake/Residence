@@ -15,7 +15,6 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
-import com.bekvon.bukkit.residence.listenersCache.DenyMessageCache;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
@@ -56,9 +55,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             // Monster-on-player knockback doesn't need to check Flags.pvp
             // Allow players to knock themselves back (e.g., by Wind Charges)
             if (player != null && !target.equals(player) && FlagPermissions.has(target.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
-                if (DenyMessageCache.shouldSendDenyMessage(player, Flags.pvp)) {
-                    lm.Flag_Deny.sendMessage(player, Flags.pvp);
-                }
+                lm.Flag_Deny.sendMessage(player, Flags.pvp);
                 return true;
             }
             return false;
@@ -96,9 +93,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             boolean result = (subFlag == null || perms.playerHas(pushedBy, subFlag, true));
 
             if (!perms.playerHas(pushedBy, mainFlag, result)) {
-                if (DenyMessageCache.shouldSendDenyMessage(pushedBy, mainFlag)) {
-                    lm.Flag_Deny.sendMessage(pushedBy, mainFlag);
-                }
+                lm.Flag_Deny.sendMessage(pushedBy, mainFlag);
                 return true;
             }
             return false;
