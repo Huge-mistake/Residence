@@ -112,9 +112,8 @@ public class ResidenceEntityListener implements Listener {
         }
         Entity entity = event.getEntity();
         boolean shouldDeny = false;
-        // Use Bukkit's Animals and Monster interfaces
-        // should cover the entities that trigger EntityChangeBlockEvent
-        if (Flags.animalgriefing.isGlobalyEnabled() && entity instanceof Animals) {
+
+        if (Flags.animalgriefing.isGlobalyEnabled() && Utils.isAnimal(entity)) {
             // Animals are friendly (villagers farming/sheep grazing)
             // When Flags.animalgriefing is None, do not fall back to Flags.destroy
             shouldDeny = FlagPermissions.has(block.getLocation(), Flags.animalgriefing, FlagCombo.OnlyFalse);
@@ -123,7 +122,7 @@ public class ResidenceEntityListener implements Listener {
             FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             shouldDeny = !perms.has(Flags.witherdestruction, perms.has(Flags.destroy, true));
 
-        } else if (Flags.mobgriefing.isGlobalyEnabled() && entity instanceof Monster) {
+        } else if (Flags.mobgriefing.isGlobalyEnabled() && isMonster(entity)) {
             FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             shouldDeny = !perms.has(Flags.mobgriefing, perms.has(Flags.destroy, true));
 
@@ -152,6 +151,11 @@ public class ResidenceEntityListener implements Listener {
 
         } else if (Flags.brush.isGlobalyEnabled() && (mat == CMIMaterial.SUSPICIOUS_GRAVEL || mat == CMIMaterial.SUSPICIOUS_SAND)) {
             flag = Flags.brush;
+
+        } else if (Flags.build.isGlobalyEnabled()) {
+            // onWeavingEffectTrigger-Paper
+            // by default, future player-triggered EntityChangeBlockEvent mechanisms check Flags.build
+            flag = Flags.build;
 
         } else {
             return false;

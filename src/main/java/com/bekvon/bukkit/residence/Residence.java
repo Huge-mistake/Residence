@@ -54,6 +54,7 @@ import com.bekvon.bukkit.residence.economy.rent.RentManager;
 import com.bekvon.bukkit.residence.gui.FlagUtil;
 import com.bekvon.bukkit.residence.itemlist.WorldItemManager;
 import com.bekvon.bukkit.residence.listeners.CrackShotListener;
+import com.bekvon.bukkit.residence.listenersCache.DenyMessageCache;
 import com.bekvon.bukkit.residence.listeners.ResidenceBlockListener;
 import com.bekvon.bukkit.residence.listeners.ResidenceEntityListener;
 import com.bekvon.bukkit.residence.listeners.ResidenceLWCListener;
@@ -605,6 +606,10 @@ public class Residence extends JavaPlugin {
                     pm.registerEvents(new ResidenceListener1_15(this), this);
                 }
                 if (Version.isCurrentEqualOrHigher(Version.v1_16_0)) {
+                    int cooldownSeconds = Residence.getInstance().getConfigManager().getFlagDenyMessageCooldown();
+                    if (cooldownSeconds > 0) {
+                        DenyMessageCache.reloadDenyMessageCache(cooldownSeconds);
+                    }
                     pm.registerEvents(new ResidenceListener1_16(this), this);
                 }
                 if ((Version.isCurrentEqualOrHigher(Version.v1_16_R3) && Version.isCurrentSubEqualOrHigher(5)) || Version.isCurrentEqualOrHigher(Version.v1_17_0)) {

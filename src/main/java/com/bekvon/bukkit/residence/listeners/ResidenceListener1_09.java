@@ -33,6 +33,7 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Teleporting;
+import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
@@ -209,32 +210,42 @@ public class ResidenceListener1_09 implements Listener {
         if (entity == null)
             return;
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, entity)) {
+        if (plugin.isDisabledWorldListener(entity.getWorld())) {
             return;
         }
-        if (entity instanceof Player) {
+        if (Flags.build.isGlobalyEnabled() && entity instanceof Player) {
+
             Player player = (Player) entity;
+            if (FlagPermissions.shouldDenyAndNotify(player, event.getBlock(), Flags.build, null)) {
+                event.setCancelled(true);
+            }
 
-            if (player.hasMetadata("NPC"))
+        } else {
+
+            if (Flags.animalgriefing.isGlobalyEnabled() && Utils.isAnimal(entity)) {
+                // SnowGolem already has SnowTrail Flag
+                if (entity instanceof Snowman) {
+                    return;
+                }
+                FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+                if (perms.has(Flags.animalgriefing, perms.has(Flags.build, true))) {
+                    return;
+                }
+
+            } else if (Flags.mobgriefing.isGlobalyEnabled() && ResidenceEntityListener.isMonster(entity)) {
+                FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+                if (perms.has(Flags.mobgriefing, perms.has(Flags.build, true))) {
+                    return;
+                }
+
+            } else if (Flags.build.isGlobalyEnabled()) {
+                if (FlagPermissions.has(event.getBlock().getLocation(), Flags.build, true)) {
+                    return;
+                }
+
+            } else {
                 return;
-
-            if (ResAdmin.isResAdmin(player))
-                return;
-
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation(), player);
-            if (perms.playerHas(player, Flags.build, true))
-                return;
-
-            event.setCancelled(true);
-
-            // SnowGolem already has SnowTrail Flag
-            // Check all entity trigger FrostWalker
-            // ArmorStand Skeleton Zombies ...
-        } else if (!(entity instanceof Snowman)) {
-
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
-            if (perms.has(Flags.build, true))
-                return;
+            }
 
             event.setCancelled(true);
 

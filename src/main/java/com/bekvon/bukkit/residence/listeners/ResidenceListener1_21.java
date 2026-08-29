@@ -141,29 +141,43 @@ public class ResidenceListener1_21 implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void OnEntityDeath(EntityDeathEvent event) {
-
-        LivingEntity ent = event.getEntity();
-        if (ent == null)
+    public void onWeavingEffectTrigger(EntityDeathEvent event) {
+        // Paper fires EntityChangeBlockEvent when a cobweb is placed at WeavingEffectTrigger
+        if (Version.isPaperBranch()) {
             return;
+        }
+        LivingEntity ent = event.getEntity();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, ent)) {
+        if (plugin.isDisabledWorldListener(ent.getWorld())) {
             return;
         }
         if (!ent.hasPotionEffect(PotionEffectType.WEAVING))
             return;
 
-        if (ent instanceof Player) {
-
-            Player player = (Player) ent;
-            if (ResAdmin.isResAdmin(player)) {
-                return;
-            }
-            if (FlagPermissions.has(ent.getLocation(), player, Flags.build, true)) {
+        if (Flags.animalgriefing.isGlobalyEnabled() && Utils.isAnimal(ent)) {
+            FlagPermissions perms = FlagPermissions.getPerms(ent.getLocation());
+            if (perms.has(Flags.animalgriefing, perms.has(Flags.build, true))) {
                 return;
             }
 
-        } else if (FlagPermissions.has(ent.getLocation(), Flags.build, true)) {
+        } else if (Flags.mobgriefing.isGlobalyEnabled() && ResidenceEntityListener.isMonster(ent)) {
+            FlagPermissions perms = FlagPermissions.getPerms(ent.getLocation());
+            if (perms.has(Flags.mobgriefing, perms.has(Flags.build, true))) {
+                return;
+            }
+
+        } else if (Flags.build.isGlobalyEnabled()) {
+            if (ent instanceof Player) {
+                Player player = (Player) ent;
+                if (!FlagPermissions.shouldDenyAndNotify(player, player, Flags.build, null)) {
+                    return;
+                }
+            } else {
+                if (FlagPermissions.has(ent.getLocation(), Flags.build, true)) {
+                    return;
+                }
+            }
+        } else {
             return;
         }
         // Removing weaving effect on death as there is no other way to properly handle

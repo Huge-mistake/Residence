@@ -34,7 +34,7 @@ public class VisualizerConfig {
     private static boolean bounceAnimation;
     private static boolean enterAnimation;
 
-    private static volatile boolean useModernVersion = true;
+    private static boolean useModernVersion = true;
     private static int gridSize = 8;
     private static int updateRateByTravel = 4;
     private static double lineThickness = 0.05;

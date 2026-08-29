@@ -16,20 +16,28 @@ For DenyMessage on high-frequency events
 */
 public class DenyMessageCache {
 
-    private static final Cache<DenyMessageKey, Boolean> DENY_MESSAGE_CACHE = CacheBuilder.newBuilder()
-            .expireAfterWrite(3, TimeUnit.SECONDS)
-            .maximumSize(1000)
-            .build();
+    private static Cache<DenyMessageKey, Boolean> DENY_MESSAGE_CACHE;
+
+    public static void reloadDenyMessageCache(int expireSeconds) {
+        DENY_MESSAGE_CACHE = CacheBuilder.newBuilder()
+                .expireAfterWrite(expireSeconds, TimeUnit.SECONDS)
+                .maximumSize(1000)
+                .build();
+    }
 
     private DenyMessageCache() {
     }
 
     public static boolean shouldSendDenyMessage(@NotNull Player player, @NotNull Flags flag) {
+        Cache<DenyMessageKey, Boolean> cache = DENY_MESSAGE_CACHE;
+        if (cache == null) {
+            return true;
+        }
         DenyMessageKey key = new DenyMessageKey(player, flag);
-        if (DENY_MESSAGE_CACHE.getIfPresent(key) != null) {
+        if (cache.getIfPresent(key) != null) {
             return false;
         }
-        DENY_MESSAGE_CACHE.put(key, true);
+        cache.put(key, true);
         return true;
     }
 
