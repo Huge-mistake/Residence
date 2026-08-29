@@ -1186,11 +1186,8 @@ public class ConfigManager {
         c.addComment("Global.Messages.FlagDenyMessageCooldown", "Cooldown for sending Flag deny messages, in seconds. (default: 3)");
         FlagDenyMessageCooldown = (c.get("Global.Messages.FlagDenyMessageCooldown", 3));
 
-        if (Version.isCurrentEqualOrHigher(Version.v1_16_0)) {
-            int cooldownSeconds = Residence.getInstance().getConfigManager().getFlagDenyMessageCooldown();
-            if (cooldownSeconds > 0) {
-                DenyMessageCache.reloadDenyMessageCache(cooldownSeconds);
-            }
+        if (Version.isCurrentEqualOrHigher(Version.v1_16_0) && FlagDenyMessageCooldown > 0) {
+            DenyMessageCache.reloadDenyMessageCache(FlagDenyMessageCooldown);
         }
 
         ActionBarOnSelection = c.get("Global.ActionBar.ShowOnSelection", true);
