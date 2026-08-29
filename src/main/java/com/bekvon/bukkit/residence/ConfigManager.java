@@ -1183,7 +1183,8 @@ public class ConfigManager {
         c.addComment("Global.Messages.MessageType", "Classified under Language MessageType of GeneralMessages");
         MessageType = new ArrayList<>(c.get("Global.Messages.MessageType", Arrays.asList("Flag_Deny", "Residence_FlagDeny", "General_NoPVPZone")));
 
-        c.addComment("Global.Messages.FlagDenyMessageCooldown", "Cooldown for sending Flag deny messages, in seconds. (default: 1)");
+        c.addComment("Global.Messages.FlagDenyMessageCooldown", "Cooldown for sending duplicate Flag deny messages, in seconds(default: 1)",
+                "Only effective for 1.16+ versions; suppresses spam from repeated Flag deny messages");
         FlagDenyMessageCooldown = (c.get("Global.Messages.FlagDenyMessageCooldown", 1));
 
         if (Version.isCurrentEqualOrHigher(Version.v1_16_0) && FlagDenyMessageCooldown > 0) {
