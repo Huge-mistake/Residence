@@ -9,13 +9,11 @@ import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Snowman;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
-import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.LingeringPotionSplashEvent;
@@ -26,14 +24,12 @@ import org.bukkit.potion.PotionEffect;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
-import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.event.ResidenceChangedEvent;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Teleporting;
-import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
@@ -199,56 +195,6 @@ public class ResidenceListener1_09 implements Listener {
                 event.getEntity().remove();
                 break;
             }
-        }
-    }
-
-    // FrostWalker form frosted_ice, Wither form wither_rose
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onEntityBlockFormEvent(EntityBlockFormEvent event) {
-
-        Entity entity = event.getEntity();
-        if (entity == null)
-            return;
-
-        if (plugin.isDisabledWorldListener(entity.getWorld())) {
-            return;
-        }
-        if (Flags.build.isGlobalyEnabled() && entity instanceof Player) {
-
-            Player player = (Player) entity;
-            if (FlagPermissions.shouldDenyAndNotify(player, event.getBlock(), Flags.build, null)) {
-                event.setCancelled(true);
-            }
-
-        } else {
-
-            if (Flags.animalgriefing.isGlobalyEnabled() && Utils.isAnimal(entity)) {
-                // SnowGolem already has SnowTrail Flag
-                if (entity instanceof Snowman) {
-                    return;
-                }
-                FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
-                if (perms.has(Flags.animalgriefing, perms.has(Flags.build, true))) {
-                    return;
-                }
-
-            } else if (Flags.mobgriefing.isGlobalyEnabled() && ResidenceEntityListener.isMonster(entity)) {
-                FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
-                if (perms.has(Flags.mobgriefing, perms.has(Flags.build, true))) {
-                    return;
-                }
-
-            } else if (Flags.build.isGlobalyEnabled()) {
-                if (FlagPermissions.has(event.getBlock().getLocation(), Flags.build, true)) {
-                    return;
-                }
-
-            } else {
-                return;
-            }
-
-            event.setCancelled(true);
-
         }
     }
 

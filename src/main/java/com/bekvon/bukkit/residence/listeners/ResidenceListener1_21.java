@@ -139,10 +139,7 @@ public class ResidenceListener1_21 implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onWeavingEffectTrigger(EntityDeathEvent event) {
-        // Paper fires EntityChangeBlockEvent when a cobweb is placed at WeavingEffectTrigger
-        if (Version.isPaperBranch()) {
-            return;
-        }
+
         LivingEntity ent = event.getEntity();
 
         if (plugin.isDisabledWorldListener(ent.getWorld())) {

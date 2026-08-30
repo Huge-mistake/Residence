@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 /*
 Should be usable in 1.16+ versions
-For DenyMessage on high-frequency events
+Suppress frequent duplicate Flag-Deny messages
 */
 public class DenyMessageCache {
 

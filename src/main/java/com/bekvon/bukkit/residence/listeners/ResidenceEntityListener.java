@@ -153,7 +153,6 @@ public class ResidenceEntityListener implements Listener {
             flag = Flags.brush;
 
         } else if (Flags.build.isGlobalyEnabled()) {
-            // onWeavingEffectTrigger-Paper
             // by default, future player-triggered EntityChangeBlockEvent mechanisms check Flags.build
             flag = Flags.build;
 

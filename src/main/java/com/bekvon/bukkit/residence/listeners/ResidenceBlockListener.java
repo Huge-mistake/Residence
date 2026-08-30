@@ -262,16 +262,43 @@ public class ResidenceBlockListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onSnowGolemTrailForm(EntityBlockFormEvent event) {
+    public void onEntityBlockForm(EntityBlockFormEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.snowtrail, event.getBlock())) {
+        Entity entity = event.getEntity();
+
+        if (plugin.isDisabledWorldListener(entity.getWorld())) {
             return;
         }
-        if (event.getEntity() instanceof Snowman) {
+        if (Flags.build.isGlobalyEnabled() && entity instanceof Player) {
+            Player player = (Player) entity;
+            if (FlagPermissions.shouldDenyAndNotify(player, event.getBlock(), Flags.build, null)) {
+                event.setCancelled(true);
+            }
+
+        } else if (Flags.snowtrail.isGlobalyEnabled() && entity instanceof Snowman) {
             FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
             if (!perms.has(Flags.snowtrail, true)) {
                 event.setCancelled(true);
             }
+
+        } else if (Flags.animalgriefing.isGlobalyEnabled() && Utils.isAnimal(entity)) {
+            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+            if (!perms.has(Flags.animalgriefing, perms.has(Flags.build, true))) {
+                event.setCancelled(true);
+            }
+
+        } else if (Flags.mobgriefing.isGlobalyEnabled() && ResidenceEntityListener.isMonster(entity)) {
+            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+            if (!perms.has(Flags.mobgriefing, perms.has(Flags.build, true))) {
+                event.setCancelled(true);
+            }
+
+        } else if (Flags.build.isGlobalyEnabled()) {
+            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+            if (!perms.has(Flags.build, true)) {
+                event.setCancelled(true);
+            }
+
         }
     }
 
