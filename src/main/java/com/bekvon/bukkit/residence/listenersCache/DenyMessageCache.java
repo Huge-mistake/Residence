@@ -21,7 +21,7 @@ public class DenyMessageCache {
     public static void reloadDenyMessageCache(int expireSeconds) {
         DENY_MESSAGE_CACHE = CacheBuilder.newBuilder()
                 .expireAfterWrite(expireSeconds, TimeUnit.SECONDS)
-                .maximumSize(1000)
+                .maximumSize(10_000)
                 .build();
     }
 
