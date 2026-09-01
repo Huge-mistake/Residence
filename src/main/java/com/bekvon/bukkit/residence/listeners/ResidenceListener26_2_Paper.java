@@ -68,18 +68,18 @@ public class ResidenceListener26_2_Paper implements Listener {
     }
 
     private boolean shouldDenyPush(@NotNull Entity target, @NotNull Player pushedBy) {
-        Flags subFlags = null;
+        Flags subFlag = null;
 
         if (target instanceof Boat || target instanceof Minecart) {
-            subFlags = Flags.vehicledestroy;
+            subFlag = Flags.vehicledestroy;
 
         } else if (Utils.isAnimal(target)) {
-            subFlags = Flags.animalkilling;
+            subFlag = Flags.animalkilling;
 
         } else if (ResidenceEntityListener.isMonster(target)) {
-            subFlags = Flags.mobkilling;
+            subFlag = Flags.mobkilling;
 
         }
-        return FlagPermissions.shouldDenyAndNotify(pushedBy, target, Flags.push, subFlags);
+        return FlagPermissions.shouldDenyAndNotify(pushedBy, target, Flags.push, subFlag);
     }
 }
