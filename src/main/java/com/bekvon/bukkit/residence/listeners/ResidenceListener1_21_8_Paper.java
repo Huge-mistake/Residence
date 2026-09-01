@@ -13,7 +13,6 @@ import org.bukkit.inventory.EquipmentSlot;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
-import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
@@ -86,17 +85,8 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             return false;
         }
         if (pushedBy != null) {
-            if (pushedBy.hasMetadata("NPC") || ResAdmin.isResAdmin(pushedBy)) {
-                return false;
-            }
-            FlagPermissions perms = FlagPermissions.getPerms(target.getLocation(), pushedBy);
-            boolean result = (subFlag == null || perms.playerHas(pushedBy, subFlag, true));
 
-            if (!perms.playerHas(pushedBy, mainFlag, result)) {
-                lm.Flag_Deny.sendMessage(pushedBy, mainFlag);
-                return true;
-            }
-            return false;
+            return FlagPermissions.shouldDenyAndNotify(pushedBy, target, mainFlag, subFlag);
 
         } else {
             FlagPermissions perms = FlagPermissions.getPerms(target.getLocation());
