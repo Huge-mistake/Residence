@@ -24,7 +24,6 @@ import org.bukkit.event.vehicle.VehicleDamageEvent;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
-import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
@@ -116,14 +115,7 @@ public class ResidenceListener1_14 implements Listener {
         Player player = Utils.potentialProjectileToPlayer(projectile);
         if (player != null) {
 
-            if (ResAdmin.isResAdmin(player)) {
-                return false;
-            }
-            if (FlagPermissions.has(block.getLocation(), player, flag, FlagCombo.OnlyFalse)) {
-                lm.Flag_Deny.sendMessage(player, flag);
-                return true;
-            }
-            return false;
+            return FlagPermissions.shouldDenyAndNotify(player, block, flag, null);
 
         } else {
             // projectile not player source

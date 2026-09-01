@@ -1545,7 +1545,7 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        Flags mainFlag = null;
+        Flags mainFlag;
         Flags subFlag = null;
 
         if (Flags.commandblock.isGlobalyEnabled() && entity instanceof CommandMinecart) {
@@ -1564,6 +1564,8 @@ public class ResidencePlayerListener implements Listener {
         } else if (Flags.trade.isGlobalyEnabled() && isTrader(entity)) {
             mainFlag = Flags.trade;
 
+        } else {
+            return;
         }
         if (FlagPermissions.shouldDenyAndNotify(player, entity, mainFlag, subFlag)) {
             event.setCancelled(true);
@@ -1589,7 +1591,7 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         CMIMaterial held = CMIMaterial.get(item);
-        Flags mainFlag = null;
+        Flags mainFlag;
         Flags subFlag = null;
 
         if (entity instanceof ItemFrame) {
@@ -1598,8 +1600,8 @@ public class ResidencePlayerListener implements Listener {
             if (!plugin.getItemManager().isAllowed(item.getType(), group, entity.getWorld().getName()) && !ResAdmin.isResAdmin(player)) {
                 lm.General_ItemBlacklisted.sendMessage(player);
                 event.setCancelled(true);
-                return;
             }
+            return;
 
         } else if (Flags.dye.isGlobalyEnabled() && entity.getType() == EntityType.SHEEP && held.containsCriteria(CMIMC.DYE)) {
             mainFlag = Flags.dye;
@@ -1613,6 +1615,8 @@ public class ResidencePlayerListener implements Listener {
                 subFlag = Flags.mobkilling;
             }
 
+        } else {
+            return;
         }
         if (FlagPermissions.shouldDenyAndNotify(player, entity, mainFlag, subFlag)) {
             event.setCancelled(true);

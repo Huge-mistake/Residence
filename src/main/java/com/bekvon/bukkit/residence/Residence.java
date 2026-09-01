@@ -1395,13 +1395,13 @@ public class Residence extends JavaPlugin {
         return false;
     }
 
-    private boolean isDisabledWorldCommand(String worldname) {
+    private boolean isDisabledWorldCommand(String worldName) {
 
         if (!getConfigManager().EnabledWorldsList.isEmpty()) {
-            return !getConfigManager().EnabledWorldsList.contains(worldname);
+            return !getConfigManager().EnabledWorldsList.contains(worldName);
         }
 
-        return getConfigManager().DisabledWorldsList.contains(worldname);
+        return getConfigManager().DisabledWorldsList.contains(worldName);
     }
 
     public InformationPager getInfoPageManager() {

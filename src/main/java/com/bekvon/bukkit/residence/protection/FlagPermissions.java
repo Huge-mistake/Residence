@@ -1765,10 +1765,7 @@ public class FlagPermissions {
         return !flag.isGlobalyEnabled() || Residence.getInstance().isDisabledWorldListener(world);
     }
 
-    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Location target, @Nullable Flags mainFlag, @Nullable Flags subFlag) {
-        if (mainFlag == null) {
-            return false;
-        }
+    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Location target, @NotNull Flags mainFlag, @Nullable Flags subFlag) {
         if (player.hasMetadata("NPC")) {
             return false;
         }
@@ -1784,11 +1781,11 @@ public class FlagPermissions {
         return true;
     }
 
-    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Block target, @Nullable Flags mainFlag, @Nullable Flags subFlag) {
+    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Block target, @NotNull Flags mainFlag, @Nullable Flags subFlag) {
         return shouldDenyAndNotify(player, target.getLocation(), mainFlag, subFlag);
     }
 
-    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Entity target, @Nullable Flags mainFlag, @Nullable Flags subFlag) {
+    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Entity target, @NotNull Flags mainFlag, @Nullable Flags subFlag) {
         return shouldDenyAndNotify(player, target.getLocation(), mainFlag, subFlag);
     }
 }
