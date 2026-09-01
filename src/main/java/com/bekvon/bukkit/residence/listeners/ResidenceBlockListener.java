@@ -207,7 +207,7 @@ public class ResidenceBlockListener implements Listener {
             return true;
 
         // disabling event on world
-        if (Residence.getInstance().isDisabledWorldListener(loc.getWorld()))
+        if (Residence.getInstance().isDisabledWorldListener(loc))
             return true;
 
         if (ResAdmin.isResAdmin(player)) {
@@ -266,7 +266,7 @@ public class ResidenceBlockListener implements Listener {
 
         Entity entity = event.getEntity();
 
-        if (plugin.isDisabledWorldListener(entity.getWorld())) {
+        if (plugin.isDisabledWorldListener(entity)) {
             return;
         }
         if (Flags.build.isGlobalyEnabled() && entity instanceof Player) {
@@ -434,7 +434,7 @@ public class ResidenceBlockListener implements Listener {
     public void onChestPlace(BlockPlaceEvent event) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getBlock()))
             return;
         if (!plugin.getConfigManager().ShowNoobMessage())
             return;
@@ -478,7 +478,7 @@ public class ResidenceBlockListener implements Listener {
     public void onChestPlaceNearResidence(BlockPlaceEvent event) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getBlock()))
             return;
 
         Player player = event.getPlayer();
@@ -507,7 +507,7 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChestPlaceCreateRes(BlockPlaceEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getBlock()))
             return;
         if (!plugin.getConfigManager().isNewPlayerUse())
             return;
@@ -547,7 +547,7 @@ public class ResidenceBlockListener implements Listener {
 
     public static boolean canPlaceBlock(Player player, Block block, boolean informPlayer) {
         // disabling event on world
-        if (Residence.getInstance().isDisabledWorldListener(block.getWorld()))
+        if (Residence.getInstance().isDisabledWorldListener(block))
             return true;
 
         if (ResAdmin.isResAdmin(player)) {
@@ -623,7 +623,7 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockPistonRetract(BlockPistonRetractEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getBlock()))
             return;
 
         // Disabling listener if flag disabled globally
@@ -667,7 +667,7 @@ public class ResidenceBlockListener implements Listener {
     public void onBlockPistonExtend(BlockPistonExtendEvent event) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getBlock()))
             return;
 
         // Disabling listener if flag disabled globally
@@ -732,7 +732,7 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockFromTo(BlockFromToEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getBlock()))
             return;
 
         ClaimedResidence fromRes = ClaimedResidence.getByLoc(event.getBlock().getLocation());
@@ -882,7 +882,7 @@ public class ResidenceBlockListener implements Listener {
     public void onLavaWaterFlow(BlockFromToEvent event) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getBlock()))
             return;
         Material mat = event.getBlock().getType();
 
@@ -1022,7 +1022,7 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockIgnite(BlockIgniteEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getBlock()))
             return;
 
         IgniteCause cause = event.getCause();

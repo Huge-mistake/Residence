@@ -142,7 +142,7 @@ public class ResidenceListener1_21 implements Listener {
 
         LivingEntity ent = event.getEntity();
 
-        if (plugin.isDisabledWorldListener(ent.getWorld())) {
+        if (plugin.isDisabledWorldListener(ent)) {
             return;
         }
         if (!ent.hasPotionEffect(PotionEffectType.WEAVING))
@@ -434,7 +434,7 @@ public class ResidenceListener1_21 implements Listener {
 
         Block originBlock = event.getBlock();
 
-        if (Residence.getInstance().isDisabledWorldListener(originBlock.getWorld())) {
+        if (Residence.getInstance().isDisabledWorldListener(originBlock)) {
             return;
         }
         if (Flags.windexplode.isGlobalyEnabled()) {
@@ -466,7 +466,7 @@ public class ResidenceListener1_21 implements Listener {
 
         Entity originEntity = event.getEntity();
 
-        if (Residence.getInstance().isDisabledWorldListener(originEntity.getWorld())) {
+        if (Residence.getInstance().isDisabledWorldListener(originEntity)) {
             return;
         }
         ProjectileSource cause;

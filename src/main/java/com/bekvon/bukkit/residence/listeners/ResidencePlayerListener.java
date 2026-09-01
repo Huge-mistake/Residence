@@ -208,7 +208,7 @@ public class ResidencePlayerListener implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPlayerGlobalChat(AsyncPlayerChatEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
         if (!plugin.getConfigManager().isGlobalChatEnabled())
             return;
@@ -259,7 +259,7 @@ public class ResidencePlayerListener implements Listener {
 
     private void procEvent(AsyncPlayerChatEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
         if (!plugin.getConfigManager().isGlobalChatEnabled())
             return;
@@ -703,7 +703,7 @@ public class ResidencePlayerListener implements Listener {
         if (event.getPlayer() == null)
             return;
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
 
         Block block = event.getClickedBlock();
@@ -752,7 +752,7 @@ public class ResidencePlayerListener implements Listener {
     public void onSignCreate(SignChangeEvent event) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
         Block block = event.getBlock();
 
@@ -814,7 +814,7 @@ public class ResidencePlayerListener implements Listener {
     public void onSignDestroy(BlockBreakEvent event) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
         if (event.isCancelled())
             return;
@@ -934,7 +934,7 @@ public class ResidencePlayerListener implements Listener {
     public void onPlayerSpawn(PlayerRespawnEvent event) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getRespawnLocation().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getRespawnLocation()))
             return;
         Location loc = event.getRespawnLocation();
         Boolean bed = event.isBedSpawn();
@@ -1118,7 +1118,7 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld())) {
+        if (plugin.isDisabledWorldListener(block)) {
             return;
         }
         CMIMaterial mat = CMIMaterial.get(block.getType());
@@ -1188,7 +1188,7 @@ public class ResidencePlayerListener implements Listener {
         if (block == null)
             return;
         // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld()))
+        if (plugin.isDisabledWorldListener(block))
             return;
         if (event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
@@ -1244,7 +1244,7 @@ public class ResidencePlayerListener implements Listener {
         if (block == null)
             return;
         // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld()))
+        if (plugin.isDisabledWorldListener(block))
             return;
         if (event.getAction() != Action.LEFT_CLICK_BLOCK)
             return;
@@ -1367,7 +1367,7 @@ public class ResidencePlayerListener implements Listener {
         if (block == null)
             return;
         // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld()))
+        if (plugin.isDisabledWorldListener(block))
             return;
 
         if (event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK)
@@ -1541,7 +1541,7 @@ public class ResidencePlayerListener implements Listener {
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(entity.getWorld())) {
+        if (plugin.isDisabledWorldListener(entity)) {
             return;
         }
         Player player = event.getPlayer();
@@ -1573,8 +1573,8 @@ public class ResidencePlayerListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteractEntityWithItem(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
-        World world = entity.getWorld();
-        if (plugin.isDisabledWorldListener(world)) {
+
+        if (plugin.isDisabledWorldListener(entity)) {
             return;
         }
         Player player = event.getPlayer();
@@ -1595,7 +1595,7 @@ public class ResidencePlayerListener implements Listener {
         if (entity instanceof ItemFrame) {
             // Check held Material Blacklist
             PermissionGroup group = plugin.getPlayerManager().getResidencePlayer(player).getGroup();
-            if (!plugin.getItemManager().isAllowed(item.getType(), group, world.getName()) && !ResAdmin.isResAdmin(player)) {
+            if (!plugin.getItemManager().isAllowed(item.getType(), group, entity.getWorld().getName()) && !ResAdmin.isResAdmin(player)) {
                 lm.General_ItemBlacklisted.sendMessage(player);
                 event.setCancelled(true);
                 return;
@@ -1683,7 +1683,7 @@ public class ResidencePlayerListener implements Listener {
     public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
         // disabling event on world
 
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
         Player player = event.getPlayer();
         if (ResAdmin.isResAdmin(player))
@@ -1754,7 +1754,7 @@ public class ResidencePlayerListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerBucketFill(PlayerBucketFillEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
         Player player = event.getPlayer();
         if (ResAdmin.isResAdmin(player))
@@ -1784,7 +1784,7 @@ public class ResidencePlayerListener implements Listener {
     public void onPlayerTeleport(PlayerTeleportEvent event) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
         Player player = event.getPlayer();
 
@@ -1842,7 +1842,7 @@ public class ResidencePlayerListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerDeath(final PlayerDeathEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getEntity().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getEntity()))
             return;
         Player player = event.getEntity();
         if (player == null)
@@ -2112,7 +2112,7 @@ public class ResidencePlayerListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
         Player player = event.getPlayer();
         if (player == null)
@@ -2154,7 +2154,7 @@ public class ResidencePlayerListener implements Listener {
     public void onPlayerMoveInVehicle(VehicleMoveEvent event) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getVehicle().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getVehicle()))
             return;
 
         List<Entity> ent = Utils.getPassengers(event.getVehicle());
@@ -2666,7 +2666,7 @@ public class ResidencePlayerListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
         String pname = event.getPlayer().getName();
         if (!plugin.getConfigManager().chatEnabled() || playerPersistentData.get(event.getPlayer()).isChatEnabled())

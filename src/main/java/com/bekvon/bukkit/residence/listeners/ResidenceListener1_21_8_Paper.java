@@ -34,7 +34,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onKnockback(EntityPushedByEntityAttackEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getEntity().getWorld())) {
+        if (plugin.isDisabledWorldListener(event.getEntity())) {
             return;
         }
         if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy()))

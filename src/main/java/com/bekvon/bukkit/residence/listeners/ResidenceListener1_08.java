@@ -72,7 +72,7 @@ public class ResidenceListener1_08 implements Listener {
         }
         Block sourceBlock = event.getBlock();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(sourceBlock.getWorld())) {
+        if (plugin.isDisabledWorldListener(sourceBlock)) {
             return;
         }
         if (Flags.explode.isGlobalyEnabled()) {

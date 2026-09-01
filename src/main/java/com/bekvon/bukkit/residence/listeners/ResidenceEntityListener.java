@@ -10,7 +10,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Animals;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EnderCrystal;
@@ -107,7 +106,7 @@ public class ResidenceEntityListener implements Listener {
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
         Block block = event.getBlock();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld())) {
+        if (plugin.isDisabledWorldListener(block)) {
             return;
         }
         Entity entity = event.getEntity();
@@ -205,7 +204,7 @@ public class ResidenceEntityListener implements Listener {
             return;
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(entity.getWorld()))
+        if (plugin.isDisabledWorldListener(entity))
             return;
 
         FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
@@ -220,7 +219,7 @@ public class ResidenceEntityListener implements Listener {
 
         Entity entity = event.getEntity();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(entity.getWorld())) {
+        if (plugin.isDisabledWorldListener(entity)) {
             return;
         }
         Block block = event.getBlock();
@@ -496,7 +495,7 @@ public class ResidenceEntityListener implements Listener {
         LivingEntity ent = event.getEntity();
         if (ent == null)
             return;
-        if (plugin.isDisabledWorldListener(ent.getWorld()))
+        if (plugin.isDisabledWorldListener(ent))
             return;
         if (ent instanceof Player)
             return;
@@ -676,7 +675,7 @@ public class ResidenceEntityListener implements Listener {
         Entity ent = event.getEntity();
         if (ent == null)
             return;
-        if (plugin.isDisabledWorldListener(ent.getWorld()))
+        if (plugin.isDisabledWorldListener(ent))
             return;
         FlagPermissions perms = FlagPermissions.getPerms(event.getLocation());
         if (Utils.isAnimal(ent)) {
@@ -786,7 +785,7 @@ public class ResidenceEntityListener implements Listener {
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
         Projectile projectile = event.getEntity();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(projectile.getWorld())) {
+        if (plugin.isDisabledWorldListener(projectile)) {
             return;
         }
         Flags flag = Flags.shoot;
@@ -936,7 +935,7 @@ public class ResidenceEntityListener implements Listener {
         Entity ent = event.getEntity();
         if (ent == null)
             return;
-        if (plugin.isDisabledWorldListener(ent.getWorld()))
+        if (plugin.isDisabledWorldListener(ent))
             return;
 
         CMIEntityType type = CMIEntityType.get(event.getEntityType());
@@ -1049,7 +1048,7 @@ public class ResidenceEntityListener implements Listener {
         }
         // disabling event on world
         Location loc = event.getLocation();
-        if (plugin.isDisabledWorldListener(loc.getWorld()))
+        if (plugin.isDisabledWorldListener(loc))
             return;
 
         Entity ent = event.getEntity();
@@ -1484,7 +1483,7 @@ public class ResidenceEntityListener implements Listener {
     public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(entity.getWorld()))
+        if (plugin.isDisabledWorldListener(entity))
             return;
 
         if (!(entity instanceof EnderCrystal) && !(entity instanceof ItemFrame)
@@ -1719,7 +1718,7 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityDamage(EntityDamageEvent event) {
         // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getEntity().getWorld()))
+        if (plugin.isDisabledWorldListener(event.getEntity()))
             return;
         Entity ent = event.getEntity();
         if (ent.hasMetadata("NPC"))

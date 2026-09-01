@@ -80,7 +80,7 @@ public class ResidenceListener1_13 implements Listener {
     private boolean shouldCancelFarmLandChange(Block block) {
 
         // disabling event on world
-        if (plugin.isDisabledWorldListener(block.getWorld()))
+        if (plugin.isDisabledWorldListener(block))
             return false;
 
         if (block.getType() != Material.FARMLAND)
@@ -105,7 +105,7 @@ public class ResidenceListener1_13 implements Listener {
             return;
         }
         // disabling event on world
-        if (plugin.isDisabledWorldListener(hitBlock.getWorld())) {
+        if (plugin.isDisabledWorldListener(hitBlock)) {
             return;
         }
         Block hitBlockFace = hitBlock.getLocation().clone().add(event.getHitBlockFace().getDirection()).getBlock();
