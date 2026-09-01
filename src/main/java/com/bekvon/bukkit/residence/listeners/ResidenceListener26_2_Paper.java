@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.listenersCache.PlayerCollideWithEntityCache;
+import com.bekvon.bukkit.residence.listenersCache.PlayerCollideWithEntityCache.PlayerCollideWithEntityKey;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.utils.Utils;
 
@@ -59,9 +60,8 @@ public class ResidenceListener26_2_Paper implements Listener {
             // Only handle entity pushes involving a player
             return;
         }
-        PlayerCollideWithEntityCache.PlayerCollideWithEntityKey key
-                = new PlayerCollideWithEntityCache.PlayerCollideWithEntityKey(target, pushedBy);
-
+        PlayerCollideWithEntityKey key = new PlayerCollideWithEntityKey(target, pushedBy);
+        // Collisions are high-frequency events; caching is more lightweight
         if (PlayerCollideWithEntityCache.getOrCompute(key, () -> shouldDenyPush(target, pushedBy))) {
             event.setCancelled(true);
         }
