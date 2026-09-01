@@ -197,6 +197,7 @@ public class ConfigManager {
     private int SelectionNetherHeight = 128;
     protected boolean NoCostForYBlocks = false;
     protected boolean WorldEditIntegration = false;
+    protected boolean DisabledWorld;
     protected boolean DisableListeners;
     protected boolean DisableCommands;
     private boolean DisableResidenceCreation;
@@ -652,6 +653,15 @@ public class ConfigManager {
         DisableCommands = c.get("Global.Optimizations.DisabledWorlds.DisableCommands", true);
         c.addComment("Global.Optimizations.DisabledWorlds.DisableResidenceCreation", "Disables residence creation in included worlds");
         DisableResidenceCreation = c.get("Global.Optimizations.DisabledWorlds.DisableResidenceCreation", true);
+
+        if (DisabledWorldsList.isEmpty() && EnabledWorldsList.isEmpty()) {
+            DisabledWorld = false;
+            DisableListeners = false;
+            DisableCommands = false;
+            DisableResidenceCreation = false;
+        } else {
+            DisabledWorld = true;
+        }
 
         c.addComment("Global.Optimizations.ItemPickUpDelay", "Delay in seconds between item pickups after residence flag prevents it", "Keep it at arround 10 sec to lower unesecery checks");
         ItemPickUpDelay = c.get("Global.Optimizations.ItemPickUpDelay", 10);

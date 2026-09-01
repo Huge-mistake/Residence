@@ -1753,25 +1753,16 @@ public class FlagPermissions {
         ignoreGroupedFlagsAccess = flagsAccess;
     }
 
-    public static boolean shouldIgnoreCheck(@NotNull Flags flag, @NotNull Block block) {
-        if (!flag.isGlobalyEnabled()) {
-            return true;
-        }
-        return Residence.getInstance().isDisabledWorldListener(block.getWorld());
+    public static boolean shouldIgnoreCheck(@NotNull Flags flag, Block block) {
+        return !flag.isGlobalyEnabled() || Residence.getInstance().isDisabledWorldListener(block);
     }
 
-    public static boolean shouldIgnoreCheck(@NotNull Flags flag, @NotNull Entity entity) {
-        if (!flag.isGlobalyEnabled()) {
-            return true;
-        }
-        return Residence.getInstance().isDisabledWorldListener(entity.getWorld());
+    public static boolean shouldIgnoreCheck(@NotNull Flags flag, Entity entity) {
+        return !flag.isGlobalyEnabled() || Residence.getInstance().isDisabledWorldListener(entity);
     }
 
-    public static boolean shouldIgnoreCheck(@NotNull Flags flag, @NotNull World world) {
-        if (!flag.isGlobalyEnabled()) {
-            return true;
-        }
-        return Residence.getInstance().isDisabledWorldListener(world);
+    public static boolean shouldIgnoreCheck(@NotNull Flags flag, World world) {
+        return !flag.isGlobalyEnabled() || Residence.getInstance().isDisabledWorldListener(world);
     }
 
     public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Location target, @Nullable Flags mainFlag, @Nullable Flags subFlag) {
