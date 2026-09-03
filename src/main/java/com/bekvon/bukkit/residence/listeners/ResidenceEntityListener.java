@@ -1436,16 +1436,6 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         Entity attacker = event.getDamager();
-        // https://github.com/Zrips/Residence/commit/37c7041e6c82484852ff92f46340ca5d17de867b
-        // https://github.com/Zrips/Residence/commit/adb30c965bca64bb50a9f2b9d2976dc1bd6998f4
-         if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player
-                 && attacker instanceof Projectile && ((Projectile) attacker).getShooter() instanceof Player) {
-             if (FlagPermissions.has(victim.getLocation(), Flags.pvp, true)) {
-                 return;
-             }
-             attacker.setFireTicks(0);
-             return;
-         }
         Flags mainFlag = null;
         Flags subFlag = null;
 
