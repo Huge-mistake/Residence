@@ -826,14 +826,16 @@ public class ConfigManager {
 
         c.addComment("Global.Optimizations.ExtraContainerProtection");
         c.addComment("Global.Optimizations.ExtraContainerProtection.HopperCrossResCheck",
-                "Whether to check hoppers crossing Residence borders to prevent edge container theft (default: true)");
+                "Whether to check hoppers crossing Residence borders to prevent edge container theft (default: true)",
+                "This option has no effect when Flags.container is globally disabled");
         HopperCrossResCheck = c.get("Global.Optimizations.ExtraContainerProtection.HopperCrossResCheck", true);
 
         c.addComment("Global.Optimizations.ExtraContainerProtection.DisableHopperMinecartOffRailContainerPickup",
                 "When off‑rail, HopperMinecart can be pushed freely, and through special means it can steal items from containers",
                 "Enabling this option prevents off‑rail HopperMinecarts from taking items from containers",
-                "Affects only HopperMinecarts and containers in the same Residence area (default: true)");
-        DisableMinecartOffRailPick = c.get("Global.Optimizations.ExtraContainerProtection.DisableHopperMinecartOffRailContainerPickup", true);
+                "Affects only HopperMinecarts and containers in the same Residence area (default: false)",
+                "This option has no effect when Flags.container is globally disabled or HopperCrossResCheck is disabled");
+        DisableMinecartOffRailPick = c.get("Global.Optimizations.ExtraContainerProtection.DisableHopperMinecartOffRailContainerPickup", false);
 
         SignsMaxPerResidence = c.get("Global.Signs.MaxPerResidence", 5);
         SignsMaxPerResidence = SignsMaxPerResidence < 0 ? 0 : SignsMaxPerResidence;
