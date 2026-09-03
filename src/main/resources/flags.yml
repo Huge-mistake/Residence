@@ -112,7 +112,7 @@ Global:
     # Allow or deny creeper explosions
     creeper: true
     # Applies to: Residence
-    # Allows or denys all entity damage within the residence
+    # Allow or deny damage to players and tamed animals
     damage: false
     # Applies to: Residence
     # Sets day time in residence

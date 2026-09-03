@@ -3,7 +3,7 @@ package com.bekvon.bukkit.residence.listeners;
 import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -72,7 +72,7 @@ public class CrackShotListener implements Listener {
         // disabling event on world
         if (plugin.isDisabledWorldListener(event.getPlayer()))
             return;
-        if (event.getVictim().getType() != EntityType.ITEM_FRAME && !Utils.isArmorStandEntity(event.getVictim().getType()))
+        if (!(event.getVictim() instanceof ItemFrame) && !Utils.isArmorStand(event.getVictim()))
             return;
 
         Entity dmgr = event.getDamager();

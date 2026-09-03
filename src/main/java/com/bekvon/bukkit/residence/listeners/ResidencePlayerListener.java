@@ -21,10 +21,11 @@ import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.LeashHitch;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Sheep;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.entity.minecart.CommandMinecart;
 import org.bukkit.event.Event.Result;
@@ -355,7 +356,7 @@ public class ResidencePlayerListener implements Listener {
         }
         if (event.getCaught() == null)
             return;
-        if ((Utils.isArmorStandEntity(event.getCaught().getType()) || event.getCaught() instanceof Boat || event.getCaught() instanceof LivingEntity) && !ResAdmin.isResAdmin(player)) {
+        if ((Utils.isArmorStand(event.getCaught()) || event.getCaught() instanceof Boat || event.getCaught() instanceof LivingEntity) && !ResAdmin.isResAdmin(player)) {
             FlagPermissions perm = FlagPermissions.getPerms(event.getCaught().getLocation());
             ClaimedResidence res = ClaimedResidence.getByLoc(event.getCaught().getLocation());
             if (perm.has(Flags.hook, FlagCombo.OnlyFalse)) {
@@ -1532,11 +1533,6 @@ public class ResidencePlayerListener implements Listener {
         return false;
     }
 
-    private boolean isTrader(Entity entity) {
-        CMIEntityType type = CMIEntityType.get(entity);
-        return type == CMIEntityType.VILLAGER || type == CMIEntityType.WANDERING_TRADER;
-    }
-
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
@@ -1555,13 +1551,16 @@ public class ResidencePlayerListener implements Listener {
             mainFlag = Flags.container;
             subFlag = Flags.use;
 
+        } else if (Flags.leash.isGlobalyEnabled() && entity instanceof LeashHitch) {
+            mainFlag = Flags.leash;
+
         } else if (Flags.container.isGlobalyEnabled() && canHaveContainer(entity, player)) {
             mainFlag = Flags.container;
 
         } else if (Flags.riding.isGlobalyEnabled() && canRide(entity, player)) {
             mainFlag = Flags.riding;
 
-        } else if (Flags.trade.isGlobalyEnabled() && isTrader(entity)) {
+        } else if (Flags.trade.isGlobalyEnabled() && Utils.isVillagerOrTrader(entity)) {
             mainFlag = Flags.trade;
 
         } else {
@@ -1603,7 +1602,7 @@ public class ResidencePlayerListener implements Listener {
             }
             return;
 
-        } else if (Flags.dye.isGlobalyEnabled() && entity.getType() == EntityType.SHEEP && held.containsCriteria(CMIMC.DYE)) {
+        } else if (Flags.dye.isGlobalyEnabled() && entity instanceof Sheep && held.containsCriteria(CMIMC.DYE)) {
             mainFlag = Flags.dye;
             subFlag = Flags.animalkilling;
 
@@ -2712,7 +2711,7 @@ public class ResidencePlayerListener implements Listener {
         if (Version.isCurrentLower(Version.v26_2_0)) {
             return;
         }
-        if (event.getEntityType() != EntityType.EGG) {
+        if (!(event.getEntity() instanceof org.bukkit.entity.Egg)) {
             return;
         }
         org.bukkit.entity.Projectile egg = event.getEntity();

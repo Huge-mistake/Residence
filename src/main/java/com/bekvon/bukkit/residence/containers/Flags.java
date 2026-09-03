@@ -44,7 +44,7 @@ public enum Flags {
     dragongrief(CMIMaterial.DIRT, FlagMode.Residence, "Prevents ender dragon block griefing", true),
     day(CMIMaterial.DANDELION, FlagMode.Residence, "Sets day time in residence", true),
     dye(CMIMaterial.ORANGE_DYE, FlagMode.Both, "Allows or denys sheep dyeing", true),
-    damage(CMIMaterial.GOLDEN_SWORD, FlagMode.Residence, "Allows or denys all entity damage within the residence", false),
+    damage(CMIMaterial.GOLDEN_SWORD, FlagMode.Residence, "Allow or deny damage to players and tamed animals", false),
     decay(CMIMaterial.OAK_LEAVES, FlagMode.Residence, "Allows or denys leave decay in the residence", true),
     destroy(CMIMaterial.END_STONE, FlagMode.Both, "Allows or denys only destruction of blocks, overrides the build flag", true),
     dryup(CMIMaterial.BLUE_STAINED_GLASS_PANE, FlagMode.Residence, "Prevents land from drying up", true),
