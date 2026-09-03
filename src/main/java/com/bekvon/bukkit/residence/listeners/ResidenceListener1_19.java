@@ -66,49 +66,49 @@ public class ResidenceListener1_19 implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onHopperCrossRes(InventoryMoveItemEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.container.isGlobalyEnabled())
-            return;
-
-        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(event.getSource().getLocation());
-        ClaimedResidence destRes = ClaimedResidence.getByLoc(event.getDestination().getLocation());
-
-        // source & dest not in Res
-        if (sourceRes == null && destRes == null)
-            return;
-
-        // source & dest in Res
-        if (sourceRes != null && destRes != null) {
-
-            // in Same Res, or have Same Res owner
-            if (sourceRes.equals(destRes) || sourceRes.isOwner(destRes.getOwner()))
-                return;
-
-            // not in Same Res & not Same Res owner
-            // hopper can be source or dest
-            if (sourceRes.getPermissions().has(Flags.container, true) &&
-                    destRes.getPermissions().has(Flags.container, true))
-                return;
-
-            // source in Res, dest definitely not in Res
-        } else if (sourceRes != null) {
-
-            if (sourceRes.getPermissions().has(Flags.container, true))
-                return;
-
-            // dest definitely in Res, source definitely not in Res
-        } else {
-
-            if (destRes.getPermissions().has(Flags.container, true))
-                return;
-
-        }
-
-        event.setCancelled(true);
-
-    }
+//    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+//    public void onHopperCrossRes(InventoryMoveItemEvent event) {
+//        // Disabling listener if flag disabled globally
+//        if (!Flags.container.isGlobalyEnabled())
+//            return;
+//
+//        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(event.getSource().getLocation());
+//        ClaimedResidence destRes = ClaimedResidence.getByLoc(event.getDestination().getLocation());
+//
+//        // source & dest not in Res
+//        if (sourceRes == null && destRes == null)
+//            return;
+//
+//        // source & dest in Res
+//        if (sourceRes != null && destRes != null) {
+//
+//            // in Same Res, or have Same Res owner
+//            if (sourceRes.equals(destRes) || sourceRes.isOwner(destRes.getOwner()))
+//                return;
+//
+//            // not in Same Res & not Same Res owner
+//            // hopper can be source or dest
+//            if (sourceRes.getPermissions().has(Flags.container, true) &&
+//                    destRes.getPermissions().has(Flags.container, true))
+//                return;
+//
+//            // source in Res, dest definitely not in Res
+//        } else if (sourceRes != null) {
+//
+//            if (sourceRes.getPermissions().has(Flags.container, true))
+//                return;
+//
+//            // dest definitely in Res, source definitely not in Res
+//        } else {
+//
+//            if (destRes.getPermissions().has(Flags.container, true))
+//                return;
+//
+//        }
+//
+//        event.setCancelled(true);
+//
+//    }
 
     // if Flag_riding is true
     // riding InventoryVehicle: check Flag_container when opening Vehicle Inventory

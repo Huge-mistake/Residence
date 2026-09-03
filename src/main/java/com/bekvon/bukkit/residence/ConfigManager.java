@@ -191,6 +191,8 @@ public class ConfigManager {
     protected boolean Couldroncompatibility;
     protected boolean enableDebug = false;
     protected boolean versionCheck = true;
+    protected boolean HopperCrossResCheck;
+    protected boolean DisableMinecartOffRailPick;
 
     protected boolean SelectionIgnoreY = false;
     protected boolean SelectionIgnoreYInSubzone = false;
@@ -821,6 +823,17 @@ public class ConfigManager {
         WalkSpeed2 = WalkSpeed2 < 0 ? 0 : WalkSpeed2;
         WalkSpeed2 = WalkSpeed2 > 5 ? 5 : WalkSpeed2;
         WalkSpeed2 = WalkSpeed2 / 5.0;
+
+        c.addComment("Global.Optimizations.ExtraContainerProtection");
+        c.addComment("Global.Optimizations.ExtraContainerProtection.HopperCrossResCheck",
+                "Whether to check hoppers crossing Residence borders to prevent edge container theft (default: true)");
+        HopperCrossResCheck = c.get("Global.Optimizations.ExtraContainerProtection.HopperCrossResCheck", true);
+
+        c.addComment("Global.Optimizations.ExtraContainerProtection.DisableHopperMinecartOffRailContainerPickup",
+                "When off‑rail, HopperMinecart can be pushed freely, and through special means it can steal items from containers",
+                "Enabling this option prevents off‑rail HopperMinecarts from taking items from containers",
+                "Affects only HopperMinecarts and containers in the same Residence area (default: true)");
+        DisableMinecartOffRailPick = c.get("Global.Optimizations.ExtraContainerProtection.DisableHopperMinecartOffRailContainerPickup", true);
 
         SignsMaxPerResidence = c.get("Global.Signs.MaxPerResidence", 5);
         SignsMaxPerResidence = SignsMaxPerResidence < 0 ? 0 : SignsMaxPerResidence;
@@ -2222,6 +2235,14 @@ public class ConfigManager {
 
     public List<String> getTeleportBlockedWorlds() {
         return TeleportBlockedWorlds;
+    }
+
+    public boolean getHopperCrossResCheck() {
+        return HopperCrossResCheck;
+    }
+
+    public boolean isDisableMinecartOffRailPick() {
+        return DisableMinecartOffRailPick;
     }
 
 //    public int getTownMinRange() {

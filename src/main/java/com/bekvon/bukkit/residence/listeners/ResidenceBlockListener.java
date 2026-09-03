@@ -16,6 +16,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowman;
+import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -38,6 +39,7 @@ import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.PortalCreateEvent;
@@ -1077,6 +1079,61 @@ public class ResidenceBlockListener implements Listener {
         Player player = event.getPlayer();
 
         if (FlagPermissions.shouldDenyAndNotify(player, block, Flags.ignite, null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onHopperCrossRes(InventoryMoveItemEvent event) {
+        if (!plugin.getConfigManager().getHopperCrossResCheck()) {
+            return;
+        }
+        // Disabling listener if flag disabled globally
+        if (!Flags.container.isGlobalyEnabled()) {
+            return;
+        }
+        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(event.getSource().getLocation());
+        ClaimedResidence destRes = ClaimedResidence.getByLoc(event.getDestination().getLocation());
+        // Source and Dest not in Res
+        if (sourceRes == null && destRes == null) {
+            return;
+        }
+        // Source and Dest in Res
+        if (sourceRes != null && destRes != null) {
+            // in Same Res, or have Same Res owner
+            if (sourceRes == destRes || sourceRes.isOwner(destRes.getOwner())) {
+                onHopperMinecartOffRail(event);
+                return;
+            }
+            // Not in Same Res and not Same Res owner; hopper can be Source or Dest
+            if (sourceRes.getPermissions().has(Flags.container, true)
+                    && destRes.getPermissions().has(Flags.container, true)) {
+                return;
+            }
+            // Source in Res, Dest definitely not in Res
+        } else if (sourceRes != null) {
+            if (sourceRes.getPermissions().has(Flags.container, true)) {
+                return;
+            }
+            // Dest definitely in Res, Source definitely not in Res
+        } else {
+            if (destRes.getPermissions().has(Flags.container, true)) {
+                return;
+            }
+        }
+        event.setCancelled(true);
+    }
+
+    private void onHopperMinecartOffRail(InventoryMoveItemEvent event) {
+        if (!plugin.getConfigManager().isDisableMinecartOffRailPick()) {
+            return;
+        }
+        if (!(event.getInitiator().getHolder() instanceof HopperMinecart)) {
+            return;
+        }
+        Block block = ((HopperMinecart) event.getInitiator().getHolder()).getLocation().getBlock();
+
+        if (!CMIMaterial.get(block.getType()).containsCriteria(CMIMC.RAIL)) {
             event.setCancelled(true);
         }
     }
