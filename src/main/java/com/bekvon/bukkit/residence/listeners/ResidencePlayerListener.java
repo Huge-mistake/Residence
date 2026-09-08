@@ -1437,11 +1437,16 @@ public class ResidencePlayerListener implements Listener {
                             break main;
                         break;
                     }
+                    event.setCancelled(true);
+                    lm.Flag_Deny.sendMessage(player, result);
+                    return;
                 }
-                event.setCancelled(true);
-                lm.Flag_Deny.sendMessage(player, result);
-                return;
 
+                if (isCanUseEntity_BothClick(mat)) {
+                    event.setCancelled(true);
+                    lm.Flag_Deny.sendMessage(player, result);
+                }
+                return;
             }
             // End AbstractBlockClickFlag Check
         }
