@@ -191,8 +191,6 @@ public class ConfigManager {
     protected boolean Couldroncompatibility;
     protected boolean enableDebug = false;
     protected boolean versionCheck = true;
-    protected boolean HopperCrossResCheck;
-    protected boolean DisableMinecartOffRailPick;
 
     protected boolean SelectionIgnoreY = false;
     protected boolean SelectionIgnoreYInSubzone = false;
@@ -203,6 +201,7 @@ public class ConfigManager {
     protected boolean DisableListeners;
     protected boolean DisableCommands;
     private boolean DisableResidenceCreation;
+    private boolean HopperCrossResidenceCheck;
 
     // Town
 //    private boolean TownEnabled = false;
@@ -824,18 +823,10 @@ public class ConfigManager {
         WalkSpeed2 = WalkSpeed2 > 5 ? 5 : WalkSpeed2;
         WalkSpeed2 = WalkSpeed2 / 5.0;
 
-        c.addComment("Global.Optimizations.ExtraContainerProtection");
-        c.addComment("Global.Optimizations.ExtraContainerProtection.HopperCrossResCheck",
+        c.addComment("Global.Optimizations.ExtraProtection.HopperCrossResidenceCheck",
                 "Whether to check hoppers crossing Residence borders to prevent edge container theft (default: true)",
-                "This option has no effect when Flags.container is globally disabled");
-        HopperCrossResCheck = c.get("Global.Optimizations.ExtraContainerProtection.HopperCrossResCheck", true);
-
-        c.addComment("Global.Optimizations.ExtraContainerProtection.DisableHopperMinecartOffRailContainerPickup",
-                "When off‑rail, HopperMinecart can be pushed freely, and through special means it can steal items from containers",
-                "Enabling this option prevents off‑rail HopperMinecarts from taking items from containers",
-                "Affects only HopperMinecarts and containers in the same Residence area (default: false)",
-                "This option has no effect when Flags.container is globally disabled or HopperCrossResCheck is disabled");
-        DisableMinecartOffRailPick = c.get("Global.Optimizations.ExtraContainerProtection.DisableHopperMinecartOffRailContainerPickup", false);
+                "If Flags.container is globally disabled, this option has no effect");
+        HopperCrossResidenceCheck = c.get("Global.Optimizations.ExtraProtection.HopperCrossResidenceCheck", true);
 
         SignsMaxPerResidence = c.get("Global.Signs.MaxPerResidence", 5);
         SignsMaxPerResidence = SignsMaxPerResidence < 0 ? 0 : SignsMaxPerResidence;
@@ -2239,12 +2230,8 @@ public class ConfigManager {
         return TeleportBlockedWorlds;
     }
 
-    public boolean getHopperCrossResCheck() {
-        return HopperCrossResCheck;
-    }
-
-    public boolean isDisableMinecartOffRailPick() {
-        return DisableMinecartOffRailPick;
+    public boolean getHopperCrossResidenceCheck() {
+        return HopperCrossResidenceCheck;
     }
 
 //    public int getTownMinRange() {

@@ -1084,12 +1084,18 @@ public class ResidenceBlockListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onHopperCrossRes(InventoryMoveItemEvent event) {
-        if (!plugin.getConfigManager().getHopperCrossResCheck()) {
-            return;
+    public void onHopperMoveItem(InventoryMoveItemEvent event) {
+        // Prevent trolls from pushing derailed hopper minecarts into the Residence to steal items from containers
+        if (Flags.minecartsuction.isGlobalyEnabled() && event.getInitiator().getHolder() instanceof HopperMinecart) {
+            Location loc = ((HopperMinecart) event.getInitiator().getHolder()).getLocation();
+            if (!CMIMaterial.get(loc.getBlock().getType()).containsCriteria(CMIMC.RAIL)
+                    && FlagPermissions.has(loc, Flags.minecartsuction, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+                return;
+            }
         }
-        // Disabling listener if flag disabled globally
-        if (!Flags.container.isGlobalyEnabled()) {
+        // Protect containers at the edge of the Residence area from theft
+        if (!Flags.container.isGlobalyEnabled() || !plugin.getConfigManager().getHopperCrossResidenceCheck()) {
             return;
         }
         ClaimedResidence sourceRes = ClaimedResidence.getByLoc(event.getSource().getLocation());
@@ -1102,7 +1108,6 @@ public class ResidenceBlockListener implements Listener {
         if (sourceRes != null && destRes != null) {
             // in Same Res, or have Same Res owner
             if (sourceRes == destRes || sourceRes.isOwner(destRes.getOwner())) {
-                onHopperMinecartOffRail(event);
                 return;
             }
             // Not in Same Res and not Same Res owner; hopper can be Source or Dest
@@ -1122,19 +1127,5 @@ public class ResidenceBlockListener implements Listener {
             }
         }
         event.setCancelled(true);
-    }
-
-    private void onHopperMinecartOffRail(InventoryMoveItemEvent event) {
-        if (!plugin.getConfigManager().isDisableMinecartOffRailPick()) {
-            return;
-        }
-        if (!(event.getInitiator().getHolder() instanceof HopperMinecart)) {
-            return;
-        }
-        Block block = ((HopperMinecart) event.getInitiator().getHolder()).getLocation().getBlock();
-
-        if (!CMIMaterial.get(block.getType()).containsCriteria(CMIMC.RAIL)) {
-            event.setCancelled(true);
-        }
     }
 }

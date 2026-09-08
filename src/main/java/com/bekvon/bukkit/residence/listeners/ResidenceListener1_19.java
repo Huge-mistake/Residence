@@ -6,6 +6,7 @@ import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.ChestBoat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
@@ -18,7 +19,6 @@ import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 
-import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener1_19 implements Listener {
@@ -29,9 +29,11 @@ public class ResidenceListener1_19 implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onUseGoatHorn(PlayerInteractEvent event) {
-
+        if (event.useItemInHand() == Result.DENY) {
+            return;
+        }
         Player player = event.getPlayer();
 
         if (FlagPermissions.shouldIgnoreCheck(Flags.goathorn, player)) {
@@ -40,9 +42,9 @@ public class ResidenceListener1_19 implements Listener {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
 
-        if (CMIMaterial.get(event.getItem()) != CMIMaterial.GOAT_HORN)
+        if (event.getItem() == null || event.getItem().getType() != Material.GOAT_HORN) {
             return;
-
+        }
         if (FlagPermissions.shouldDenyAndNotify(player, player, Flags.goathorn, null)) {
             event.setCancelled(true);
         }

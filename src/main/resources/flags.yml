@@ -262,6 +262,9 @@ Global:
     # Allows or denys players to use looms
     loom: true
     # Applies to: Residence
+    # Allow or deny derailed hopper minecarts from sucking items from containers
+    minecartsuction: true
+    # Applies to: Residence
     # Prevents mob droping exp on death
     mobexpdrop: true
     # Applies to: Residence

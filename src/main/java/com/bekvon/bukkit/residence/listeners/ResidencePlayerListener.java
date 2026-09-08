@@ -1284,11 +1284,11 @@ public class ResidencePlayerListener implements Listener {
     }
 
     private boolean isContainer(Material mat) {
-        return FlagPermissions.getMaterialUseFlagList().containsKey(mat) && FlagPermissions.getMaterialUseFlagList().get(mat).equals(Flags.container)
+        return FlagPermissions.getMaterialUseFlagList().get(mat) == Flags.container
                 || plugin.getConfigManager().getCustomContainers().contains(mat);
     }
 
-    public static boolean isCanUseEntity_BothClick(Material mat) {
+    private boolean isCanUseEntity_BothClick(Material mat) {
         CMIMaterial cmat = CMIMaterial.get(mat);
 
         switch (cmat) {
@@ -1398,82 +1398,68 @@ public class ResidencePlayerListener implements Listener {
         if (!isContainer(mat) && !isCanUseEntity(mat))
             return;
 
-        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
-        boolean hasUse = perms.playerHas(player, Flags.use, true);
-
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(block.getLocation());
-        // Restrict defender container use in raid
-        if (res != null && res.getRaid().isUnderRaid() && res.getRaid().isDefender(player) && !ConfigManager.RaidDefenderContainerUsage) {
-            Flags result = FlagPermissions.getMaterialUseFlagList().get(mat);
-            if (result != null && result.equals(Flags.container)) {
-                event.setCancelled(true);
-                lm.Raid_cantDo.sendMessage(player);
-                return;
-            }
-        }
-
-        if (res == null || !res.isOwner(player)) {
-
-            Flags result = FlagPermissions.getMaterialUseFlagList().get(mat);
-            // Residence assigns Flags internally for Material
-            if (result != null) {
-                // Start AbstractBlockClickFlag Check
-                main: if (!perms.playerHas(player, result, hasUse)) {
-
-                    if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-
-                        if (res != null && res.getRaid().isUnderRaid() && res.getRaid().isAttacker(player)) {
-                            break main;
-                        }
-
-                        switch (result) {
-                        case button:
-                            if (ResPerm.bypass_button.hasPermission(player, 10000L))
-                                break main;
-                            break;
-                        case container:
-                            if (ResPerm.bypass_container.hasPermission(player, 10000L))
-                                break main;
-                            break;
-                        case door:
-                            if (ResPerm.bypass_door.hasPermission(player, 10000L))
-                                break main;
-                            break;
-                        }
-                        event.setCancelled(true);
-                        lm.Flag_Deny.sendMessage(player, result);
-                        return;
-                    }
-
-                    if (isCanUseEntity_BothClick(mat)) {
-
-                        if (res != null && res.getRaid().isUnderRaid() && res.getRaid().isAttacker(player)) {
-                            break main;
-                        }
-                        event.setCancelled(true);
-                        lm.Flag_Deny.sendMessage(player, result);
-                    }
+        Flags result = FlagPermissions.getMaterialUseFlagList().get(mat);
+        // Not Vanilla Raid
+        if (ConfigManager.RaidEnabled) {
+            ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
+            if (res != null && res.getRaid().isUnderRaid()) {
+                // Exempt interaction check for Raid attacker
+                if (res.getRaid().isAttacker(player)) {
                     return;
                 }
-                // End AbstractBlockClickFlag Check
+                // Restrict defender container use in raid
+                if (!ConfigManager.RaidDefenderContainerUsage && result == Flags.container && res.getRaid().isDefender(player)) {
+                    lm.Raid_cantDo.sendMessage(player);
+                    event.setCancelled(true);
+                    return;
+                }
             }
         }
-        // Restrict custom both-click container use
+        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
+        boolean hasUse = perms.playerHas(player, Flags.use, true);
+        // Residence assigns Flags internally for Material
+        if (result != null) {
+            // Start AbstractBlockClickFlag Check
+            main: if (!perms.playerHas(player, result, hasUse)) {
+
+                if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                    switch (result) {
+                    case button:
+                        if (ResPerm.bypass_button.hasPermission(player, 10000L))
+                            break main;
+                        break;
+                    case container:
+                        if (ResPerm.bypass_container.hasPermission(player, 10000L))
+                            break main;
+                        break;
+                    case door:
+                        if (ResPerm.bypass_door.hasPermission(player, 10000L))
+                            break main;
+                        break;
+                    }
+                }
+                event.setCancelled(true);
+                lm.Flag_Deny.sendMessage(player, result);
+                return;
+
+            }
+            // End AbstractBlockClickFlag Check
+        }
+        // Custom both-click container check; Flags.container
         if (plugin.getConfigManager().getCustomContainers().contains(mat)) {
-            if (!perms.playerHas(player, Flags.container, hasUse)
-                    || !ResPerm.bypass_container.hasPermission(player, 10000L)) {
+            if (!perms.playerHas(player, Flags.container, hasUse) && !ResPerm.bypass_container.hasPermission(player, 10000L)) {
                 event.setCancelled(true);
                 lm.Flag_Deny.sendMessage(player, Flags.container);
                 return;
             }
         }
-        // Restrict custom both-click block
+        // Custom both-click block check; Flags.use
         if (!hasUse && plugin.getConfigManager().getCustomBothClick().contains(mat)) {
             event.setCancelled(true);
             lm.Flag_Deny.sendMessage(player, Flags.use);
             return;
         }
-        // Restrict custom right-click block
+        // Custom right-click block check; Flags.use
         if (!hasUse && event.getAction() == Action.RIGHT_CLICK_BLOCK
                 && plugin.getConfigManager().getCustomRightClick().contains(mat)) {
             event.setCancelled(true);
