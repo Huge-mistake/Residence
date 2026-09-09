@@ -1281,6 +1281,7 @@ public class ConfigManager {
         NewPlayerRangeY = c.get("Global.NewPlayer.Range.Y", 5);
         NewPlayerRangeZ = c.get("Global.NewPlayer.Range.Z", 5);
 
+        customContainers.clear();
         c.addComment("Global.CustomContainers", "Experimental - The following settings are lists of block IDs to be used as part of the checks for the 'container' and 'use' flags when using mods.");
         List<String> pls = c.get("Global.CustomContainers", new ArrayList<String>());
         for (String one : pls) {
@@ -1289,6 +1290,7 @@ public class ConfigManager {
                 customContainers.add(mat);
         }
 
+        customBothClick.clear();
         pls = c.get("Global.CustomBothClick", new ArrayList<String>());
         for (String one : pls) {
             Material mat = CMILib.getInstance().getItemManager().getMaterial(one);
@@ -1296,6 +1298,7 @@ public class ConfigManager {
                 customBothClick.add(mat);
         }
 
+        customRightClick.clear();
         pls = c.get("Global.CustomRightClick", new ArrayList<String>());
         for (String one : pls) {
             Material mat = CMILib.getInstance().getItemManager().getMaterial(one);
