@@ -45,6 +45,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.util.Vector;
@@ -1098,8 +1099,28 @@ public class ResidenceBlockListener implements Listener {
         if (!Flags.container.isGlobalyEnabled() || !plugin.getConfigManager().getHopperCrossResidenceCheck()) {
             return;
         }
-        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(event.getSource().getLocation());
-        ClaimedResidence destRes = ClaimedResidence.getByLoc(event.getDestination().getLocation());
+        Location sourceLoc = null;
+        Location destLoc = null;
+        if (Version.isCurrentEqualOrHigher(Version.v1_9_0)) {
+            sourceLoc= event.getSource().getLocation();
+            destLoc = event.getDestination().getLocation();
+        } else {
+            InventoryHolder sourceHolder = event.getSource().getHolder();
+            if (sourceHolder instanceof BlockState) {
+                sourceLoc = ((BlockState) sourceHolder).getLocation();
+            } else if (sourceHolder instanceof Entity) {
+                sourceLoc = ((Entity) sourceHolder).getLocation();
+            }
+
+            InventoryHolder destHolder = event.getDestination().getHolder();
+            if (destHolder instanceof BlockState) {
+                destLoc = ((BlockState) destHolder).getLocation();
+            } else if (destHolder instanceof Entity) {
+                destLoc = ((Entity) destHolder).getLocation();
+            }
+        }
+        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(sourceLoc);
+        ClaimedResidence destRes = ClaimedResidence.getByLoc(destLoc);
         // Source and Dest not in Res
         if (sourceRes == null && destRes == null) {
             return;
