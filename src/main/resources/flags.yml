@@ -516,6 +516,7 @@ Global:
     leash: LEAD
     lever: LEVER
     loom: LOOM
+    minecartsuction: HOPPER_MINECART
     mobexpdrop: MELON_SEEDS
     mobgriefing: BONE
     mobitemdrop: COCOA_BEANS

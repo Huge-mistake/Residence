@@ -1087,12 +1087,15 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHopperMoveItem(InventoryMoveItemEvent event) {
         // Prevent trolls from pushing derailed hopper minecarts into the Residence to steal items from containers
-        if (Flags.minecartsuction.isGlobalyEnabled() && event.getInitiator().getHolder() instanceof HopperMinecart) {
-            Location loc = ((HopperMinecart) event.getInitiator().getHolder()).getLocation();
-            if (!CMIMaterial.get(loc.getBlock().getType()).containsCriteria(CMIMC.RAIL)
-                    && FlagPermissions.has(loc, Flags.minecartsuction, FlagCombo.OnlyFalse)) {
-                event.setCancelled(true);
-                return;
+        if (Flags.minecartsuction.isGlobalyEnabled()) {
+            InventoryHolder holder = event.getInitiator().getHolder();
+            if (holder instanceof HopperMinecart) {
+                Location loc = ((HopperMinecart) holder).getLocation();
+                if (!CMIMaterial.get(loc.getBlock().getType()).containsCriteria(CMIMC.RAIL)
+                        && FlagPermissions.has(loc, Flags.minecartsuction, FlagCombo.OnlyFalse)) {
+                    event.setCancelled(true);
+                    return;
+                }
             }
         }
         // Protect containers at the edge of the Residence area from theft
@@ -1101,9 +1104,12 @@ public class ResidenceBlockListener implements Listener {
         }
         Location sourceLoc = null;
         Location destLoc = null;
+
         if (Version.isCurrentEqualOrHigher(Version.v1_9_0)) {
             sourceLoc= event.getSource().getLocation();
             destLoc = event.getDestination().getLocation();
+
+            // Legacy versions do not support Inventory.getLocation() directly
         } else {
             InventoryHolder sourceHolder = event.getSource().getHolder();
             if (sourceHolder instanceof BlockState) {
