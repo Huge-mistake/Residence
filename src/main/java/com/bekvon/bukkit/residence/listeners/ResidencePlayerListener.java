@@ -17,7 +17,6 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
-import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
@@ -37,6 +36,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
@@ -1418,10 +1418,7 @@ public class ResidencePlayerListener implements Listener {
         // Click requires sneaking to open these entity containers
         // Avoid overriding Flags.riding
         if (player.isSneaking()) {
-            if (Version.isCurrentEqualOrHigher(Version.v1_19_0)) {
-                return ResidenceListener1_19.canHaveContainer1_19(entity);
-            }
-            return entity instanceof AbstractHorse;
+            return Utils.isRideableContainerVehicle(entity);
         }
         return false;
     }
@@ -1581,6 +1578,31 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         if (FlagPermissions.shouldDenyAndNotify(player, event.getEntity(), Flags.shear, null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onRidingVehicleInventoryOpen(InventoryOpenEvent event) {
+        // Whether to additionally check Flags.container state
+        // when player opens inventory while riding vehicle having Inventory
+        if (!plugin.getConfigManager().getRidingVehicleInventoryOpenCheck()) {
+            return;
+        }
+        Player player = (Player) event.getPlayer();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.container, player)) {
+            return;
+        }
+        Entity vehicle = player.getVehicle();
+
+        if (!Utils.isRideableContainerVehicle(vehicle)) {
+            return;
+        }
+        if (!(event.getInventory().getHolder() instanceof Vehicle)) {
+            return;
+        }
+        if (FlagPermissions.shouldDenyAndNotify(player, vehicle, Flags.container, null)) {
             event.setCancelled(true);
         }
     }

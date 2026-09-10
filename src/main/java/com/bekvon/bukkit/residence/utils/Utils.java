@@ -13,6 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Bat;
 import org.bukkit.entity.Entity;
@@ -316,6 +317,15 @@ public class Utils {
 
     public static boolean isArmorStand(Entity entity) {
         return Version.isCurrentEqualOrHigher(Version.v1_8_0) && entity instanceof org.bukkit.entity.ArmorStand;
+    }
+
+    public static boolean isRideableContainerVehicle(Entity entity) {
+        if (entity == null) {
+            return false;
+        }
+        return entity instanceof AbstractHorse
+                || (Version.isCurrentEqualOrHigher(Version.v1_19_0) && entity instanceof org.bukkit.entity.ChestBoat)
+                || (Version.isCurrentEqualOrHigher(Version.v1_21_R7) && entity instanceof org.bukkit.entity.AbstractNautilus);
     }
 
     public static boolean isSpectator(org.bukkit.GameMode mode) {

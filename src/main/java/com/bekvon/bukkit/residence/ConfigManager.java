@@ -202,6 +202,7 @@ public class ConfigManager {
     protected boolean DisableCommands;
     private boolean DisableResidenceCreation;
     private boolean HopperCrossResidenceCheck;
+    private boolean RidingVehicleInventoryOpenCheck;
 
     // Town
 //    private boolean TownEnabled = false;
@@ -827,6 +828,11 @@ public class ConfigManager {
                 "Whether to check hoppers crossing Residence borders to prevent edge container theft (default: true)",
                 "If Flags.container is globally disabled, this option has no effect");
         HopperCrossResidenceCheck = c.get("Global.Optimizations.ExtraProtection.HopperCrossResidenceCheck", true);
+
+        c.addComment("Global.Optimizations.ExtraProtection.RidingVehicleInventoryOpenCheck",
+                "Whether to additionally check Flags.container state when player opens inventory while riding vehicle having Inventory (default: true)",
+                "If Flags.container is globally disabled, this option has no effect");
+        RidingVehicleInventoryOpenCheck = c.get("Global.Optimizations.ExtraProtection.RidingVehicleInventoryOpenCheck", true);
 
         SignsMaxPerResidence = c.get("Global.Signs.MaxPerResidence", 5);
         SignsMaxPerResidence = SignsMaxPerResidence < 0 ? 0 : SignsMaxPerResidence;
@@ -2235,6 +2241,10 @@ public class ConfigManager {
 
     public boolean getHopperCrossResidenceCheck() {
         return HopperCrossResidenceCheck;
+    }
+
+    public boolean getRidingVehicleInventoryOpenCheck() {
+        return RidingVehicleInventoryOpenCheck;
     }
 
 //    public int getTownMinRange() {
