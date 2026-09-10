@@ -57,8 +57,10 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -1401,54 +1403,6 @@ public class ResidencePlayerListener implements Listener {
         // End AbstractBlockClickFlag Check
     }
 
-    private boolean canHaveContainer(Entity entity, Player player) {
-        CMIEntityType type = CMIEntityType.get(entity);
-        if (type != null) {
-            // Click to open container entities
-            switch (type) {
-            case ALLAY:
-            case CHEST_MINECART:
-            case FURNACE_MINECART:
-            case HOPPER_MINECART:
-                return true;
-            default:
-                break;
-            }
-        }
-        // Click requires sneaking to open these entity containers
-        // Avoid overriding Flags.riding
-        if (player.isSneaking()) {
-            return Utils.isRideableContainerVehicle(entity);
-        }
-        return false;
-    }
-
-    private boolean canRide(Entity entity, Player player) {
-        // Cannot ride while sneaking
-        if (player.isSneaking()) {
-            return false;
-        }
-        if (entity instanceof Vehicle) {
-            CMIEntityType type = CMIEntityType.get(entity);
-            if (type == null) {
-                return true;
-            }
-            switch (type) {
-            // Non-rideable Vehicles
-            case CHEST_MINECART:
-            case COMMAND_BLOCK_MINECART:
-            case FURNACE_MINECART:
-            case HOPPER_MINECART:
-            case SPAWNER_MINECART:
-            case TNT_MINECART:
-                return false;
-            default:
-                return true;
-            }
-        }
-        return false;
-    }
-
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
@@ -1470,11 +1424,8 @@ public class ResidencePlayerListener implements Listener {
         } else if (Flags.leash.isGlobalyEnabled() && entity instanceof LeashHitch) {
             mainFlag = Flags.leash;
 
-        } else if (Flags.container.isGlobalyEnabled() && canHaveContainer(entity, player)) {
+        } else if (Flags.container.isGlobalyEnabled() && Utils.isAllay(entity)) {
             mainFlag = Flags.container;
-
-        } else if (Flags.riding.isGlobalyEnabled() && canRide(entity, player)) {
-            mainFlag = Flags.riding;
 
         } else if (Flags.trade.isGlobalyEnabled() && Utils.isVillagerOrTrader(entity)) {
             mainFlag = Flags.trade;
@@ -1583,26 +1534,34 @@ public class ResidencePlayerListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onRidingVehicleInventoryOpen(InventoryOpenEvent event) {
-        // Whether to additionally check Flags.container state
-        // when player opens inventory while riding vehicle having Inventory
-        if (!plugin.getConfigManager().getRidingVehicleInventoryOpenCheck()) {
+    public void onPlayerRide(VehicleEnterEvent event) {
+
+        Entity entity = event.getEntered();
+
+        if (!(entity instanceof Player)) {
             return;
         }
+        Player player = (Player) entity;
+
+        if (FlagPermissions.shouldDenyAndNotify(player, entity, Flags.riding, null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onVehicleInventoryOpen(InventoryOpenEvent event) {
+
         Player player = (Player) event.getPlayer();
 
         if (FlagPermissions.shouldIgnoreCheck(Flags.container, player)) {
             return;
         }
-        Entity vehicle = player.getVehicle();
+        InventoryHolder holder = event.getInventory().getHolder();
 
-        if (!Utils.isRideableContainerVehicle(vehicle)) {
+        if (!(holder instanceof Vehicle)) {
             return;
         }
-        if (!(event.getInventory().getHolder() instanceof Vehicle)) {
-            return;
-        }
-        if (FlagPermissions.shouldDenyAndNotify(player, vehicle, Flags.container, null)) {
+        if (FlagPermissions.shouldDenyAndNotify(player, (Vehicle) holder, Flags.container, null)) {
             event.setCancelled(true);
         }
     }

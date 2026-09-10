@@ -273,6 +273,10 @@ public class Utils {
         return loc;
     }
 
+    public static boolean isAllay(Entity entity) {
+        return Version.isCurrentEqualOrHigher(Version.v1_19_0) && entity instanceof org.bukkit.entity.Allay;
+    }
+
     public static boolean isAnimal(Entity ent) {
         if (ent == null) {
             return false;
@@ -317,15 +321,6 @@ public class Utils {
 
     public static boolean isArmorStand(Entity entity) {
         return Version.isCurrentEqualOrHigher(Version.v1_8_0) && entity instanceof org.bukkit.entity.ArmorStand;
-    }
-
-    public static boolean isRideableContainerVehicle(Entity entity) {
-        if (entity == null) {
-            return false;
-        }
-        return entity instanceof AbstractHorse
-                || (Version.isCurrentEqualOrHigher(Version.v1_19_0) && entity instanceof org.bukkit.entity.ChestBoat)
-                || (Version.isCurrentEqualOrHigher(Version.v1_21_R7) && entity instanceof org.bukkit.entity.AbstractNautilus);
     }
 
     public static boolean isSpectator(org.bukkit.GameMode mode) {
