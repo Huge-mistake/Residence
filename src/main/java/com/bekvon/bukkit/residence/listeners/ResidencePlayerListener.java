@@ -1533,9 +1533,7 @@ public class ResidencePlayerListener implements Listener {
         if (!(entity instanceof Player)) {
             return;
         }
-        Player player = (Player) entity;
-
-        if (FlagPermissions.shouldDenyAndNotify(player, event.getVehicle(), Flags.riding, null)) {
+        if (FlagPermissions.shouldDenyAndNotify((Player) entity, event.getVehicle(), Flags.riding, null)) {
             event.setCancelled(true);
         }
     }
