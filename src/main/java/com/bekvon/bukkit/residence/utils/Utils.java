@@ -13,13 +13,14 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Bat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.IronGolem;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.NPC;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.PoweredMinecart;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowman;
 import org.bukkit.entity.Tameable;
@@ -273,10 +274,6 @@ public class Utils {
         return loc;
     }
 
-    public static boolean isAllay(Entity entity) {
-        return Version.isCurrentEqualOrHigher(Version.v1_19_0) && entity instanceof org.bukkit.entity.Allay;
-    }
-
     public static boolean isAnimal(Entity ent) {
         if (ent == null) {
             return false;
@@ -332,6 +329,12 @@ public class Utils {
             return event.getHand() == EquipmentSlot.HAND;
         }
         return true;
+    }
+
+    public static boolean isContainerEntityWithoutGui(Entity entity) {
+        return  entity instanceof ItemFrame
+                || entity instanceof PoweredMinecart
+                || (Version.isCurrentEqualOrHigher(Version.v1_19_0) && entity instanceof org.bukkit.entity.Allay);
     }
 
     public static boolean isChorusTeleport(TeleportCause tpcause) {

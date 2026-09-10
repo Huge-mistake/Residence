@@ -1416,16 +1416,13 @@ public class ResidencePlayerListener implements Listener {
 
         if (Flags.commandblock.isGlobalyEnabled() && entity instanceof CommandMinecart) {
             mainFlag = Flags.commandblock;
-            // ItemFrame covers item_frame/glow_item_frame
-        } else if (Flags.container.isGlobalyEnabled() && entity instanceof ItemFrame) {
+
+        } else if (Flags.container.isGlobalyEnabled() && Utils.isContainerEntityWithoutGui(entity)) {
             mainFlag = Flags.container;
             subFlag = Flags.use;
 
         } else if (Flags.leash.isGlobalyEnabled() && entity instanceof LeashHitch) {
             mainFlag = Flags.leash;
-
-        } else if (Flags.container.isGlobalyEnabled() && Utils.isAllay(entity)) {
-            mainFlag = Flags.container;
 
         } else if (Flags.trade.isGlobalyEnabled() && Utils.isVillagerOrTrader(entity)) {
             mainFlag = Flags.trade;
@@ -1538,18 +1535,21 @@ public class ResidencePlayerListener implements Listener {
 
         Entity entity = event.getEntered();
 
+        if (FlagPermissions.shouldIgnoreCheck(Flags.riding, entity)) {
+            return;
+        }
         if (!(entity instanceof Player)) {
             return;
         }
         Player player = (Player) entity;
 
-        if (FlagPermissions.shouldDenyAndNotify(player, entity, Flags.riding, null)) {
+        if (FlagPermissions.shouldDenyAndNotify(player, event.getVehicle(), Flags.riding, null)) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onVehicleInventoryOpen(InventoryOpenEvent event) {
+    public void onPlayerOpenVehicleInventory(InventoryOpenEvent event) {
 
         Player player = (Player) event.getPlayer();
 
