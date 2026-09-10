@@ -1318,17 +1318,12 @@ public class ResidencePlayerListener implements Listener {
         if (ResAdmin.isResAdmin(player))
             return;
 
-        if (event.useItemInHand() != Result.DENY) {
-            CMIMaterial heldItem = CMIMaterial.get(event.getItem());
-            // Check held Material Blacklist
-            if (!heldItem.isNone() && heldItem.isValidItem() && !plugin.getItemManager().isAllowed(
-                    heldItem.getMaterial(),
-                    plugin.getPlayerManager().getResidencePlayer(player).getGroup(),
-                    player.getWorld().getName())) {
-                lm.General_ItemBlacklisted.sendMessage(player);
-                event.setCancelled(true);
-                return;
-            }
+        // Check held Material Blacklist
+        if (event.useItemInHand() != Result.DENY && event.getItem() != null
+                && !plugin.getItemManager().isAllowed(event.getItem().getType(), player)) {
+            lm.General_ItemBlacklisted.sendMessage(player);
+            event.setCancelled(true);
+            return;
         }
         if (event.useInteractedBlock() == Result.DENY) {
             return;
@@ -1453,20 +1448,17 @@ public class ResidencePlayerListener implements Listener {
         if (item == null) {
             return;
         }
+        // Check held Material Blacklist
+        if (!plugin.getItemManager().isAllowed(item.getType(), player) && !ResAdmin.isResAdmin(player)) {
+            lm.General_ItemBlacklisted.sendMessage(player);
+            event.setCancelled(true);
+            return;
+        }
         CMIMaterial held = CMIMaterial.get(item);
         Flags mainFlag;
         Flags subFlag = null;
 
-        if (entity instanceof ItemFrame) {
-            // Check held Material Blacklist
-            PermissionGroup group = plugin.getPlayerManager().getResidencePlayer(player).getGroup();
-            if (!plugin.getItemManager().isAllowed(item.getType(), group, entity.getWorld().getName()) && !ResAdmin.isResAdmin(player)) {
-                lm.General_ItemBlacklisted.sendMessage(player);
-                event.setCancelled(true);
-            }
-            return;
-
-        } else if (Flags.dye.isGlobalyEnabled() && entity instanceof Sheep && held.containsCriteria(CMIMC.DYE)) {
+        if (Flags.dye.isGlobalyEnabled() && entity instanceof Sheep && held.containsCriteria(CMIMC.DYE)) {
             mainFlag = Flags.dye;
             subFlag = Flags.animalkilling;
 
