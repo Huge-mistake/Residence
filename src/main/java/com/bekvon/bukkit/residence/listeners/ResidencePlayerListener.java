@@ -20,7 +20,6 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.LeashHitch;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
