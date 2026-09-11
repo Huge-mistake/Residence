@@ -57,6 +57,7 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -75,6 +76,7 @@ import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Entities.CMIEntityType;
+import net.Zrips.CMILib.Items.CMIItemStack;
 import net.Zrips.CMILib.Items.CMIMC;
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
@@ -1430,12 +1432,22 @@ public class ResidenceEntityListener implements Listener {
         if (plugin.isDisabledWorldListener(victim)) {
             return;
         }
+        Entity attacker = event.getDamager();
+        // Check held Material Blacklist
+        if (attacker instanceof Player) {
+            Player player = (Player) attacker;
+            ItemStack item = CMIItemStack.getItemInMainHand(player);
+            if (item != null && !plugin.getItemManager().isAllowed(item.getType(), player) && !ResAdmin.isResAdmin(player)) {
+                lm.General_ItemBlacklisted.sendMessage(player);
+                event.setCancelled(true);
+                return;
+            }
+        }
         // Decorative entity damage uses separate logic
         if (victim instanceof EnderCrystal || victim instanceof ItemFrame || Utils.isArmorStand(victim)) {
             handleDecorativeEntityDamage(event);
             return;
         }
-        Entity attacker = event.getDamager();
         Flags mainFlag = null;
         Flags subFlag = null;
 
