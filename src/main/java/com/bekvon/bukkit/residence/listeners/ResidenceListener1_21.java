@@ -48,6 +48,8 @@ import net.Zrips.CMILib.Items.CMIMC;
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
 
+import static com.bekvon.bukkit.residence.listeners.ResidenceListener1_14.isItemTag;
+
 public class ResidenceListener1_21 implements Listener {
 
     private Residence plugin;
@@ -114,25 +116,6 @@ public class ResidenceListener1_21 implements Listener {
         }
         if (res.getPermissions().playerHas(closest, Flags.leash, FlagCombo.OnlyFalse)) {
             lm.Residence_FlagDeny.sendMessage(closest, Flags.leash, res.getName());
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onAnimalEnterVehicle(VehicleEnterEvent event) {
-
-        Entity entity = event.getEntered();
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.boarding, entity)) {
-            return;
-        }
-        if (!(entity instanceof LivingEntity))
-            return;
-
-        if (!Utils.isAnimal(entity))
-            return;
-
-        if (FlagPermissions.getPerms(entity.getLocation()).has(Flags.boarding, FlagCombo.OnlyFalse)) {
             event.setCancelled(true);
         }
     }
@@ -337,10 +320,6 @@ public class ResidenceListener1_21 implements Listener {
         default:
             return false;
         }
-    }
-
-    private boolean isItemTag(Material item, String tagName) {
-        return ResidenceListener1_14.isItemTag(item, tagName);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

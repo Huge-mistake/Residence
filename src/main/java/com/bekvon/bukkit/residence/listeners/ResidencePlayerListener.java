@@ -1523,18 +1523,24 @@ public class ResidencePlayerListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerRide(VehicleEnterEvent event) {
+    public void onEntityTryRideVehicle(VehicleEnterEvent event) {
 
         Entity entity = event.getEntered();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.riding, entity)) {
-            return;
-        }
-        if (!(entity instanceof Player)) {
-            return;
-        }
-        if (FlagPermissions.shouldDenyAndNotify((Player) entity, event.getVehicle(), Flags.riding, null)) {
-            event.setCancelled(true);
+        if (entity instanceof Player) {
+            if (FlagPermissions.shouldIgnoreCheck(Flags.riding, entity)) {
+                return;
+            }
+            if (FlagPermissions.shouldDenyAndNotify((Player) entity, event.getVehicle(), Flags.riding, null)) {
+                event.setCancelled(true);
+            }
+        } else {
+            if (FlagPermissions.shouldIgnoreCheck(Flags.boarding, entity)) {
+                return;
+            }
+            if (FlagPermissions.has(entity.getLocation(), Flags.boarding, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+            }
         }
     }
 
