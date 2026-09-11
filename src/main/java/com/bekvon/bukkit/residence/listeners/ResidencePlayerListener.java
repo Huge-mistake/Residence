@@ -1301,24 +1301,26 @@ public class ResidencePlayerListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST) // Do not use (ignoreCancelled = true)
-    public void onPlayerInteract(PlayerInteractEvent event) {
-
+    public void onPlayerClickInteract(PlayerInteractEvent event) {
+        if (event.getAction() == Action.PHYSICAL) {
+            return;
+        }
         Player player = event.getPlayer();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(player))
+        if (plugin.isDisabledWorldListener(player)) {
             return;
-
-        if (event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK)
+        }
+        if (ResAdmin.isResAdmin(player)) {
             return;
-
-        if (ResAdmin.isResAdmin(player))
-            return;
-
+        }
         // Check held Material Blacklist
         if (event.useItemInHand() != Result.DENY && event.getItem() != null
                 && !plugin.getItemManager().isAllowed(event.getItem().getType(), player)) {
             lm.General_ItemBlacklisted.sendMessage(player);
             event.setCancelled(true);
+            return;
+        }
+        if (event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
         if (event.useInteractedBlock() == Result.DENY) {
