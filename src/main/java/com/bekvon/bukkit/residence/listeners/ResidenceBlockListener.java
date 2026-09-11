@@ -1106,7 +1106,7 @@ public class ResidenceBlockListener implements Listener {
         Location destLoc = null;
 
         if (Version.isCurrentEqualOrHigher(Version.v1_9_0)) {
-            sourceLoc= event.getSource().getLocation();
+            sourceLoc = event.getSource().getLocation();
             destLoc = event.getDestination().getLocation();
 
             // Legacy versions do not support Inventory.getLocation() directly
