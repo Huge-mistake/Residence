@@ -1303,17 +1303,14 @@ public class ResidencePlayerListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST) // Do not use (ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
 
-        Block block = event.getClickedBlock();
-        if (block == null)
-            return;
+        Player player = event.getPlayer();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(block))
+        if (plugin.isDisabledWorldListener(player))
             return;
 
         if (event.getAction() != Action.LEFT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
 
-        Player player = event.getPlayer();
         if (ResAdmin.isResAdmin(player))
             return;
 
@@ -1325,6 +1322,10 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         if (event.useInteractedBlock() == Result.DENY) {
+            return;
+        }
+        Block block = event.getClickedBlock();
+        if (block == null) {
             return;
         }
         Material blockType = block.getType();
