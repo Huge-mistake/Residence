@@ -491,7 +491,7 @@ public class ConfigManager {
                 "this is the actual list of material names that this list allows or disallows",
                 "You can look up the material name by item ID in game by typing /res material <id>",
                 "Alternativly, you can simply use the item ID in the list, but its less descriptive and harder to see what the list allows or dissallows at a glance",
-                "Items:","- Apple","- Stone","- Lava_Bucket");
+                "Items:", "- Apple", "- Stone", "- Lava_Bucket");
 
         for (Flags fl : Flags.values()) {
             cfg.addComment("Global.FlagPermission." + fl, "Applies to: " + fl.getFlagMode(), fl.getDesc());
