@@ -837,8 +837,8 @@ public class ResidenceEntityListener implements Listener {
         if (FlagPermissions.shouldIgnoreCheck(Flags.destroy, entity)) {
             return false;
         }
-        if (remover instanceof Player) {
-            Player player = (Player) remover;
+        Player player = Utils.potentialProjectileToPlayer(remover);
+        if (player != null) {
             if (Residence.getInstance().getResidenceManager().isOwnerOfLocation(player, entity.getLocation())) {
                 return false;
             }
