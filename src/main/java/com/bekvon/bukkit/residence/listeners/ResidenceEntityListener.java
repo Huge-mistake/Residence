@@ -828,30 +828,29 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHangingBreakByEntity(HangingBreakByEntityEvent event) {
 
-        Hanging ent = event.getEntity();
-        if (ent == null)
-            return;
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.destroy, ent)) {
-            return;
+        if (shouldDenyEntityBreakByEntity(event.getRemover(), event.getEntity())) {
+            event.setCancelled(true);
         }
-        if (event.getRemover() instanceof Player) {
-            Player player = (Player) event.getRemover();
+    }
 
-            if (plugin.getResidenceManager().isOwnerOfLocation(player, ent.getLocation())) {
-                return;
+    public static boolean shouldDenyEntityBreakByEntity(Entity remover, Entity entity) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.destroy, entity)) {
+            return false;
+        }
+        if (remover instanceof Player) {
+            Player player = (Player) remover;
+            if (Residence.getInstance().getResidenceManager().isOwnerOfLocation(player, entity.getLocation())) {
+                return false;
             }
-            if (FlagPermissions.shouldDenyAndNotify(player, ent, Flags.destroy, Flags.build)) {
-                event.setCancelled(true);
-            }
+            return FlagPermissions.shouldDenyAndNotify(player, entity, Flags.destroy, Flags.build);
+
         } else {
-            if (Utils.isSourceBlockInsideSameResidence(event.getRemover(), ClaimedResidence.getByLoc(event.getEntity().getLocation()))) {
-                return;
+            if (Utils.isSourceBlockInsideSameResidence(remover, ClaimedResidence.getByLoc(entity.getLocation()))) {
+                return false;
             }
-            FlagPermissions perms = FlagPermissions.getPerms(ent.getLocation());
-            if (!perms.has(Flags.destroy, perms.has(Flags.build, true))) {
-                event.setCancelled(true);
-            }
+            FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
+
+            return !perms.has(Flags.destroy, perms.has(Flags.build, true));
         }
     }
 
