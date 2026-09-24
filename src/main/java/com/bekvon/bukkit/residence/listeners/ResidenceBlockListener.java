@@ -1088,7 +1088,7 @@ public class ResidenceBlockListener implements Listener {
     public void onHopperMoveItem(InventoryMoveItemEvent event) {
         // Prevent trolls from pushing derailed hopper minecarts into the Residence to steal items from containers
         if (Flags.minecartsuction.isGlobalyEnabled()) {
-            InventoryHolder holder = event.getInitiator().getHolder();
+            InventoryHolder holder = getHolderNoSnapshot(event.getInitiator());
             if (holder instanceof HopperMinecart) {
                 Location loc = ((HopperMinecart) holder).getLocation();
                 if (!CMIMaterial.get(loc.getBlock().getType()).containsCriteria(CMIMC.RAIL)
@@ -1154,5 +1154,12 @@ public class ResidenceBlockListener implements Listener {
             }
         }
         event.setCancelled(true);
+    }
+
+    private InventoryHolder getHolderNoSnapshot(Inventory inventory) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_16_0) && Version.isPaperBranch()) {
+            return inventory.getHolder(false);
+        }
+        return inventory.getHolder();
     }
 }

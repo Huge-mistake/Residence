@@ -190,7 +190,8 @@ public class ResidencePlayerListener implements Listener {
 
         Player player = event.getPlayer();
 
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(player.getLocation());
+        ClaimedResidence res = ClaimedResidence.getByLoc(player.getLocation());
+
         if (res == null)
             return;
 
@@ -1388,12 +1389,7 @@ public class ResidencePlayerListener implements Listener {
             }
             break;
         }
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            lm.Flag_Deny.sendMessage(player, flag);
-            event.setCancelled(true);
-            return;
-        }
-        if (canBothClickBlock(blockType)) {
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK || canBothClickBlock(blockType)) {
             lm.Flag_Deny.sendMessage(player, flag);
             event.setCancelled(true);
         }
@@ -1408,7 +1404,7 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        Flags mainFlag;
+        Flags mainFlag = null;
         Flags subFlag = null;
 
         if (Flags.commandblock.isGlobalyEnabled() && entity instanceof CommandMinecart) {
@@ -1424,7 +1420,8 @@ public class ResidencePlayerListener implements Listener {
         } else if (Flags.trade.isGlobalyEnabled() && Utils.isVillagerOrTrader(entity)) {
             mainFlag = Flags.trade;
 
-        } else {
+        }
+        if (mainFlag == null) {
             return;
         }
         if (FlagPermissions.shouldDenyAndNotify(player, entity, mainFlag, subFlag)) {
@@ -1457,7 +1454,7 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         CMIMaterial held = CMIMaterial.get(item);
-        Flags mainFlag;
+        Flags mainFlag = null;
         Flags subFlag = null;
 
         if (Flags.dye.isGlobalyEnabled() && entity instanceof Sheep && held.containsCriteria(CMIMC.DYE)) {
@@ -1471,8 +1468,8 @@ public class ResidencePlayerListener implements Listener {
             } else if (ResidenceEntityListener.isMonster(entity)) {
                 subFlag = Flags.mobkilling;
             }
-
-        } else {
+        }
+        if (mainFlag == null) {
             return;
         }
         if (FlagPermissions.shouldDenyAndNotify(player, entity, mainFlag, subFlag)) {

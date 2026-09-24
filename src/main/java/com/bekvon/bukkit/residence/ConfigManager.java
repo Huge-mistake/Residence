@@ -8,6 +8,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,7 +72,7 @@ public class ConfigManager {
     protected boolean LwcOnDelete = false;
     protected boolean LwcOnBuy = false;
     protected boolean LwcOnUnrent = false;
-    protected List<Material> LwcMatList = new ArrayList<Material>();
+    protected Set<Material> LwcMatList = EnumSet.noneOf(Material.class);
     protected boolean UseClean = false;
     protected boolean PvPFlagPrevent;
 
@@ -217,14 +218,14 @@ public class ConfigManager {
     protected boolean CreeperExplodeBelow;
     protected int CreeperExplodeBelowLevel;
 
-    protected List<Material> customContainers = new ArrayList<Material>();
-    protected List<Material> customBothClick = new ArrayList<Material>();
-    protected List<Material> customRightClick = new ArrayList<Material>();
-    protected List<Material> CleanBlocks = new ArrayList<Material>();
+    protected Set<Material> customContainers = EnumSet.noneOf(Material.class);
+    protected Set<Material> customBothClick = EnumSet.noneOf(Material.class);
+    protected Set<Material> customRightClick = EnumSet.noneOf(Material.class);
+    protected Set<Material> CleanBlocks = EnumSet.noneOf(Material.class);
 
     protected List<String> NoFlowWorlds;
     protected List<String> AutoCleanUpWorlds;
-    
+
     private boolean AutoCleanTrasnferToUser;
     private String AutoCleanUserName;
     protected List<String> NoPlaceWorlds;
@@ -1658,7 +1659,7 @@ public class ConfigManager {
         return NoWaterPlace;
     }
 
-    public List<Material> getLwcMatList() {
+    public Set<Material> getLwcMatList() {
         return LwcMatList;
     }
 
@@ -1982,19 +1983,19 @@ public class ConfigManager {
 //        return OfflineMode;
 //    }
 
-    public List<Material> getCustomContainers() {
+    public Set<Material> getCustomContainers() {
         return customContainers;
     }
 
-    public List<Material> getCustomBothClick() {
+    public Set<Material> getCustomBothClick() {
         return customBothClick;
     }
 
-    public List<Material> getCustomRightClick() {
+    public Set<Material> getCustomRightClick() {
         return customRightClick;
     }
 
-    public List<Material> getCleanBlocks() {
+    public Set<Material> getCleanBlocks() {
         return CleanBlocks;
     }
 

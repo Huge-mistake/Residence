@@ -52,7 +52,7 @@ Global:
     # Allows or denys players to use beds
     bed: true
     # Applies to: Residence
-    # Allows or denys animal boarding in residences
+    # Allow or deny non-player entities from riding vehicles
     boarding: true
     # Applies to: Both
     # Allows or denys players to use brewing stands
