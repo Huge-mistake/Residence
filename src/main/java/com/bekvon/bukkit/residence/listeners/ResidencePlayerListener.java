@@ -1551,7 +1551,7 @@ public class ResidencePlayerListener implements Listener {
         if (FlagPermissions.shouldIgnoreCheck(Flags.container, player)) {
             return;
         }
-        InventoryHolder holder = event.getInventory().getHolder();
+        InventoryHolder holder = Utils.getHolderNoSnapshot(event.getInventory());
 
         if (!(holder instanceof Vehicle)) {
             return;

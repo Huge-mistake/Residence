@@ -31,6 +31,8 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.util.BlockIterator;
 import org.jetbrains.annotations.NotNull;
@@ -346,5 +348,13 @@ public class Utils {
             return event.getBlocks();
         }
         return Collections.singletonList(event.getBlock());
+    }
+
+    public static InventoryHolder getHolderNoSnapshot(Inventory inventory) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_16_0) && Version.isPaperBranch()) {
+            // Skipping snapshot creation is faster
+            return inventory.getHolder(false);
+        }
+        return inventory.getHolder();
     }
 }
