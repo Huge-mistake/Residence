@@ -12,6 +12,7 @@ import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Pig;
@@ -52,7 +53,7 @@ import static com.bekvon.bukkit.residence.listeners.ResidenceListener1_14.isItem
 
 public class ResidenceListener1_21 implements Listener {
 
-    private Residence plugin;
+    private final Residence plugin;
 
     public ResidenceListener1_21(Residence plugin) {
         this.plugin = plugin;
@@ -82,7 +83,7 @@ public class ResidenceListener1_21 implements Listener {
                 return;
             }
 
-        } else if (Version.isCurrentEqualOrHigher(Version.v1_21_R7)) {
+        } else if (Version.isCurrentEqualOrHigher(Version.v1_21_11)) {
             // spigot
             if (vehicle instanceof org.bukkit.entity.Leashable
                     && !((org.bukkit.entity.Leashable) vehicle).isLeashed()) {
@@ -162,59 +163,50 @@ public class ResidenceListener1_21 implements Listener {
         ent.removePotionEffect(PotionEffectType.WEAVING);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onInteractCopperGolem(PlayerInteractEntityEvent event) {
-
+    public static void onInteractCopperGolem(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.copper, entity)) {
-            return;
-        }
-        if (CMIEntityType.get(entity) != CMIEntityType.COPPER_GOLEM)
-            return;
-
-        Player player = event.getPlayer();
-
-        EntityEquipment gloemInv = ((LivingEntity) entity).getEquipment();
-        // Right-click to remove items from holding copper_golem
-        if (gloemInv != null && (gloemInv.getItemInMainHand().getType() != Material.AIR)) {
-
-            if (FlagPermissions.shouldDenyAndNotify(player, entity, Flags.container, null)) {
-                event.setCancelled(true);
+        if (Flags.container.isGlobalyEnabled()) {
+            EntityEquipment golemInv = ((LivingEntity) entity).getEquipment();
+            // Right-click to remove items from holding copper_golem
+            if (golemInv != null && golemInv.getItemInMainHand().getType() != Material.AIR) {
+                if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.container, null)) {
+                    event.setCancelled(true);
+                }
+                return;
             }
+        }
+        // Now Copper_golem has no item in hand
+        if (!Flags.copper.isGlobalyEnabled()) {
             return;
         }
-        // Copper_golem has no item in hand
-
         Material held = ResidenceListener1_09.getHeldMaterial(event);
-
-        // Avoid overwriting Leash Flag, Lead Shears
-        if (held != Material.HONEYCOMB && !isItemTag(held, "axes"))
+        // Honeycomb and Axes can change CopperGolem
+        if (held != Material.HONEYCOMB && !isItemTag(held, "axes")) {
             return;
-
-        if (FlagPermissions.shouldDenyAndNotify(player, entity, Flags.copper, Flags.animalkilling)) {
+        }
+        if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.copper, Flags.animalkilling)) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onFishingBobberHit(ProjectileHitEvent event) {
+    public void onFishingBobberHitEntity(ProjectileHitEvent event) {
         // anti NPE
         Entity hitEntity = event.getHitEntity();
-        if (hitEntity == null)
+        if (hitEntity == null) {
             return;
-
+        }
         if (FlagPermissions.shouldIgnoreCheck(Flags.hook, hitEntity)) {
             return;
         }
+        if (event.getEntityType() != EntityType.FISHING_BOBBER) {
+            return;
+        }
         Projectile hook = event.getEntity();
-        // only fishing_bobber
-        if (CMIEntityType.get(hook) != CMIEntityType.FISHING_BOBBER)
-            return;
         // have player source
-        if (!(hook.getShooter() instanceof Player))
+        if (!(hook.getShooter() instanceof Player)) {
             return;
-
+        }
         Player player = (Player) hook.getShooter();
 
         if (FlagPermissions.shouldDenyAndNotify(player, hitEntity, Flags.hook, null)) {
@@ -436,9 +428,7 @@ public class ResidenceListener1_21 implements Listener {
                 denyInteraction.add(block);
             }
         }
-        if (!denyInteraction.isEmpty()) {
-            event.blockList().removeAll(denyInteraction);
-        }
+        event.blockList().removeAll(denyInteraction);
     }
 
     public static void onWindExplode(EntityExplodeEvent event) {
@@ -478,14 +468,12 @@ public class ResidenceListener1_21 implements Listener {
                 denyInteraction.add(block);
             }
         }
-        if (!denyInteraction.isEmpty()) {
-            event.blockList().removeAll(denyInteraction);
-        }
+        event.blockList().removeAll(denyInteraction);
     }
 
     private static boolean shouldDenyWindExplode(Location triggerLoc, ProjectileSource cause, FlagPermissions perms,
                                                  Flags mainFlag, Flags subFlag) {
-        boolean sholudDeny = false;
+        boolean shouldDeny = false;
         if (cause instanceof Player) {
             Player player = (Player) cause;
             if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
@@ -498,14 +486,14 @@ public class ResidenceListener1_21 implements Listener {
                     : playerPerms.playerHas(player, subFlag, true);
             if (!playerPerms.playerHas(player, mainFlag, result)) {
                 lm.Flag_Deny.sendMessage(player, mainFlag);
-                sholudDeny = true;
+                shouldDeny = true;
             }
         } else {
             if (!perms.has(mainFlag, perms.has(subFlag, true))) {
-                sholudDeny = true;
+                shouldDeny = true;
             }
         }
-        return sholudDeny;
+        return shouldDeny;
     }
 
     @Nullable

@@ -3,6 +3,7 @@ package com.bekvon.bukkit.residence.listeners;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -32,7 +33,7 @@ import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener1_17 implements Listener {
 
-    private Residence plugin;
+    private final Residence plugin;
 
     public ResidenceListener1_17(Residence plugin) {
         this.plugin = plugin;
@@ -41,35 +42,34 @@ public class ResidenceListener1_17 implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         // Disabling listener if flag disabled globally
-        if (!Flags.place.isGlobalyEnabled())
+        if (!Flags.place.isGlobalyEnabled()) {
             return;
+        }
+        Block block = event.getBlock();
 
-        if (ResidenceBlockListener.canPlaceBlock(event.getPlayer(), event.getBlock(), true))
+        if (ResidenceBlockListener.canPlaceBlock(event.getPlayer(), block, true)) {
             return;
-
+        }
         event.setCancelled(true);
-
         // https://github.com/PaperMC/Paper/pull/6751
-        if (Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_18_R2))
+        if (Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_18_2)) {
             return;
-
-        if (event.getBlock().getType() != Material.POWDER_SNOW)
+        }
+        if (block.getType() != Material.POWDER_SNOW) {
             return;
-
-        ResidenceBlockData.updatePowderedSnow(event.getBlock());
+        }
+        ResidenceBlockData.updatePowderedSnow(block);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerBucketEntityEvent(PlayerBucketEntityEvent event) {
 
-        Entity ent = event.getEntity();
+        Entity entity = event.getEntity();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.animalkilling, ent)) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.animalkilling, entity)) {
             return;
         }
-        Player player = event.getPlayer();
-
-        if (FlagPermissions.shouldDenyAndNotify(player, ent, Flags.animalkilling, null)) {
+        if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.animalkilling, null)) {
             event.setCancelled(true);
         }
     }
@@ -92,37 +92,33 @@ public class ResidenceListener1_17 implements Listener {
 
     private boolean isUnwaxedCopper(Block block) {
         CMIMaterial mat = CMIMaterial.get(block.getType());
-        if (mat.containsCriteria(CMIMC.COPPER)) {
-            return !mat.name().startsWith("WAXED_");
-        }
-        return false;
+        return mat.containsCriteria(CMIMC.COPPER) && !mat.name().startsWith("WAXED_");
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPowderSnowPhysics(BlockPhysicsEvent event) {
         // https://github.com/PaperMC/Paper/pull/6751
-        if (Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_18_R2))
-            return;
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.place, event.getBlock())) {
+        if (Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_18_2)) {
             return;
         }
-        if (!event.getSourceBlock().getType().equals(Material.POWDER_SNOW) || event.getBlock().getType().equals(Material.AIR) || event.getBlock().getType().equals(Material.POWDER_SNOW))
-            return;
-
         Block block = event.getBlock();
-        if (block == null)
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.place, block)) {
             return;
+        }
+        Block sourceBlock = event.getSourceBlock();
 
-        if (block.getLocation().getY() == event.getSourceBlock().getLocation().getY())
+        if (sourceBlock.getType() != Material.POWDER_SNOW || block.getType() == Material.AIR || block.getType() == Material.POWDER_SNOW) {
             return;
+        }
+        Location blockLoc = block.getLocation();
 
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(block.getLocation());
-        if (res == null)
+        if (blockLoc.getY() == sourceBlock.getLocation().getY()) {
             return;
-
-        ResidenceBlockData.addPowderedSnow(event.getSourceBlock(), block);
-
+        }
+        if (ClaimedResidence.getByLoc(blockLoc) != null) {
+            ResidenceBlockData.addPowderedSnow(sourceBlock, block);
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -136,8 +132,9 @@ public class ResidenceListener1_17 implements Listener {
         Player player = event.getPlayer();
 
         if (player != null) {
-            if (ResPerm.bypass_build.hasPermission(player, 10000L))
+            if (ResPerm.bypass_build.hasPermission(player, 10000L)) {
                 return;
+            }
             // cancel event if player has no build permission at click-position
             // non-saplings don't consume bone_meal on event cancel
             if (FlagPermissions.has(block.getLocation(), player, Flags.build, FlagCombo.OnlyFalse)) {
@@ -146,35 +143,32 @@ public class ResidenceListener1_17 implements Listener {
                 return;
             }
         }
-        // player has build permission at click position, or event is not triggered by
-        // player
+        // player has build permission at click position, or event is not player-triggered
         // check build permission for spread blocks
         ClaimedResidence originRes = ClaimedResidence.getByLoc(block.getLocation());
-
         List<BlockState> denySpread = new ArrayList<>();
 
-        for (BlockState oneBlock : event.getBlocks()) {
-            ClaimedResidence spreadRes = ClaimedResidence.getByLoc(oneBlock.getLocation());
+        for (BlockState spreadBlock : event.getBlocks()) {
+            ClaimedResidence spreadRes = ClaimedResidence.getByLoc(spreadBlock.getLocation());
             // spread-block not in Res, skip check
-            // origin & spread-block in Same Res, or have Same Res owner, skip check
-            if (spreadRes == null ||
-                    (originRes != null && (originRes.equals(spreadRes) || originRes.isOwner(spreadRes.getOwner()))))
+            if (spreadRes == null) {
                 continue;
-
+            }
+            // origin & spread-block in Same Res, or have Same Res owner, skip check
+            if (originRes != null && (originRes == spreadRes || originRes.isOwner(spreadRes.getOwner()))) {
+                continue;
+            }
             // origin & spread-block not in Same Res, not Same Res owner
-
             if (player != null) {
                 if (spreadRes.getPermissions().playerHas(player, Flags.build, FlagCombo.OnlyFalse)) {
-                    denySpread.add(oneBlock);
+                    denySpread.add(spreadBlock);
                 }
             } else {
                 if (spreadRes.getPermissions().has(Flags.build, FlagCombo.OnlyFalse)) {
-                    denySpread.add(oneBlock);
+                    denySpread.add(spreadBlock);
                 }
             }
         }
-        if (!denySpread.isEmpty()) {
-            event.getBlocks().removeAll(denySpread);
-        }
+        event.getBlocks().removeAll(denySpread);
     }
 }

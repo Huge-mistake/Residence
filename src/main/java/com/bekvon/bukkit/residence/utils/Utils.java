@@ -322,6 +322,10 @@ public class Utils {
         return Version.isCurrentEqualOrHigher(Version.v1_8_0) && entity instanceof org.bukkit.entity.ArmorStand;
     }
 
+    public static boolean isCopperGolem(Entity entity) {
+        return Version.isCurrentEqualOrHigher(Version.v1_21_9) && entity instanceof org.bukkit.entity.CopperGolem;
+    }
+
     public static boolean isSpectator(org.bukkit.GameMode mode) {
         return Version.isCurrentEqualOrHigher(Version.v1_8_0) && mode == org.bukkit.GameMode.SPECTATOR;
     }

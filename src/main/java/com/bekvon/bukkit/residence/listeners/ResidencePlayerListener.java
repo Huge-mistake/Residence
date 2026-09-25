@@ -56,6 +56,7 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
+import org.bukkit.event.player.PlayerUnleashEntityEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -104,7 +105,6 @@ import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Colors.CMIChatColor;
 import net.Zrips.CMILib.Container.CMINumber;
 import net.Zrips.CMILib.Container.CMIWorld;
-import net.Zrips.CMILib.Entities.CMIEntityType;
 import net.Zrips.CMILib.Items.CMIItemStack;
 import net.Zrips.CMILib.Items.CMIMC;
 import net.Zrips.CMILib.Items.CMIMaterial;
@@ -116,7 +116,7 @@ import net.Zrips.CMILib.Version.Schedulers.CMIScheduler;
 
 public class ResidencePlayerListener implements Listener {
 
-    private Residence plugin;
+    private final Residence plugin;
 
     private PlayerLocationChecker locationChecker = new PlayerLocationChecker();
 
@@ -1420,6 +1420,9 @@ public class ResidencePlayerListener implements Listener {
         } else if (Flags.trade.isGlobalyEnabled() && Utils.isVillagerOrTrader(entity)) {
             mainFlag = Flags.trade;
 
+        } else if (Utils.isCopperGolem(entity)) {
+            ResidenceListener1_21.onInteractCopperGolem(event);
+            return;
         }
         if (mainFlag == null) {
             return;
@@ -1504,6 +1507,19 @@ public class ResidencePlayerListener implements Listener {
         Player player = event.getPlayer();
 
         if (FlagPermissions.shouldDenyAndNotify(player, loc, Flags.vehicleplacing, Flags.build)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPlayerUnleashEntity(PlayerUnleashEntityEvent event) {
+
+        Entity entity = event.getEntity();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.leash, entity)) {
+            return;
+        }
+        if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.leash, null)) {
             event.setCancelled(true);
         }
     }
