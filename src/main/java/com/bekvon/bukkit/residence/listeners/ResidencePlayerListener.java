@@ -1017,6 +1017,22 @@ public class ResidencePlayerListener implements Listener {
         return false;
     }
 
+    private boolean isLegacyCauldronInteraction(CMIMaterial held) {
+        // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
+        if (Version.isCurrentEqualOrHigher(Version.v1_9_0)) {
+            return false;
+        }
+        switch (held) {
+        case BUCKET:
+        case GLASS_BOTTLE:
+        case POTION:
+        case WATER_BUCKET:
+            return true;
+        default:
+            return false;
+        }
+    }
+
     private boolean isBuildClickBlock(CMIMaterial block, CMIMaterial held) {
         if (held == CMIMaterial.BONE_MEAL) {
             return isBlockFertilizable(block);
@@ -1026,8 +1042,7 @@ public class ResidencePlayerListener implements Listener {
         }
         switch (block) {
         case CAULDRON:
-            // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
-            return Version.isCurrentLower(Version.v1_9_0) && (held == CMIMaterial.GLASS_BOTTLE || held == CMIMaterial.POTION);
+            return isLegacyCauldronInteraction(held);
         case PUMPKIN:
             return held == CMIMaterial.SHEARS;
         case REDSTONE_WIRE:
@@ -1607,20 +1622,14 @@ public class ResidencePlayerListener implements Listener {
         boolean shouldPlaceInsideBlock = false;
 
         if (!player.isSneaking()) {
+            // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+.
+            // Legacy Cauldrons do not trigger PlayerBucketEmptyEvent;
+            // PlayerInteractEvent is used instead.
+            if (isCauldron(clickBlock)) {
+                return;
+            }
             if (Version.isCurrentEqualOrHigher(Version.v1_13_0) && clickBlock.getBlockData() instanceof org.bukkit.block.data.Waterlogged) {
                 shouldPlaceInsideBlock = true;
-
-            } else if (isCauldron(clickBlock)) {
-                // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
-                if (Version.isCurrentEqualOrHigher(Version.v1_9_0)) {
-                    return;
-                }
-                // Cauldron check in 1.7.10 ~ 1.8.9
-                if (FlagPermissions.shouldDenyAndNotify(player, clickBlock.getLocation(), Flags.build, null)) {
-                    event.setCancelled(true);
-                }
-                // Cauldron check complete; no need to enter the following logic
-                return;
             }
         }
         Location loc = shouldPlaceInsideBlock
@@ -1674,29 +1683,29 @@ public class ResidencePlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerBucketFill(PlayerBucketFillEvent event) {
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer()))
-            return;
         Player player = event.getPlayer();
-        if (ResAdmin.isResAdmin(player))
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(player)) {
             return;
-        // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
-        if (Version.isCurrentEqualOrHigher(Version.v1_9_0) && isCauldron(event.getBlockClicked())) {
+        }
+        if (ResAdmin.isResAdmin(player)) {
+            return;
+        }
+        // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+.
+        // Legacy Cauldrons do not trigger PlayerBucketFillEvent;
+        // PlayerInteractEvent is used instead.
+        if (isCauldron(event.getBlockClicked())) {
             return;
         }
         Location loc = event.getBlockClicked().getLocation();
 
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(loc);
+        ClaimedResidence res = ClaimedResidence.getByLoc(loc);
         if (res != null && plugin.getConfigManager().preventRentModify() && plugin.getConfigManager().enabledRentSystem() && plugin.getRentManager().isRented(res)) {
             lm.Rent_ModifyDeny.sendMessage(player);
             event.setCancelled(true);
             return;
         }
-
-        FlagPermissions perms = FlagPermissions.getPerms(loc, player);
-        boolean hasdestroy = perms.playerHas(player, Flags.destroy, perms.playerHas(player, Flags.build, true));
-        if (!hasdestroy) {
-            lm.Flag_Deny.sendMessage(player, Flags.destroy);
+        if (FlagPermissions.shouldDenyAndNotify(player, loc, Flags.destroy, Flags.build)) {
             event.setCancelled(true);
         }
     }
