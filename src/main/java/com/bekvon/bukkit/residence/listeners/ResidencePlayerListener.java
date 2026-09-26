@@ -1619,20 +1619,15 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         Block clickBlock = event.getBlockClicked();
-        boolean shouldPlaceInsideBlock = false;
+        Location loc;
 
-        if (!player.isSneaking()) {
-            // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
-            if (Version.isCurrentEqualOrHigher(Version.v1_9_0) && isCauldron(event.getBlockClicked())) {
-                return;
-            }
-            if (Version.isCurrentEqualOrHigher(Version.v1_13_0) && clickBlock.getBlockData() instanceof org.bukkit.block.data.Waterlogged) {
-                shouldPlaceInsideBlock = true;
-            }
+        if (!player.isSneaking() && Version.isCurrentEqualOrHigher(Version.v1_13_0) && clickBlock.getBlockData() instanceof org.bukkit.block.data.Waterlogged) {
+            // if place inside the block
+            loc = clickBlock.getLocation();
+        } else {
+            // place outside the block
+            loc = clickBlock.getRelative(event.getBlockFace()).getLocation();
         }
-        Location loc = shouldPlaceInsideBlock
-                ? clickBlock.getLocation()
-                : clickBlock.getRelative(event.getBlockFace()).getLocation();
 
         CMIMaterial cmat = CMIMaterial.get(event.getBucket());
         ClaimedResidence res = plugin.getResidenceManager().getByLoc(loc);
