@@ -1622,10 +1622,8 @@ public class ResidencePlayerListener implements Listener {
         boolean shouldPlaceInsideBlock = false;
 
         if (!player.isSneaking()) {
-            // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+.
-            // Legacy Cauldrons do not trigger PlayerBucketEmptyEvent;
-            // PlayerInteractEvent is used instead.
-            if (isCauldron(clickBlock)) {
+            // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
+            if (Version.isCurrentEqualOrHigher(Version.v1_9_0) && isCauldron(event.getBlockClicked())) {
                 return;
             }
             if (Version.isCurrentEqualOrHigher(Version.v1_13_0) && clickBlock.getBlockData() instanceof org.bukkit.block.data.Waterlogged) {
@@ -1689,6 +1687,10 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         if (ResAdmin.isResAdmin(player)) {
+            return;
+        }
+        // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
+        if (Version.isCurrentEqualOrHigher(Version.v1_9_0) && isCauldron(event.getBlockClicked())) {
             return;
         }
         Location loc = event.getBlockClicked().getLocation();
