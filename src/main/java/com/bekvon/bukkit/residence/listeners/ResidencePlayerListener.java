@@ -1691,12 +1691,6 @@ public class ResidencePlayerListener implements Listener {
         if (ResAdmin.isResAdmin(player)) {
             return;
         }
-        // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+.
-        // Legacy Cauldrons do not trigger PlayerBucketFillEvent;
-        // PlayerInteractEvent is used instead.
-        if (isCauldron(event.getBlockClicked())) {
-            return;
-        }
         Location loc = event.getBlockClicked().getLocation();
 
         ClaimedResidence res = ClaimedResidence.getByLoc(loc);
