@@ -1595,29 +1595,32 @@ public class ResidencePlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
-        // disabling event on world
-
-        if (plugin.isDisabledWorldListener(event.getPlayer()))
-            return;
         Player player = event.getPlayer();
-        if (ResAdmin.isResAdmin(player))
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(player)) {
             return;
-
+        }
+        if (ResAdmin.isResAdmin(player)) {
+            return;
+        }
         Block clickBlock = event.getBlockClicked();
-        boolean isCauldron = isCauldron(clickBlock);
-        // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
-        if (isCauldron && Version.isCurrentEqualOrHigher(Version.v1_9_0)) {
-            return;
-        }
-        Location loc;
+        boolean shouldPlaceInsideBlock = false;
 
-        if (!player.isSneaking() && (isCauldron || (Version.isCurrentEqualOrHigher(Version.v1_13_0) && clickBlock.getBlockData() instanceof org.bukkit.block.data.Waterlogged))) {
-            // if place inside the block
-            loc = clickBlock.getLocation();
-        } else {
-            // place outside the block
-            loc = clickBlock.getRelative(event.getBlockFace()).getLocation();
+        if (!player.isSneaking()) {
+            if (Version.isCurrentEqualOrHigher(Version.v1_13_0) && clickBlock.getBlockData() instanceof org.bukkit.block.data.Waterlogged) {
+                shouldPlaceInsideBlock = true;
+
+            } else if (isCauldron(clickBlock)) {
+                // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
+                if (Version.isCurrentEqualOrHigher(Version.v1_9_0)) {
+                    return;
+                }
+                shouldPlaceInsideBlock = true;
+            }
         }
+        Location loc = shouldPlaceInsideBlock
+                ? clickBlock.getLocation()
+                : clickBlock.getRelative(event.getBlockFace()).getLocation();
 
         CMIMaterial cmat = CMIMaterial.get(event.getBucket());
         ClaimedResidence res = plugin.getResidenceManager().getByLoc(loc);
