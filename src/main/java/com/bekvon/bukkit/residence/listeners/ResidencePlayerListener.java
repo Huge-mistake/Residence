@@ -1615,7 +1615,12 @@ public class ResidencePlayerListener implements Listener {
                 if (Version.isCurrentEqualOrHigher(Version.v1_9_0)) {
                     return;
                 }
-                shouldPlaceInsideBlock = true;
+                // Cauldron check in 1.7.10 ~ 1.8.9
+                if (FlagPermissions.shouldDenyAndNotify(player, clickBlock.getLocation(), Flags.build, null)) {
+                    event.setCancelled(true);
+                }
+                // Cauldron check complete; no need to enter the following logic
+                return;
             }
         }
         Location loc = shouldPlaceInsideBlock
@@ -1643,8 +1648,7 @@ public class ResidencePlayerListener implements Listener {
             }
         }
 
-        if (FlagPermissions.has(loc, player, Flags.build, FlagCombo.OnlyFalse)) {
-            lm.Flag_Deny.sendMessage(player, Flags.build);
+        if (FlagPermissions.shouldDenyAndNotify(player, loc, Flags.build, null)) {
             event.setCancelled(true);
             return;
         }
