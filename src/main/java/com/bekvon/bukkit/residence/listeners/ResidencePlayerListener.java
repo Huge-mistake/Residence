@@ -1593,15 +1593,23 @@ public class ResidencePlayerListener implements Listener {
     }
 
     private boolean isCauldron(Block block) {
-        if (block == null) {
-            return false;
-        }
-        CMIMaterial mat = CMIMaterial.get(block.getType());
-        switch (mat) {
+        switch (CMIMaterial.get(block.getType())) {
         case CAULDRON:
         case LAVA_CAULDRON:
         case POWDER_SNOW_CAULDRON:
         case WATER_CAULDRON:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    private boolean isCauldronBucketType(CMIMaterial mat) {
+        switch (mat) {
+        case LAVA_BUCKET:
+            return Version.isCurrentEqualOrHigher(Version.v1_17_0);
+        case POWDER_SNOW_BUCKET:
+        case WATER_BUCKET:
             return true;
         default:
             return false;
@@ -1619,18 +1627,23 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         Block clickBlock = event.getBlockClicked();
-        Location loc;
-
-        if (!player.isSneaking() && Version.isCurrentEqualOrHigher(Version.v1_13_0) && clickBlock.getBlockData() instanceof org.bukkit.block.data.Waterlogged) {
-            // if place inside the block
-            loc = clickBlock.getLocation();
-        } else {
-            // place outside the block
-            loc = clickBlock.getRelative(event.getBlockFace()).getLocation();
-        }
-
         CMIMaterial cmat = CMIMaterial.get(event.getBucket());
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(loc);
+        boolean canPlaceInside = false;
+        // Can be placed inside blocks only when not sneaking
+        if (!player.isSneaking()) {
+            // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
+            if (Version.isCurrentEqualOrHigher(Version.v1_9_0) && isCauldron(clickBlock) && isCauldronBucketType(cmat)) {
+                return;
+            }
+            if (Version.isCurrentEqualOrHigher(Version.v1_13_0) && cmat != CMIMaterial.LAVA_BUCKET) {
+                canPlaceInside = clickBlock.getBlockData() instanceof org.bukkit.block.data.Waterlogged;
+            }
+        }
+        Location loc = canPlaceInside
+                ? clickBlock.getLocation()
+                : clickBlock.getRelative(event.getBlockFace()).getLocation();
+
+        ClaimedResidence res = ClaimedResidence.getByLoc(loc);
         if (res != null) {
             if (plugin.getConfigManager().preventRentModify() && plugin.getConfigManager().enabledRentSystem()) {
                 if (plugin.getRentManager().isRented(res)) {
