@@ -972,7 +972,7 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         event.setCancelled(true);
-        // fix Creeper/End_Crystal not disappearing when explosions are canceled
+        // fix Creeper/End_Crystal not disappearing when EntityExplodeEvent is canceled
         // projectiles disappear on their own, so this may not be needed
         if (shouldRemove) {
             entity.remove();
@@ -992,16 +992,19 @@ public class ResidenceEntityListener implements Listener {
             ResidenceListener1_21.onWindExplode(event);
             return;
         }
+        FlagPermissions perms;
         Location loc = event.getLocation();
-        FlagPermissions perms = FlagPermissions.getPerms(loc);
         boolean shouldDeny = false;
 
         CMIEntityType type = CMIEntityType.get(event.getEntityType());
         // Explosion is prohibited at the source location; cancel the event directly
         if (type == null) {
             // Unknown entity type fallback
-            if (Flags.explode.isGlobalyEnabled() && !perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
-                shouldDeny = true;
+            if (Flags.explode.isGlobalyEnabled()) {
+                perms = FlagPermissions.getPerms(loc);
+                if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
+                    shouldDeny = true;
+                }
             }
         } else {
             switch (type) {
@@ -1009,6 +1012,7 @@ public class ResidenceEntityListener implements Listener {
                 if (!Flags.creeper.isGlobalyEnabled()) {
                     break;
                 }
+                perms = FlagPermissions.getPerms(loc);
                 if (!perms.has(Flags.creeper, perms.has(Flags.explode, true))) {
                     shouldDeny = !plugin.getConfigManager().isCreeperExplodeBelow()
                             || loc.getBlockY() >= plugin.getConfigManager().getCreeperExplodeBelowLevel()
@@ -1020,14 +1024,19 @@ public class ResidenceEntityListener implements Listener {
                 if (!Flags.tnt.isGlobalyEnabled()) {
                     break;
                 }
+                perms = FlagPermissions.getPerms(loc);
                 if (!perms.has(Flags.tnt, perms.has(Flags.explode, true))) {
                     shouldDeny = !plugin.getConfigManager().isTNTExplodeBelow()
                             || loc.getBlockY() >= plugin.getConfigManager().getTNTExplodeBelowLevel()
                             || ClaimedResidence.getByLoc(loc) != null;
                 }
                 break;
-            case SMALL_FIREBALL:
             case FIREBALL:
+            case SMALL_FIREBALL:
+                if (!Flags.explode.isGlobalyEnabled() && !Flags.fireball.isGlobalyEnabled()) {
+                    break;
+                }
+                perms = FlagPermissions.getPerms(loc);
                 if ((Flags.explode.isGlobalyEnabled() && !perms.has(Flags.explode, true))
                         || (Flags.fireball.isGlobalyEnabled() && !perms.has(Flags.fireball, true))) {
                     shouldDeny = true;
@@ -1038,6 +1047,7 @@ public class ResidenceEntityListener implements Listener {
                 if (!Flags.explode.isGlobalyEnabled()) {
                     break;
                 }
+                perms = FlagPermissions.getPerms(loc);
                 if (!perms.has(Flags.explode, perms.has(Flags.witherdestruction, true))) {
                     shouldDeny = true;
                 }
@@ -1046,6 +1056,7 @@ public class ResidenceEntityListener implements Listener {
                 if (!Flags.dragongrief.isGlobalyEnabled()) {
                     break;
                 }
+                perms = FlagPermissions.getPerms(loc);
                 if (!perms.has(Flags.dragongrief, true)) {
                     shouldDeny = true;
                 }
@@ -1055,6 +1066,7 @@ public class ResidenceEntityListener implements Listener {
                 if (!Flags.explode.isGlobalyEnabled()) {
                     break;
                 }
+                perms = FlagPermissions.getPerms(loc);
                 if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
                     shouldDeny = true;
                 }
