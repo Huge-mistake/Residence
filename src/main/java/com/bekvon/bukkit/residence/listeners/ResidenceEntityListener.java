@@ -1558,11 +1558,24 @@ public class ResidenceEntityListener implements Listener {
             }
             return;
         }
-        if (Flags.animalkilling.isGlobalyEnabled()
-                && (event.getCause() == DamageCause.BLOCK_EXPLOSION || event.getCause() == DamageCause.ENTITY_EXPLOSION)
-                && Utils.isAnimal(entity)) {
-            if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse)) {
-                event.setCancelled(true);
+        if (cause == DamageCause.BLOCK_EXPLOSION || cause == DamageCause.ENTITY_EXPLOSION) {
+            if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(entity)) {
+                if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse)) {
+                    event.setCancelled(true);
+                }
+            } else if (Flags.mobkilling.isGlobalyEnabled() && isMonster(entity)) {
+                if (FlagPermissions.has(entity.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse)) {
+                    event.setCancelled(true);
+                }
+            } else if (Flags.pvp.isGlobalyEnabled() && entity instanceof Player) {
+                if (FlagPermissions.has(entity.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+                    event.setCancelled(true);
+                }
+            } else if (Flags.explode.isGlobalyEnabled()) {
+                FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
+                if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
+                    event.setCancelled(true);
+                }
             }
             return;
         }
