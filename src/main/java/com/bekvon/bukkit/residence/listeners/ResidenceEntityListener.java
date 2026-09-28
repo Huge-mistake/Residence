@@ -1528,7 +1528,8 @@ public class ResidenceEntityListener implements Listener {
         if (plugin.isDisabledWorldListener(entity)) {
             return;
         }
-        if (Flags.damage.isGlobalyEnabled() && event.getCause() != DamageCause.VOID
+        DamageCause cause = event.getCause();
+        if (Flags.damage.isGlobalyEnabled() && cause != DamageCause.VOID
                 && (entity instanceof Player || Utils.isTamed(entity))
                 && FlagPermissions.has(entity.getLocation(), Flags.damage, FlagCombo.OnlyFalse)) {
             event.setCancelled(true);
@@ -1536,20 +1537,20 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
 
-        if (Flags.falldamage.isGlobalyEnabled() && event.getCause() == DamageCause.FALL && entity instanceof Player) {
+        if (Flags.falldamage.isGlobalyEnabled() && cause == DamageCause.FALL && entity instanceof Player) {
             if (FlagPermissions.has(entity.getLocation(), Flags.falldamage, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
             }
             return;
         }
-        if (Flags.pvp.isGlobalyEnabled() && event.getCause() == DamageCause.LIGHTNING && entity instanceof Player) {
+        if (Flags.pvp.isGlobalyEnabled() && cause == DamageCause.LIGHTNING && entity instanceof Player) {
             if (FlagPermissions.has(entity.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
             }
             return;
         }
         if (Flags.destroy.isGlobalyEnabled()
-                && (event.getCause() == DamageCause.BLOCK_EXPLOSION || event.getCause() == DamageCause.ENTITY_EXPLOSION || event.getCause() == DamageCause.FIRE_TICK)
+                && (cause == DamageCause.BLOCK_EXPLOSION || cause == DamageCause.ENTITY_EXPLOSION || cause == DamageCause.FIRE_TICK)
                 && (entity instanceof Arrow || Utils.isArmorStand(entity))) {
             if (FlagPermissions.has(entity.getLocation(), Flags.destroy, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
@@ -1557,6 +1558,13 @@ public class ResidenceEntityListener implements Listener {
             }
             return;
         }
-
+        if (Flags.animalkilling.isGlobalyEnabled()
+                && (event.getCause() == DamageCause.BLOCK_EXPLOSION || event.getCause() == DamageCause.ENTITY_EXPLOSION)
+                && Utils.isAnimal(entity)) {
+            if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+            }
+            return;
+        }
     }
 }
