@@ -1558,17 +1558,17 @@ public class ResidenceEntityListener implements Listener {
             }
             return;
         }
-        if (cause == DamageCause.BLOCK_EXPLOSION || cause == DamageCause.ENTITY_EXPLOSION) {
-            if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(entity)) {
+        if (cause == DamageCause.BLOCK_EXPLOSION) {
+            if (Flags.pvp.isGlobalyEnabled() && entity instanceof Player) {
+                if (FlagPermissions.has(entity.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+                    event.setCancelled(true);
+                }
+            } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(entity)) {
                 if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse)) {
                     event.setCancelled(true);
                 }
             } else if (Flags.mobkilling.isGlobalyEnabled() && isMonster(entity)) {
                 if (FlagPermissions.has(entity.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse)) {
-                    event.setCancelled(true);
-                }
-            } else if (Flags.pvp.isGlobalyEnabled() && entity instanceof Player) {
-                if (FlagPermissions.has(entity.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
                     event.setCancelled(true);
                 }
             } else if (Flags.explode.isGlobalyEnabled()) {
