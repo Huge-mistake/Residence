@@ -45,16 +45,17 @@ public class ResidenceListener1_08 implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockExplodeEvent(BlockExplodeEvent event) {
+
+        Block sourceBlock = event.getBlock();
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(sourceBlock)) {
+            return;
+        }
         // ExplosionResult.TRIGGER_BLOCK does not destroy blocks
         // it is triggered by (Enchantment: Wind Burst)
         if (Version.isCurrentEqualOrHigher(Version.v1_21_0)
                 && event.getExplosionResult() == org.bukkit.ExplosionResult.TRIGGER_BLOCK) {
             ResidenceListener1_21.onWindExplode(event);
-            return;
-        }
-        Block sourceBlock = event.getBlock();
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(sourceBlock)) {
             return;
         }
         boolean shouldCheckExplode = Flags.explode.isGlobalyEnabled();

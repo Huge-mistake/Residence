@@ -884,6 +884,7 @@ public class ResidenceEntityListener implements Listener {
         boolean shouldRemove = false;
 
         if (type == null) {
+            // Unknown entity type fallback
             if (!Flags.explode.isGlobalyEnabled()) {
                 return;
             }
@@ -956,6 +957,7 @@ public class ResidenceEntityListener implements Listener {
                 }
                 break;
             default:
+                // Other entity types
                 if (!Flags.explode.isGlobalyEnabled()) {
                     return;
                 }
@@ -978,7 +980,11 @@ public class ResidenceEntityListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onEntityExplodeBreakBlock(EntityExplodeEvent event) {
+    public void onEntityExplode(EntityExplodeEvent event) {
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(event.getEntity())) {
+            return;
+        }
         // ExplosionResult.TRIGGER_BLOCK does not destroy blocks
         // it is triggered by (WindCharge and Wind Charged Effect)
         if (Version.isCurrentEqualOrHigher(Version.v1_21_0)
@@ -986,133 +992,173 @@ public class ResidenceEntityListener implements Listener {
             ResidenceListener1_21.onWindExplode(event);
             return;
         }
-        if (plugin.isDisabledWorldListener(event.getEntity())) {
-            return;
-        }
-        CMIEntityType type = CMIEntityType.get(event.getEntityType());
-        Flags flag = Flags.explode;
+        Location loc = event.getLocation();
+        FlagPermissions perms = FlagPermissions.getPerms(loc);
+        boolean shouldDeny = false;
 
-        if (type != null) {
+        CMIEntityType type = CMIEntityType.get(event.getEntityType());
+        // Explosion is prohibited at the source location; cancel the event directly
+        if (type == null) {
+            // Unknown entity type fallback
+            if (Flags.explode.isGlobalyEnabled() && !perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
+                shouldDeny = true;
+            }
+        } else {
             switch (type) {
             case CREEPER:
-                flag = Flags.creeper;
+                if (!Flags.creeper.isGlobalyEnabled()) {
+                    break;
+                }
+                if (!perms.has(Flags.creeper, perms.has(Flags.explode, true))) {
+                    shouldDeny = !plugin.getConfigManager().isCreeperExplodeBelow()
+                            || loc.getBlockY() >= plugin.getConfigManager().getCreeperExplodeBelowLevel()
+                            || ClaimedResidence.getByLoc(loc) != null;
+                }
                 break;
             case TNT:
             case TNT_MINECART:
-                flag = Flags.tnt;
+                if (!Flags.tnt.isGlobalyEnabled()) {
+                    break;
+                }
+                if (!perms.has(Flags.tnt, perms.has(Flags.explode, true))) {
+                    shouldDeny = !plugin.getConfigManager().isTNTExplodeBelow()
+                            || loc.getBlockY() >= plugin.getConfigManager().getTNTExplodeBelowLevel()
+                            || ClaimedResidence.getByLoc(loc) != null;
+                }
                 break;
-            case ENDER_DRAGON:
-                flag = Flags.dragongrief;
-                break;
-            case FIREBALL:
             case SMALL_FIREBALL:
-                flag = Flags.fireball;
+            case FIREBALL:
+                if ((Flags.explode.isGlobalyEnabled() && perms.has(Flags.explode, FlagCombo.OnlyFalse)) ||
+                        (Flags.fireball.isGlobalyEnabled() && perms.has(Flags.fireball, FlagCombo.OnlyFalse))) {
+                    shouldDeny = true;
+                }
                 break;
             case WITHER:
             case WITHER_SKULL:
-                flag = Flags.witherdestruction;
+                if (!Flags.explode.isGlobalyEnabled()) {
+                    break;
+                }
+                if (!perms.has(Flags.explode, perms.has(Flags.witherdestruction, true))) {
+                    shouldDeny = true;
+                }
+                break;
+            case ENDER_DRAGON:
+                if (!Flags.dragongrief.isGlobalyEnabled()) {
+                    break;
+                }
+                if (!perms.has(Flags.dragongrief, true)) {
+                    shouldDeny = true;
+                }
                 break;
             default:
+                // Other entity types
+                if (!Flags.explode.isGlobalyEnabled()) {
+                    break;
+                }
+                if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
+                    shouldDeny = true;
+                }
                 break;
             }
         }
-        FlagPermissions perms;
+        if (shouldDeny) {
+            event.setCancelled(true);
+            return;
+        }
+        // Source allows explosion, so check each affected block for destruction
+        FlagPermissions blockPerms;
         List<Block> denyBreak = new ArrayList<>();
-
-        switch (flag) {
-        case creeper:
-            // Creeper explosion triggers ExplosionPrimeEvent first
-            // Explosion is already allowed at this point; now check if it can break blocks
-            if (!flag.isGlobalyEnabled()) {
-                return;
-            }
+        if (type == null) {
+            // Unknown entity type fallback
             for (Block block : event.blockList()) {
-                perms = FlagPermissions.getPerms(block.getLocation());
-                if (!perms.has(flag, perms.has(Flags.explode, true))
-                        && (!plugin.getConfigManager().isCreeperExplodeBelow()
-                        || block.getY() >= plugin.getConfigManager().getCreeperExplodeBelowLevel()
-                        || ClaimedResidence.getByLoc(block.getLocation()) != null)) {
+                blockPerms = FlagPermissions.getPerms(block.getLocation());
+                if ((Flags.destroy.isGlobalyEnabled() && !blockPerms.has(Flags.destroy, true))
+                        || (Flags.explode.isGlobalyEnabled() && !blockPerms.has(Flags.explode, true))) {
                     denyBreak.add(block);
                 }
             }
-            break;
-        case tnt:
-            // Tnt explosion triggers ExplosionPrimeEvent first
-            // Explosion is already allowed at this point; now check if it can break blocks
-            if (!flag.isGlobalyEnabled()) {
-                return;
-            }
-            for (Block block : event.blockList()) {
-                perms = FlagPermissions.getPerms(block.getLocation());
-                if (!perms.has(flag, perms.has(Flags.explode, true))
-                        && (!plugin.getConfigManager().isTNTExplodeBelow()
-                        || block.getY() >= plugin.getConfigManager().getTNTExplodeBelowLevel()
-                        || ClaimedResidence.getByLoc(block.getLocation()) != null)) {
-                    denyBreak.add(block);
+        } else {
+            switch (type) {
+            case CREEPER:
+                if (!Flags.creeper.isGlobalyEnabled()) {
+                    return;
                 }
-            }
-            break;
-        case dragongrief:
-            // Ender Dragon breaking blocks
-            if (!flag.isGlobalyEnabled()) {
-                return;
-            }
-            for (Block block : event.blockList()) {
-                perms = FlagPermissions.getPerms(block.getLocation());
-                if (!perms.has(flag, true)) {
-                    denyBreak.add(block);
+                for (Block block : event.blockList()) {
+                    blockPerms = FlagPermissions.getPerms(block.getLocation());
+                    if (!blockPerms.has(Flags.creeper, blockPerms.has(Flags.explode, true))
+                            && (!plugin.getConfigManager().isCreeperExplodeBelow()
+                            || block.getY() >= plugin.getConfigManager().getCreeperExplodeBelowLevel()
+                            || ClaimedResidence.getByLoc(block.getLocation()) != null)) {
+                        denyBreak.add(block);
+                    }
                 }
-            }
-            break;
-        case fireball:
-            // Fireball explosion triggers ExplosionPrimeEvent first
-            // Explosion is already allowed at this point; now check if it can break blocks
-            if (!flag.isGlobalyEnabled() && !Flags.explode.isGlobalyEnabled()) {
-                return;
-            }
-            for (Block block : event.blockList()) {
-                perms = FlagPermissions.getPerms(block.getLocation());
-                if ((flag.isGlobalyEnabled() && !perms.has(flag, true))
-                        || (Flags.explode.isGlobalyEnabled() && !perms.has(Flags.explode, true))) {
-                    denyBreak.add(block);
+                break;
+            case TNT:
+            case TNT_MINECART:
+                if (!Flags.tnt.isGlobalyEnabled()) {
+                    return;
                 }
-            }
-            break;
-        case witherdestruction:
-            // Wither & Wither_Skull explosion triggers ExplosionPrimeEvent first
-            // Explosion is already allowed at this point; now check if it can break blocks
-            if (!flag.isGlobalyEnabled() && !Flags.explode.isGlobalyEnabled()) {
-                return;
-            }
-            for (Block block : event.blockList()) {
-                perms = FlagPermissions.getPerms(block.getLocation());
-                if ((flag.isGlobalyEnabled() && !perms.has(flag, perms.has(Flags.destroy, true)))
-                        || (Flags.explode.isGlobalyEnabled() && !perms.has(Flags.explode, true))) {
-                    denyBreak.add(block);
+                for (Block block : event.blockList()) {
+                    blockPerms = FlagPermissions.getPerms(block.getLocation());
+                    if (!blockPerms.has(Flags.tnt, blockPerms.has(Flags.explode, true))
+                            && (!plugin.getConfigManager().isTNTExplodeBelow()
+                            || block.getY() >= plugin.getConfigManager().getTNTExplodeBelowLevel()
+                            || ClaimedResidence.getByLoc(block.getLocation()) != null)) {
+                        denyBreak.add(block);
+                    }
                 }
-            }
-            break;
-        case explode:
-        default:
-            if (!flag.isGlobalyEnabled() && !Flags.destroy.isGlobalyEnabled()) {
-                return;
-            }
-            // Other entities re-check whether explosion is allowed at the source location via EntityExplodeEvent
-            FlagPermissions sourcePerms = FlagPermissions.getPerms(event.getLocation());
-            // Explosion is prohibited at the source location; cancel the event directly
-            if (flag.isGlobalyEnabled() && !sourcePerms.has(flag, sourcePerms.has(Flags.destroy, true))) {
-                event.setCancelled(true);
-                return;
-            }
-            // Source allows explosion, so check each affected block for destruction
-            for (Block block : event.blockList()) {
-                perms = FlagPermissions.getPerms(block.getLocation());
-                if ((flag.isGlobalyEnabled() && !perms.has(flag, true))
-                        || (Flags.destroy.isGlobalyEnabled() && !perms.has(Flags.destroy, true))) {
-                    denyBreak.add(block);
+                break;
+            case ENDER_DRAGON:
+                if (!Flags.dragongrief.isGlobalyEnabled()) {
+                    return;
                 }
+                for (Block block : event.blockList()) {
+                    blockPerms = FlagPermissions.getPerms(block.getLocation());
+                    if (!blockPerms.has(Flags.dragongrief, true)) {
+                        denyBreak.add(block);
+                    }
+                }
+                break;
+            case FIREBALL:
+            case SMALL_FIREBALL:
+                if (!Flags.explode.isGlobalyEnabled() && !Flags.fireball.isGlobalyEnabled()) {
+                    return;
+                }
+                for (Block block : event.blockList()) {
+                    blockPerms = FlagPermissions.getPerms(block.getLocation());
+                    if ((Flags.explode.isGlobalyEnabled() && !blockPerms.has(Flags.explode, true))
+                            || (Flags.fireball.isGlobalyEnabled() && !blockPerms.has(Flags.fireball, true))) {
+                        denyBreak.add(block);
+                    }
+                }
+                break;
+            case WITHER:
+            case WITHER_SKULL:
+                if (!Flags.witherdestruction.isGlobalyEnabled() && !Flags.explode.isGlobalyEnabled()) {
+                    return;
+                }
+                for (Block block : event.blockList()) {
+                    blockPerms = FlagPermissions.getPerms(block.getLocation());
+                    if ((Flags.witherdestruction.isGlobalyEnabled() && !blockPerms.has(Flags.witherdestruction, blockPerms.has(Flags.destroy, true)))
+                            || (Flags.explode.isGlobalyEnabled() && !blockPerms.has(Flags.explode, true))) {
+                        denyBreak.add(block);
+                    }
+                }
+                break;
+            default:
+                // Other entity types
+                if (!Flags.destroy.isGlobalyEnabled() && !Flags.explode.isGlobalyEnabled()) {
+                    return;
+                }
+                for (Block block : event.blockList()) {
+                    blockPerms = FlagPermissions.getPerms(block.getLocation());
+                    if ((Flags.destroy.isGlobalyEnabled() && !blockPerms.has(Flags.destroy, true))
+                            || (Flags.explode.isGlobalyEnabled() && !blockPerms.has(Flags.explode, true))) {
+                        denyBreak.add(block);
+                    }
+                }
+                break;
             }
-            break;
         }
         event.blockList().removeAll(denyBreak);
     }

@@ -403,13 +403,8 @@ public class ResidenceListener1_21 implements Listener {
 
     public static void onWindExplode(BlockExplodeEvent event) {
 
-        Block originBlock = event.getBlock();
-
-        if (Residence.getInstance().isDisabledWorldListener(originBlock)) {
-            return;
-        }
         if (Flags.windexplode.isGlobalyEnabled()) {
-            FlagPermissions originPerms = FlagPermissions.getPerms(originBlock.getLocation());
+            FlagPermissions originPerms = FlagPermissions.getPerms(event.getBlock().getLocation());
             // Wind-Explode is prohibited at the origin location; cancel the event directly
             if (!originPerms.has(Flags.windexplode, originPerms.has(Flags.explode, true))) {
                 event.setCancelled(true);
@@ -434,10 +429,6 @@ public class ResidenceListener1_21 implements Listener {
     public static void onWindExplode(EntityExplodeEvent event) {
 
         Entity originEntity = event.getEntity();
-
-        if (Residence.getInstance().isDisabledWorldListener(originEntity)) {
-            return;
-        }
         ProjectileSource cause;
 
         if (originEntity instanceof AbstractWindCharge) {
@@ -448,9 +439,8 @@ public class ResidenceListener1_21 implements Listener {
         }
         if (Flags.windexplode.isGlobalyEnabled()) {
             Location originLoc = event.getLocation();
-            FlagPermissions originPerms = FlagPermissions.getPerms(originLoc);
             // Wind-Explode is prohibited at the origin location; cancel the event directly
-            if (shouldDenyWindExplode(originLoc, cause, originPerms, Flags.windexplode, Flags.explode)) {
+            if (shouldDenyWindExplode(originLoc, cause, Flags.windexplode, Flags.explode)) {
                 event.setCancelled(true);
                 return;
             }
@@ -462,18 +452,14 @@ public class ResidenceListener1_21 implements Listener {
             if (flag == null || !flag.isGlobalyEnabled()) {
                 continue;
             }
-            FlagPermissions blockPerms = FlagPermissions.getPerms(block.getLocation());
-
-            if (shouldDenyWindExplode(block.getLocation(), cause, blockPerms, flag, Flags.use)) {
+            if (shouldDenyWindExplode(block.getLocation(), cause, flag, Flags.use)) {
                 denyInteraction.add(block);
             }
         }
         event.blockList().removeAll(denyInteraction);
     }
 
-    private static boolean shouldDenyWindExplode(Location triggerLoc, ProjectileSource cause, FlagPermissions perms,
-                                                 Flags mainFlag, Flags subFlag) {
-        boolean shouldDeny = false;
+    private static boolean shouldDenyWindExplode(Location triggerLoc, ProjectileSource cause, Flags mainFlag, Flags subFlag) {
         if (cause instanceof Player) {
             Player player = (Player) cause;
             if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
@@ -482,18 +468,17 @@ public class ResidenceListener1_21 implements Listener {
             FlagPermissions playerPerms = FlagPermissions.getPerms(triggerLoc, player);
             // Because Flags.explode is not FlagMode.Both
             boolean result = (subFlag == Flags.explode)
-                    ? perms.has(subFlag, true)
+                    ? FlagPermissions.has(triggerLoc, subFlag, true)
                     : playerPerms.playerHas(player, subFlag, true);
             if (!playerPerms.playerHas(player, mainFlag, result)) {
                 lm.Flag_Deny.sendMessage(player, mainFlag);
-                shouldDeny = true;
+                return true;
             }
         } else {
-            if (!perms.has(mainFlag, perms.has(subFlag, true))) {
-                shouldDeny = true;
-            }
+            FlagPermissions perms = FlagPermissions.getPerms(triggerLoc);
+            return !perms.has(mainFlag, perms.has(subFlag, true));
         }
-        return shouldDeny;
+        return false;
     }
 
     @Nullable
