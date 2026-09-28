@@ -1070,6 +1070,9 @@ public class ResidenceEntityListener implements Listener {
         List<Block> denyBreak = new ArrayList<>();
         if (type == null) {
             // Unknown entity type fallback
+            if (!Flags.destroy.isGlobalyEnabled() && !Flags.explode.isGlobalyEnabled()) {
+                return;
+            }
             for (Block block : event.blockList()) {
                 blockPerms = FlagPermissions.getPerms(block.getLocation());
                 if ((Flags.destroy.isGlobalyEnabled() && !blockPerms.has(Flags.destroy, true))
