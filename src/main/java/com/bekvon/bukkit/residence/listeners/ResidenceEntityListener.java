@@ -1028,8 +1028,8 @@ public class ResidenceEntityListener implements Listener {
                 break;
             case SMALL_FIREBALL:
             case FIREBALL:
-                if ((Flags.explode.isGlobalyEnabled() && perms.has(Flags.explode, FlagCombo.OnlyFalse)) ||
-                        (Flags.fireball.isGlobalyEnabled() && perms.has(Flags.fireball, FlagCombo.OnlyFalse))) {
+                if ((Flags.explode.isGlobalyEnabled() && !perms.has(Flags.explode, true))
+                        || (Flags.fireball.isGlobalyEnabled() && !perms.has(Flags.fireball, true))) {
                     shouldDeny = true;
                 }
                 break;
