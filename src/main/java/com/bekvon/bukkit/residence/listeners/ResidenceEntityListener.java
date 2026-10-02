@@ -1550,6 +1550,8 @@ public class ResidenceEntityListener implements Listener {
             }
             return;
         }
+        // Even if BlockExplodeEvent is canceled, damage will still be dealt
+        // Fix bed and respawn anchor explosions damaging entities
         if (cause == DamageCause.BLOCK_EXPLOSION) {
             if (Flags.pvp.isGlobalyEnabled() && entity instanceof Player) {
                 if (FlagPermissions.has(entity.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
