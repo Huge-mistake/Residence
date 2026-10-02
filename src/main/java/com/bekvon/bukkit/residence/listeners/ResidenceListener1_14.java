@@ -8,7 +8,6 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -20,7 +19,6 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 import org.bukkit.event.raid.RaidTriggerEvent;
-import org.bukkit.event.vehicle.VehicleDamageEvent;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
@@ -71,24 +69,6 @@ public class ResidenceListener1_14 implements Listener {
         Player player = event.getPlayer();
 
         if (FlagPermissions.shouldDenyAndNotify(player, event.getLectern().getLocation(), Flags.container, null)) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onVehicleDamage(VehicleDamageEvent event) {
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.vehicledestroy, event.getVehicle())) {
-            return;
-        }
-        Entity attacker = event.getAttacker();
-
-        if (!(attacker instanceof Player)) {
-            return;
-        }
-        Player player = (Player) attacker;
-
-        if (FlagPermissions.shouldDenyAndNotify(player, event.getVehicle(), Flags.vehicledestroy, null)) {
             event.setCancelled(true);
         }
     }

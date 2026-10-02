@@ -56,6 +56,7 @@ import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.hanging.HangingPlaceEvent;
+import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -485,8 +486,9 @@ public class ResidenceEntityListener implements Listener {
         }
     }
 
+    // Fix player being able to knock back vehicle before Destroy
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void VehicleDestroy(VehicleDestroyEvent event) {
+    public void onPlayerDamageVehicle(VehicleDamageEvent event) {
 
         Vehicle vehicle = event.getVehicle();
 
@@ -495,10 +497,29 @@ public class ResidenceEntityListener implements Listener {
         }
         Entity attacker = event.getAttacker();
 
+        if (!(attacker instanceof Player)) {
+            return;
+        }
+        if (FlagPermissions.shouldDenyAndNotify((Player) attacker, vehicle, Flags.vehicledestroy, null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onVehicleDestroy(VehicleDestroyEvent event) {
+
+        Vehicle vehicle = event.getVehicle();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.vehicledestroy, vehicle)) {
+            return;
+        }
+        Entity attacker = event.getAttacker();
+        // Entity destroys vehicle
         if (attacker != null) {
-            if (shouldDenyVehicleDestroy(attacker, vehicle)) {
+            if (shouldDenyEntityDestroyVehicle(attacker, vehicle)) {
                 event.setCancelled(true);
             }
+            // Explosion destroys vehicle
         } else if (Version.isCurrentEqualOrHigher(Version.v26_1_2) && Version.isPaperBranch()
                 && event.getDamageSource() == org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.EXPLOSION)) {
             if (FlagPermissions.has(vehicle.getLocation(), Flags.vehicledestroy, FlagCombo.OnlyFalse)) {
@@ -508,7 +529,7 @@ public class ResidenceEntityListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void vehicleCombust(EntityCombustByEntityEvent event) {
+    public void onNonLivingVehicleCombust(EntityCombustByEntityEvent event) {
 
         Entity entity = event.getEntity();
 
@@ -521,17 +542,17 @@ public class ResidenceEntityListener implements Listener {
         if (!(entity instanceof Vehicle)) {
             return;
         }
-        if (shouldDenyVehicleDestroy(event.getCombuster(), (Vehicle) entity)) {
+        if (shouldDenyEntityDestroyVehicle(event.getCombuster(), (Vehicle) entity)) {
             event.setCancelled(true);
         }
     }
 
-    private boolean shouldDenyVehicleDestroy(Entity attacker, Vehicle vehicle) {
+    private boolean shouldDenyEntityDestroyVehicle(Entity attacker, Vehicle vehicle) {
 
-        Player cause = Utils.potentialProjectileToPlayer(attacker);
+        Player player = Utils.potentialProjectileToPlayer(attacker);
 
-        if (cause != null) {
-            return FlagPermissions.shouldDenyAndNotify(cause, vehicle, Flags.vehicledestroy, null);
+        if (player != null) {
+            return FlagPermissions.shouldDenyAndNotify(player, vehicle, Flags.vehicledestroy, null);
         } else {
             return FlagPermissions.has(vehicle.getLocation(), Flags.vehicledestroy, FlagCombo.OnlyFalse);
         }
