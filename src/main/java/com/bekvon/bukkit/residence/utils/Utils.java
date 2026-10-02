@@ -81,13 +81,12 @@ public class Utils {
     }
 
     public static List<Entity> getPassengers(Vehicle vehicle) {
-        if (Version.isCurrentEqualOrHigher(Version.v1_9_R1))
+        // getPassengers was not added until Bukkit 1.11.2+
+        if (Version.isCurrentEqualOrHigher(Version.v1_11_2)) {
             return vehicle.getPassengers();
-        else {
-            List<Entity> passengers = new ArrayList<>();
-            if (vehicle.getPassenger() != null)
-                passengers.add(vehicle.getPassenger());
-            return passengers;
+        } else {
+            Entity passenger = vehicle.getPassenger();
+            return passenger != null ? Collections.singletonList(passenger) : Collections.emptyList();
         }
     }
 
