@@ -519,9 +519,10 @@ public class ResidenceEntityListener implements Listener {
             if (shouldDenyEntityDestroyVehicle(attacker, vehicle)) {
                 event.setCancelled(true);
             }
-            // Explosion destroys vehicle
+            // Bed and Respawn Anchor Explosions Destroy Vehicles
+            // Prevent vehicles inside Residence borders from being destroyed by external explosions
         } else if (Version.isCurrentEqualOrHigher(Version.v26_1_2) && Version.isPaperBranch()
-                && event.getDamageSource().getDamageType() == org.bukkit.damage.DamageType.EXPLOSION) {
+                && event.getDamageSource().getDamageType() == org.bukkit.damage.DamageType.BAD_RESPAWN_POINT) {
             if (FlagPermissions.has(vehicle.getLocation(), Flags.vehicledestroy, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
             }
