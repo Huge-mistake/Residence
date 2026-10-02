@@ -521,7 +521,7 @@ public class ResidenceEntityListener implements Listener {
             }
             // Explosion destroys vehicle
         } else if (Version.isCurrentEqualOrHigher(Version.v26_1_2) && Version.isPaperBranch()
-                && event.getDamageSource() == org.bukkit.damage.DamageSource.builder(org.bukkit.damage.DamageType.EXPLOSION)) {
+                && event.getDamageSource().getDamageType() == org.bukkit.damage.DamageType.EXPLOSION) {
             if (FlagPermissions.has(vehicle.getLocation(), Flags.vehicledestroy, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
             }
