@@ -486,8 +486,9 @@ public class ResidenceEntityListener implements Listener {
         }
     }
 
+    // Fix player being able to knock back vehicle before Destroy
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onVehicleDamage(VehicleDamageEvent event) {
+    public void onPlayerDamageVehicle(VehicleDamageEvent event) {
 
         Vehicle vehicle = event.getVehicle();
 
@@ -495,17 +496,12 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         Entity attacker = event.getAttacker();
-        // Fix player being able to knock back vehicle before Destroy
-        if (attacker instanceof Player) {
-            if (FlagPermissions.shouldDenyAndNotify((Player) attacker, vehicle, Flags.vehicledestroy, null)) {
-                event.setCancelled(true);
-            }
-            // Fix bed and respawn anchor explosions knocking back and destroying vehicles
-        } else if (Version.isCurrentEqualOrHigher(Version.v26_1_2) && Version.isPaperBranch()
-                && event.getDamageSource().getDamageType() == org.bukkit.damage.DamageType.BAD_RESPAWN_POINT) {
-            if (FlagPermissions.has(vehicle.getLocation(), Flags.vehicledestroy, FlagCombo.OnlyFalse)) {
-                event.setCancelled(true);
-            }
+
+        if (!(attacker instanceof Player)) {
+            return;
+        }
+        if (FlagPermissions.shouldDenyAndNotify((Player) attacker, vehicle, Flags.vehicledestroy, null)) {
+            event.setCancelled(true);
         }
     }
 
@@ -518,11 +514,18 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         Entity attacker = event.getAttacker();
-        if (attacker == null) {
-            return;
-        }
-        if (shouldDenyEntityDestroyVehicle(attacker, vehicle)) {
-            event.setCancelled(true);
+        // Entity destroys vehicle
+        if (attacker != null) {
+            if (shouldDenyEntityDestroyVehicle(attacker, vehicle)) {
+                event.setCancelled(true);
+            }
+            // Even if BlockExplodeEvent is canceled, vehicles can still be destroyed
+            // Fix bed and respawn anchor explosions destroying vehicles
+        } else if (Version.isCurrentEqualOrHigher(Version.v26_1_2) && Version.isPaperBranch()
+                && event.getDamageSource().getDamageType() == org.bukkit.damage.DamageType.BAD_RESPAWN_POINT) {
+            if (FlagPermissions.has(vehicle.getLocation(), Flags.vehicledestroy, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+            }
         }
     }
 
