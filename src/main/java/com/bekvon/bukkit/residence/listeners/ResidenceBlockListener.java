@@ -74,11 +74,13 @@ import net.Zrips.CMILib.Items.CMIMC;
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
 
+import org.jspecify.annotations.Nullable;
+
 public class ResidenceBlockListener implements Listener {
 
-    private List<UUID> MessageInformed = new ArrayList<UUID>();
+    private final List<UUID> MessageInformed = new ArrayList<UUID>();
 
-    private Residence plugin;
+    private final Residence plugin;
 
     public ResidenceBlockListener(Residence residence) {
         this.plugin = residence;
@@ -86,6 +88,10 @@ public class ResidenceBlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onAnvilInventoryClick(InventoryClickEvent e) {
+        // Paper 1.16.5+ uses AnvilDamagedEvent
+        if (Version.isCurrentEqualOrHigher(Version.v1_16_5) && Version.isPaperBranch()) {
+            return;
+        }
         // Disabling listener if flag disabled globally
         if (!Flags.anvilbreak.isGlobalyEnabled())
             return;
@@ -112,7 +118,7 @@ public class ResidenceBlockListener implements Listener {
         if (!res.getPermissions().has(Flags.anvilbreak, FlagCombo.OnlyFalse))
             return;
 
-        if (Version.isCurrentLower(Version.v1_13_R1)) {
+        if (Version.isCurrentLower(Version.v1_13_0)) {
             try {
                 b.getClass().getMethod("setData", byte.class).invoke(b, (byte) 1);
             } catch (Throwable e1) {
@@ -126,10 +132,12 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlantGrow(BlockGrowEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.grow, event.getBlock())) {
+        Block block = event.getBlock();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.grow, block)) {
             return;
         }
-        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
         if (!perms.has(Flags.grow, true)) {
             event.setCancelled(true);
         }
@@ -138,7 +146,9 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onVineGrow(BlockSpreadEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.grow, event.getBlock())) {
+        Block block = event.getBlock();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.grow, block)) {
             return;
         }
         CMIMaterial type = CMIMaterial.get(event.getSource().getType());
@@ -146,32 +156,22 @@ public class ResidenceBlockListener implements Listener {
         if (!type.equals(CMIMaterial.VINE) && !type.toString().contains("_VINES"))
             return;
 
-        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
         if (!perms.has(Flags.grow, true)) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onleaveDecay(LeavesDecayEvent event) {
+    public void onLeaveDecay(LeavesDecayEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.decay, event.getBlock())) {
+        Block block = event.getBlock();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.decay, block)) {
             return;
         }
-        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
         if (!perms.has(Flags.decay, true)) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onTreeGrowt(StructureGrowEvent event) {
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.grow, event.getWorld())) {
-            return;
-        }
-        FlagPermissions perms = FlagPermissions.getPerms(event.getLocation());
-        if (!perms.has(Flags.grow, true)) {
             event.setCancelled(true);
         }
     }
@@ -179,23 +179,60 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onTreeGrow(StructureGrowEvent event) {
 
-        if (plugin.isDisabledWorldListener(event.getWorld()))
+        if (plugin.isDisabledWorldListener(event.getWorld())) {
             return;
-
-        ClaimedResidence startRes = plugin.getResidenceManager().getByLoc(event.getLocation());
-        List<BlockState> blocks = event.getBlocks();
-
-        for (BlockState one : new ArrayList<BlockState>(blocks)) {
-            ClaimedResidence targetRes = plugin.getResidenceManager().getByLoc(one.getLocation());
-            if (startRes == null && targetRes != null || targetRes != null && startRes != null && !startRes.getName().equals(targetRes.getName()) && !startRes.isOwner(targetRes.getOwner())) {
-                blocks.remove(one);
+        }
+        if (Flags.glow.isGlobalyEnabled()) {
+            if (FlagPermissions.has(event.getLocation(), Flags.grow, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+                return;
             }
+        }
+        if (Flags.build.isGlobalyEnabled()) {
+            handleTreeGrowCrossResidence(event);
+        }
+    }
+
+    public void handleTreeGrowCrossResidence(StructureGrowEvent event) {
+
+        Location sourceLoc = event.getLocation();
+        Player player = event.getPlayer();
+
+        if (player != null) {
+            // cancel the event if the player lacks build permission at the source location
+            if (FlagPermissions.shouldDenyAndNotify(player, sourceLoc, Flags.build, null)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+        // player has build permission at the source location, or event is not player-triggered
+        // check build permission for spread blocks
+        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(sourceLoc);
+        event.getBlocks().removeIf(spread -> shouldDenySpread(spread, sourceRes, player));
+    }
+
+    public static boolean shouldDenySpread(@NotNull BlockState spread, @Nullable ClaimedResidence sourceRes, @Nullable Player player) {
+
+        ClaimedResidence spreadRes = ClaimedResidence.getByLoc(spread.getLocation());
+        // spread-block not in Res, skip check
+        if (spreadRes == null) {
+            return false;
+        }
+        // source & spread-block in same Res, or have same Res owner, skip check
+        if (sourceRes != null && (sourceRes == spreadRes || sourceRes.isOwner(spreadRes.getOwner()))) {
+            return false;
+        }
+        // source & spread-block not in same Res, not same Res owner
+        if (player != null) {
+            return spreadRes.getPermissions().playerHas(player, Flags.build, FlagCombo.OnlyFalse);
+        } else {
+            return spreadRes.getPermissions().has(Flags.build, FlagCombo.OnlyFalse);
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!canBreakBlock(event.getPlayer(), event.getBlock(), true))
+        if (!canBreakBlock(event.getPlayer(), event.getBlock().getLocation(), true))
             event.setCancelled(true);
     }
 
@@ -305,22 +342,23 @@ public class ResidenceBlockListener implements Listener {
         }
     }
 
-    private boolean isIceOrSnow(Material material) {
-        CMIMaterial mat = CMIMaterial.get(material);
-        switch (mat) {
+    private boolean isNotIceOrSnow(Material material) {
+        switch (CMIMaterial.get(material)) {
         case FROSTED_ICE:
         case ICE:
         case SNOW:
-            return true;
-        default:
             return false;
+        default:
+            return true;
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onIceForm(BlockFormEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.iceform, event.getBlock())) {
+        Block block = event.getBlock();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.iceform, block)) {
             return;
         }
         // SnowGolem already has SnowTrail Flag
@@ -328,10 +366,10 @@ public class ResidenceBlockListener implements Listener {
                 && ((EntityBlockFormEvent) event).getEntity() instanceof Snowman) {
             return;
         }
-        if (!isIceOrSnow(event.getNewState().getType())) {
+        if (isNotIceOrSnow(event.getNewState().getType())) {
             return;
         }
-        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
         if (!perms.has(Flags.iceform, true)) {
             event.setCancelled(true);
         }
@@ -340,13 +378,15 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onIceMelt(BlockFadeEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.icemelt, event.getBlock())) {
+        Block block = event.getBlock();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.icemelt, block)) {
             return;
         }
-        if (!isIceOrSnow(event.getBlock().getType())) {
+        if (isNotIceOrSnow(block.getType())) {
             return;
         }
-        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
         if (!perms.has(Flags.icemelt, true)) {
             event.setCancelled(true);
         }
@@ -403,7 +443,9 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockFall(EntityChangeBlockEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.fallinprotection, event.getBlock())) {
+        Block block = event.getBlock();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.fallinprotection, block)) {
             return;
         }
         if (!plugin.getConfigManager().isBlockFall())
@@ -414,11 +456,6 @@ public class ResidenceBlockListener implements Listener {
 
         Material typeTo = event.getTo();
         if (typeTo.hasGravity() || CMIMaterial.get(typeTo).equals(CMIMaterial.SCAFFOLDING))
-            return;
-
-        Block block = event.getBlock();
-
-        if (block == null)
             return;
 
         if (!plugin.getConfigManager().getBlockFallWorlds().contains(block.getLocation().getWorld().getName()))
@@ -772,24 +809,29 @@ public class ResidenceBlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onLandDryFade(BlockFadeEvent event) {
-        // Moved to separate class
-        if (Version.isCurrentEqualOrHigher(Version.v1_13_R1))
-            return;
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.dryup, event.getBlock())) {
+        Block block = event.getBlock();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.dryup, block)) {
             return;
         }
-        CMIMaterial mat = CMIMaterial.get(event.getBlock());
+        // Moved to separate class
+        if (Version.isCurrentEqualOrHigher(Version.v1_13_0)) {
+            if (ResidenceListener1_13.shouldCancelFarmLandChange(block)) {
+                event.setCancelled(true);
+            }
+            return;
+        }
+        CMIMaterial mat = CMIMaterial.get(block.getType());
         if (!mat.equals(CMIMaterial.FARMLAND))
             return;
 
         FlagPermissions perms = FlagPermissions.getPerms(event.getNewState().getLocation());
         if (!perms.has(Flags.dryup, true)) {
-            Block b = event.getBlock();
             try {
-                byte value = (byte) b.getClass().getMethod("getData").invoke(b);
+                byte value = (byte) block.getClass().getMethod("getData").invoke(block);
                 if (value < (byte) 2)
-                    b.getClass().getMethod("setData", byte.class).invoke(b, (byte) 7);
+                    block.getClass().getMethod("setData", byte.class).invoke(block, (byte) 7);
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e1) {
                 e1.printStackTrace();
             }
@@ -801,27 +843,31 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onLandDryPhysics(BlockPhysicsEvent event) {
 
-        // Moved to separate class
-        if (Version.isCurrentEqualOrHigher(Version.v1_13_R1))
-            return;
+        Block block = event.getBlock();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.dryup, event.getBlock())) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.dryup, block)) {
             return;
         }
-        if (!event.getBlock().getWorld().isChunkLoaded((int) Math.floor(event.getBlock().getLocation().getX()) >> 4, ((int) Math.floor(event.getBlock().getLocation().getZ()) >> 4)))
+        // Moved to separate class
+        if (Version.isCurrentEqualOrHigher(Version.v1_13_0)) {
+            if (ResidenceListener1_13.shouldCancelFarmLandChange(block)) {
+                event.setCancelled(true);
+            }
             return;
-
-        CMIMaterial mat = CMIMaterial.get(event.getBlock());
+        }
+        if (!block.getWorld().isChunkLoaded((int) Math.floor(block.getLocation().getX()) >> 4, ((int) Math.floor(block.getLocation().getZ()) >> 4))) {
+            return;
+        }
+        CMIMaterial mat = CMIMaterial.get(block.getType());
         if (!mat.equals(CMIMaterial.FARMLAND))
             return;
 
-        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
         if (perms.has(Flags.dryup, FlagCombo.OnlyFalse)) {
-            Block b = event.getBlock();
             try {
-                byte value = (byte) b.getClass().getMethod("getData").invoke(b);
+                byte value = (byte) block.getClass().getMethod("getData").invoke(block);
                 if (value < (byte) 2)
-                    b.getClass().getMethod("setData", byte.class).invoke(b, (byte) 7);
+                    block.getClass().getMethod("setData", byte.class).invoke(block, (byte) 7);
             } catch (Throwable e1) {
                 e1.printStackTrace();
             }
@@ -835,8 +881,6 @@ public class ResidenceBlockListener implements Listener {
     public void onDispense(BlockDispenseEvent event) {
 
         Block block = event.getBlock();
-        if (block == null)
-            return;
 
         if (FlagPermissions.shouldIgnoreCheck(Flags.build, block)) {
             return;
@@ -845,7 +889,8 @@ public class ResidenceBlockListener implements Listener {
             return;
 
         // target location
-        Location targetLoc = Version.isCurrentEqualOrHigher(Version.v1_13_R1) ? ResidenceBlockData.getRelative(block)
+        Location targetLoc = Version.isCurrentEqualOrHigher(Version.v1_13_0)
+                ? ResidenceBlockData.getRelative(block)
                 : block.getRelative((((org.bukkit.material.Dispenser) ((org.bukkit.block.Dispenser) block).getData()).getFacing())).getLocation();
 
         ClaimedResidence targetRes = ClaimedResidence.getByLoc(targetLoc);
@@ -974,10 +1019,9 @@ public class ResidenceBlockListener implements Listener {
 
         List<?> ls = new ArrayList<>();
         try {
-            if (Version.isCurrentEqualOrLower(Version.v1_13_R2))
-                ls = (ArrayList<Block>) e.getClass().getMethod("getBlocks").invoke(e);
-            else
-                ls = (ArrayList<BlockState>) e.getClass().getMethod("getBlocks").invoke(e);
+            ls = Version.isCurrentEqualOrHigher(Version.v1_14_0)
+                    ? (ArrayList<BlockState>) e.getClass().getMethod("getBlocks").invoke(e)
+                    : (ArrayList<Block>) e.getClass().getMethod("getBlocks").invoke(e);
         } catch (Exception e1) {
             e1.printStackTrace();
         }
@@ -989,10 +1033,10 @@ public class ResidenceBlockListener implements Listener {
         int bigestX = -Integer.MAX_VALUE;
         int bigestZ = -Integer.MAX_VALUE;
 
-        for (int i = 0; i < ls.size(); i++) {
-            Object ob = ls.get(i);
-
-            Location one = Version.isCurrentEqualOrHigher(Version.v1_14_R1) ? ((BlockState) ob).getLocation() : ((Block) ob).getLocation();
+        for (Object ob : ls) {
+            Location one = Version.isCurrentEqualOrHigher(Version.v1_14_0)
+                    ? ((BlockState) ob).getLocation()
+                    : ((Block) ob).getLocation();
 
             if (one.getBlockY() < lowestY)
                 lowestY = one.getBlockY();
@@ -1010,7 +1054,6 @@ public class ResidenceBlockListener implements Listener {
         }
 
         int height = Math.abs(bigestY - lowestY);
-        height = height < 0 ? -height : height;
 
         // If height is 1 then its not a nether portal
         if (height < 2)
@@ -1024,35 +1067,27 @@ public class ResidenceBlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockIgnite(BlockIgniteEvent event) {
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock()))
-            return;
 
-        IgniteCause cause = event.getCause();
-        if (cause == IgniteCause.SPREAD) {
-            // Disabling listener if flag disabled globally
-            if (!Flags.firespread.isGlobalyEnabled())
-                return;
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
-            if (!perms.has(Flags.firespread, true))
+        Block block = event.getBlock();
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(block)) {
+            return;
+        }
+        if (Flags.firespread.isGlobalyEnabled() && event.getCause() == IgniteCause.SPREAD) {
+            if (FlagPermissions.has(block.getLocation(), Flags.firespread, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
-        } else if (event.getPlayer() != null) {
-            // Disabling listener if flag disabled globally
-            if (!Flags.ignite.isGlobalyEnabled())
-                return;
-            Player player = event.getPlayer();
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation(), player);
-            if (!perms.playerHas(player, Flags.ignite, true) && !ResAdmin.isResAdmin(player)) {
-                event.setCancelled(true);
-                lm.Flag_Deny.sendMessage(player, Flags.ignite);
             }
-        } else {
-            // Disabling listener if flag disabled globally
-            if (!Flags.ignite.isGlobalyEnabled())
-                return;
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
-            if (!perms.has(Flags.ignite, true)) {
-                event.setCancelled(true);
+
+        } else if (Flags.ignite.isGlobalyEnabled()) {
+            Player player = event.getPlayer();
+            if (player != null) {
+                if (FlagPermissions.shouldDenyAndNotify(player, block, Flags.ignite, null)) {
+                    event.setCancelled(true);
+                }
+            } else {
+                if (FlagPermissions.has(block.getLocation(), Flags.ignite, FlagCombo.OnlyFalse)) {
+                    event.setCancelled(true);
+                }
             }
         }
     }

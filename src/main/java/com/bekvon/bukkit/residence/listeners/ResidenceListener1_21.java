@@ -1,8 +1,5 @@
 package com.bekvon.bukkit.residence.listeners;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -412,18 +409,14 @@ public class ResidenceListener1_21 implements Listener {
             }
         }
         // Origin allows Wind-Explode, so check each affected block for interaction
-        List<Block> denyInteraction = new ArrayList<>();
-        for (Block block : event.blockList()) {
+        event.blockList().removeIf(block -> {
             Flags flag = getWindExplodeInteractBlockFlag(block);
             if (flag == null || !flag.isGlobalyEnabled()) {
-                continue;
+                return false;
             }
             FlagPermissions blockPerms = FlagPermissions.getPerms(block.getLocation());
-            if (!blockPerms.has(flag, blockPerms.has(Flags.use, true))) {
-                denyInteraction.add(block);
-            }
-        }
-        event.blockList().removeAll(denyInteraction);
+            return !blockPerms.has(flag, blockPerms.has(Flags.use, true));
+        });
     }
 
     public static void onWindExplode(EntityExplodeEvent event) {
@@ -446,17 +439,13 @@ public class ResidenceListener1_21 implements Listener {
             }
         }
         // Origin allows Wind-Explode, so check each affected block for interaction
-        List<Block> denyInteraction = new ArrayList<>();
-        for (Block block : event.blockList()) {
+        event.blockList().removeIf(block -> {
             Flags flag = getWindExplodeInteractBlockFlag(block);
             if (flag == null || !flag.isGlobalyEnabled()) {
-                continue;
+                return false;
             }
-            if (shouldDenyWindExplode(block.getLocation(), cause, flag, Flags.use)) {
-                denyInteraction.add(block);
-            }
-        }
-        event.blockList().removeAll(denyInteraction);
+            return shouldDenyWindExplode(block.getLocation(), cause, flag, Flags.use);
+        });
     }
 
     private static boolean shouldDenyWindExplode(Location triggerLoc, ProjectileSource cause, Flags mainFlag, Flags subFlag) {

@@ -1,8 +1,5 @@
 package com.bekvon.bukkit.residence.listeners;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -72,14 +69,10 @@ public class ResidenceListener1_08 implements Listener {
             return;
         }
         // Source allows explosion, so check each affected block for destruction
-        List<Block> denyBreak = new ArrayList<>();
-        for (Block block : event.blockList()) {
+        event.blockList().removeIf(block -> {
             FlagPermissions blockPerms = FlagPermissions.getPerms(block.getLocation());
-            if ((shouldCheckExplode && blockPerms.has(Flags.explode, FlagCombo.OnlyFalse)) ||
-                    (shouldCheckDestroy && blockPerms.has(Flags.destroy, FlagCombo.OnlyFalse))) {
-                denyBreak.add(block);
-            }
-        }
-        event.blockList().removeAll(denyBreak);
+            return (shouldCheckExplode && blockPerms.has(Flags.explode, FlagCombo.OnlyFalse))
+                    || (shouldCheckDestroy && blockPerms.has(Flags.destroy, FlagCombo.OnlyFalse));
+        });
     }
 }
