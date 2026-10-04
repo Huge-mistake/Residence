@@ -188,30 +188,30 @@ public class ResidenceBlockListener implements Listener {
                 return;
             }
         }
-        if (Flags.build.isGlobalyEnabled()) {
-            handleTreeGrowCrossResidence(event);
+        if (!Flags.build.isGlobalyEnabled()) {
+            return;
+        }
+        if (handlePlantGrowCrossResidence(event.getBlocks(), event.getLocation(), event.getPlayer())) {
+            event.setCancelled(true);
         }
     }
 
-    public void handleTreeGrowCrossResidence(StructureGrowEvent event) {
-
-        Location sourceLoc = event.getLocation();
-        Player player = event.getPlayer();
+    public static boolean handlePlantGrowCrossResidence(@NotNull List<BlockState> spreadList, @NotNull Location sourceLoc, @Nullable Player player) {
 
         if (player != null) {
             if (ResPerm.bypass_build.hasPermission(player, 10000L)) {
-                return;
+                return false;
             }
             // cancel the event if the player lacks build permission at the source location
             if (FlagPermissions.shouldDenyAndNotify(player, sourceLoc, Flags.build, null)) {
-                event.setCancelled(true);
-                return;
+                return true;
             }
         }
         // player has build permission at the source location, or event is not player-triggered
         // check build permission for spread blocks
         ClaimedResidence sourceRes = ClaimedResidence.getByLoc(sourceLoc);
-        event.getBlocks().removeIf(spread -> shouldDenySpread(spread, sourceRes, player));
+        spreadList.removeIf(spread -> shouldDenySpread(spread, sourceRes, player));
+        return false;
     }
 
     public static boolean shouldDenySpread(@NotNull BlockState spread, @Nullable ClaimedResidence sourceRes, @Nullable Player player) {

@@ -4,7 +4,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -123,20 +122,8 @@ public class ResidenceListener1_17 implements Listener {
         if (FlagPermissions.shouldIgnoreCheck(Flags.build, block)) {
             return;
         }
-        Location sourceLoc = block.getLocation();
-        Player player = event.getPlayer();
-
-        if (player != null) {
-            // cancel the event if the player lacks build permission at the source location
-            // non-saplings don't consume bone_meal on event cancel
-            if (FlagPermissions.shouldDenyAndNotify(player, sourceLoc, Flags.build, null)) {
-                event.setCancelled(true);
-                return;
-            }
+        if (ResidenceBlockListener.handlePlantGrowCrossResidence(event.getBlocks(), block.getLocation(), event.getPlayer())) {
+            event.setCancelled(true);
         }
-        // player has build permission at the source location, or event is not player-triggered
-        // check build permission for spread blocks
-        ClaimedResidence sourceRes = ClaimedResidence.getByLoc(sourceLoc);
-        event.getBlocks().removeIf(spread -> ResidenceBlockListener.shouldDenySpread(spread, sourceRes, player));
     }
 }
