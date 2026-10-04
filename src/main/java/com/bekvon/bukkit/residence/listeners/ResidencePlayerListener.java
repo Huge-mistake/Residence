@@ -1191,6 +1191,9 @@ public class ResidencePlayerListener implements Listener {
 
     private void handleInfoTool(PlayerInteractEvent event, Block block, Player player) {
 
+        if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
+            return;
+        }
         if (isContainer(block.getType())) {
             return;
         }
@@ -1241,7 +1244,7 @@ public class ResidencePlayerListener implements Listener {
             if (held == config.getSelectionTool()) {
                 handleSelectionTool(event, block, player);
 
-            } else if (action == Action.LEFT_CLICK_BLOCK && held == config.getInfoTool()) {
+            } else if (held == config.getInfoTool()) {
                 handleInfoTool(event, block, player);
 
             }
@@ -1412,6 +1415,9 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         if (event.useInteractedBlock() == Result.DENY) {
+            return;
+        }
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
         Location loc = null;
