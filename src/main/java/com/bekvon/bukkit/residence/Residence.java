@@ -66,7 +66,6 @@ import com.bekvon.bukkit.residence.listeners.ResidenceListener1_12;
 import com.bekvon.bukkit.residence.listeners.ResidenceListener1_13;
 import com.bekvon.bukkit.residence.listeners.ResidenceListener1_14;
 import com.bekvon.bukkit.residence.listeners.ResidenceListener1_15;
-import com.bekvon.bukkit.residence.listeners.ResidenceListener1_16;
 import com.bekvon.bukkit.residence.listeners.ResidenceListener1_16_5_Paper;
 import com.bekvon.bukkit.residence.listeners.ResidenceListener1_17;
 import com.bekvon.bukkit.residence.listeners.ResidenceListener1_19;
@@ -607,13 +606,8 @@ public class Residence extends JavaPlugin {
                 if (Version.isCurrentEqualOrHigher(Version.v1_15_0)) {
                     pm.registerEvents(new ResidenceListener1_15(this), this);
                 }
-                if (Version.isCurrentEqualOrHigher(Version.v1_16_0)) {
-                    pm.registerEvents(new ResidenceListener1_16(this), this);
-                }
-                if ((Version.isCurrentEqualOrHigher(Version.v1_16_R3) && Version.isCurrentSubEqualOrHigher(5)) || Version.isCurrentEqualOrHigher(Version.v1_17_0)) {
-                    if (Version.isPaperBranch()) {
-                        pm.registerEvents(new ResidenceListener1_16_5_Paper(this), this);
-                    }
+                if (Version.isCurrentEqualOrHigher(Version.v1_16_5) && Version.isPaperBranch()) {
+                    pm.registerEvents(new ResidenceListener1_16_5_Paper(this), this);
                 }
                 if (Version.isCurrentEqualOrHigher(Version.v1_17_0)) {
                     pm.registerEvents(new ResidenceListener1_17(this), this);
@@ -627,14 +621,14 @@ public class Residence extends JavaPlugin {
                 if (Version.isCurrentEqualOrHigher(Version.v1_21_0)) {
                     pm.registerEvents(new ResidenceListener1_21(this), this);
                 }
-                if ((Version.isCurrentEqualOrHigher(Version.v1_21_R5) && Version.isCurrentSubEqualOrHigher(8)) || Version.isCurrentEqualOrHigher(Version.v1_21_R6)) {
+                if (Version.isCurrentEqualOrHigher(Version.v1_21_8)) {
                     if (Version.isPaperBranch()) {
                         pm.registerEvents(new ResidenceListener1_21_8_Paper(this), this);
                     } else {
                         pm.registerEvents(new ResidenceListener1_21_8_Spigot(this), this);
                     }
                 }
-                if (Version.isCurrentEqualOrHigher(Version.v1_21_R6) && Version.isPaperBranch()) {
+                if (Version.isCurrentEqualOrHigher(Version.v1_21_9) && Version.isPaperBranch()) {
                     pm.registerEvents(new ResidenceListener1_21_9_Paper(this), this);
                 }
                 if (Version.isCurrentEqualOrHigher(Version.v26_2_0)) {

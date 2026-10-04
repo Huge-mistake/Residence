@@ -10,7 +10,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFertilizeEvent;
 import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerBucketEntityEvent;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -30,28 +29,6 @@ public class ResidenceListener1_17 implements Listener {
 
     public ResidenceListener1_17(Residence plugin) {
         this.plugin = plugin;
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onBlockPlace(BlockPlaceEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.place.isGlobalyEnabled()) {
-            return;
-        }
-        Block block = event.getBlock();
-
-        if (ResidenceBlockListener.canPlaceBlock(event.getPlayer(), block, true)) {
-            return;
-        }
-        event.setCancelled(true);
-        // https://github.com/PaperMC/Paper/pull/6751
-        if (Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_18_2)) {
-            return;
-        }
-        if (block.getType() != Material.POWDER_SNOW) {
-            return;
-        }
-        ResidenceBlockData.updatePowderedSnow(block);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -86,6 +63,12 @@ public class ResidenceListener1_17 implements Listener {
     private boolean isUnwaxedCopper(Block block) {
         CMIMaterial mat = CMIMaterial.get(block.getType());
         return mat.containsCriteria(CMIMC.COPPER) && !mat.name().startsWith("WAXED_");
+    }
+
+    public static void handlePowderSnow(Block block) {
+        if (block.getType() == Material.POWDER_SNOW) {
+            ResidenceBlockData.updatePowderedSnow(block);
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

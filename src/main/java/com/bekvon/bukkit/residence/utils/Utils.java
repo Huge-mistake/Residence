@@ -28,21 +28,25 @@ import org.bukkit.entity.Villager;
 import org.bukkit.entity.WaterMob;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.util.BlockIterator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.bekvon.bukkit.residence.Residence;
+import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 
 import net.Zrips.CMILib.Entities.CMIEntityType;
+import net.Zrips.CMILib.Items.CMIItemStack;
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
 import net.Zrips.CMILib.Version.Schedulers.CMIScheduler;
@@ -359,5 +363,30 @@ public class Utils {
             return inventory.getHolder(false);
         }
         return inventory.getHolder();
+    }
+
+    // This blacklist is configured in flags.yml
+    public static boolean isItemBlacklisted(@Nullable ItemStack item, @NotNull Player player) {
+        if (item == null || ResAdmin.isResAdmin(player)) {
+            return false;
+        }
+        if (!Residence.getInstance().getItemManager().isAllowed(item.getType(), player)) {
+            lm.General_ItemBlacklisted.sendMessage(player);
+            return true;
+        }
+        return false;
+    }
+
+    // Supports 1.7.10+
+    public static @Nullable ItemStack getItemInUseHand(PlayerInteractEntityEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = CMIItemStack.getItemInMainHand(player);
+        try {
+            if (event.getHand() == EquipmentSlot.OFF_HAND) {
+                item = CMIItemStack.getItemInOffHand(player);
+            }
+        } catch (Throwable ignored) {
+        }
+        return item;
     }
 }

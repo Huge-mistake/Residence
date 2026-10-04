@@ -214,7 +214,7 @@ public class ResidenceBlockListener implements Listener {
         return false;
     }
 
-    public static boolean shouldDenySpread(@NotNull BlockState spread, @Nullable ClaimedResidence sourceRes, @Nullable Player player) {
+    private static boolean shouldDenySpread(@NotNull BlockState spread, @Nullable ClaimedResidence sourceRes, @Nullable Player player) {
 
         ClaimedResidence spreadRes = ClaimedResidence.getByLoc(spread.getLocation());
         // spread-block not in Res, skip check
@@ -235,8 +235,9 @@ public class ResidenceBlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!canBreakBlock(event.getPlayer(), event.getBlock().getLocation(), true))
+        if (!canBreakBlock(event.getPlayer(), event.getBlock().getLocation(), true)) {
             event.setCancelled(true);
+        }
     }
 
     @Deprecated
@@ -307,37 +308,39 @@ public class ResidenceBlockListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityBlockForm(EntityBlockFormEvent event) {
 
-        Entity entity = event.getEntity();
+        Block block = event.getBlock();
 
-        if (plugin.isDisabledWorldListener(entity)) {
+        if (plugin.isDisabledWorldListener(block)) {
             return;
         }
+        Entity entity = event.getEntity();
+
         if (Flags.build.isGlobalyEnabled() && entity instanceof Player) {
             Player player = (Player) entity;
-            if (FlagPermissions.shouldDenyAndNotify(player, event.getBlock(), Flags.build, null)) {
+            if (FlagPermissions.shouldDenyAndNotify(player, block, Flags.build, null)) {
                 event.setCancelled(true);
             }
 
         } else if (Flags.snowtrail.isGlobalyEnabled() && entity instanceof Snowman) {
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             if (!perms.has(Flags.snowtrail, true)) {
                 event.setCancelled(true);
             }
 
         } else if (Flags.animalgriefing.isGlobalyEnabled() && Utils.isAnimal(entity)) {
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             if (!perms.has(Flags.animalgriefing, perms.has(Flags.build, true))) {
                 event.setCancelled(true);
             }
 
         } else if (Flags.mobgriefing.isGlobalyEnabled() && ResidenceEntityListener.isMonster(entity)) {
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             if (!perms.has(Flags.mobgriefing, perms.has(Flags.build, true))) {
                 event.setCancelled(true);
             }
 
         } else if (Flags.build.isGlobalyEnabled()) {
-            FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
+            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             if (!perms.has(Flags.build, true)) {
                 event.setCancelled(true);
             }
@@ -585,6 +588,26 @@ public class ResidenceBlockListener implements Listener {
                 plugin.getSelectionManager().getPlayerLoc2(player), plugin.getConfigManager().isNewPlayerFree());
         if (created) {
             rp.getData().ownedResidence(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onBlockPlace(BlockPlaceEvent event) {
+
+        if (!Flags.place.isGlobalyEnabled()) {
+            return;
+        }
+        Block block = event.getBlock();
+
+        if (ResidenceBlockListener.canPlaceBlock(event.getPlayer(), block, true)) {
+            return;
+        }
+        event.setCancelled(true);
+        // Powder snow placement issue: https://github.com/Zrips/Residence/issues/784
+        // Paper 1.18.2+ already fixed this: https://github.com/PaperMC/Paper/pull/6751
+        if (Version.isCurrentEqualOrHigher(Version.v1_17_0)
+                && !(Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_18_2))) {
+            ResidenceListener1_17.handlePowderSnow(block);
         }
     }
 

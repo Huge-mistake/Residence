@@ -8,15 +8,16 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFadeEvent;
+import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 import org.bukkit.event.raid.RaidTriggerEvent;
 
@@ -28,7 +29,8 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
-import net.Zrips.CMILib.Items.CMIMaterial;
+import net.Zrips.CMILib.Version.Version;
+
 import org.jetbrains.annotations.NotNull;
 
 public class ResidenceListener1_14 implements Listener {
@@ -108,38 +110,6 @@ public class ResidenceListener1_14 implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPlayerInteractHarvest(PlayerInteractEvent event) {
-
-        Block block = event.getClickedBlock();
-        if (block == null)
-            return;
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.harvest, block)) {
-            return;
-        }
-
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
-            return;
-
-        CMIMaterial mat = CMIMaterial.get(block.getType());
-
-        switch (mat) {
-        case CAVE_VINES:
-        case CAVE_VINES_PLANT:
-        case SWEET_BERRY_BUSH:
-            break;
-        default:
-            return;
-        }
-
-        Player player = event.getPlayer();
-
-        if (FlagPermissions.shouldDenyAndNotify(player, block, Flags.harvest, null)) {
-            event.setCancelled(true);
-        }
-    }
-
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCoralDryFade(BlockFadeEvent event) {
 
@@ -171,4 +141,27 @@ public class ResidenceListener1_14 implements Listener {
         event.setCancelled(true);
 
 	}
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onAnimalTransformByLightning(EntityTransformEvent event) {
+        // Paper 1.16.5+ uses EntityZapEvent for more detailed handling
+        if (Version.isCurrentEqualOrHigher(Version.v1_16_5) && Version.isPaperBranch()) {
+            return;
+        }
+        Entity entity = event.getEntity();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.animalkilling, entity)) {
+            return;
+        }
+        if (event.getTransformReason() != EntityTransformEvent.TransformReason.LIGHTNING) {
+            return;
+        }
+        if (!(entity instanceof LivingEntity) || !Utils.isAnimal(entity)) {
+            return;
+        }
+        if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, true)) {
+            return;
+        }
+        event.setCancelled(true);
+    }
 }

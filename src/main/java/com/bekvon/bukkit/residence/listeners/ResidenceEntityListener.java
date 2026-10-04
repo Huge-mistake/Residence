@@ -57,7 +57,6 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -1433,12 +1432,10 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         Entity attacker = event.getDamager();
-        // Check held Material Blacklist
+        // Check held item blacklist
         if (attacker instanceof Player) {
             Player player = (Player) attacker;
-            ItemStack item = CMIItemStack.getItemInMainHand(player);
-            if (item != null && !plugin.getItemManager().isAllowed(item.getType(), player) && !ResAdmin.isResAdmin(player)) {
-                lm.General_ItemBlacklisted.sendMessage(player);
+            if (Utils.isItemBlacklisted(CMIItemStack.getItemInMainHand(player), player)) {
                 event.setCancelled(true);
                 return;
             }
