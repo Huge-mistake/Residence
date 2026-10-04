@@ -346,15 +346,17 @@ public class FlagPermissions {
             addMaterialToUseFlag(CMIMaterial.BELL.getMaterial(), Flags.use);
             addMaterialToUseFlag(CMIMaterial.CAMPFIRE.getMaterial(), Flags.use);
             addMaterialToUseFlag(CMIMaterial.LECTERN.getMaterial(), Flags.use);
-
-            addMaterialToUseFlag(CMIMaterial.CAVE_VINES.getMaterial(), Flags.harvest);
-            addMaterialToUseFlag(CMIMaterial.CAVE_VINES_PLANT.getMaterial(), Flags.harvest);
             addMaterialToUseFlag(CMIMaterial.SWEET_BERRY_BUSH.getMaterial(), Flags.harvest);
         }
 
         if (Version.isCurrentEqualOrHigher(Version.v1_16_0)) {
             addMaterialToUseFlag(CMIMaterial.RESPAWN_ANCHOR.getMaterial(), Flags.anchor);
             addMaterialToUseFlag(CMIMaterial.SOUL_CAMPFIRE.getMaterial(), Flags.use);
+        }
+
+        if (Version.isCurrentEqualOrHigher(Version.v1_17_0)) {
+            addMaterialToUseFlag(CMIMaterial.CAVE_VINES.getMaterial(), Flags.harvest);
+            addMaterialToUseFlag(CMIMaterial.CAVE_VINES_PLANT.getMaterial(), Flags.harvest);
         }
 
         if (Version.isCurrentEqualOrHigher(Version.v1_20_0)) {
