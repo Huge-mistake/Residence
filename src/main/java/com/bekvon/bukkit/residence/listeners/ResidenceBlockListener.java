@@ -59,7 +59,6 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.ResidencePlayer;
 import com.bekvon.bukkit.residence.containers.lm;
-import com.bekvon.bukkit.residence.permissions.PermissionGroup;
 import com.bekvon.bukkit.residence.permissions.PermissionManager.ResPerm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
@@ -235,74 +234,78 @@ public class ResidenceBlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (!canBreakBlock(event.getPlayer(), event.getBlock().getLocation(), true)) {
+
+        if (!Flags.destroy.isGlobalyEnabled()) {
+            return;
+        }
+        if (!canBreakBlock(event.getPlayer(), event.getBlock(), true)) {
             event.setCancelled(true);
         }
     }
 
-    @Deprecated
-    public static boolean canBreakBlock(Player player, Block block, boolean inform) {
-        return canBreakBlock(player, block.getLocation(), inform);
-    }
-
-    public static boolean canBreakBlock(Player player, Location loc, boolean inform) {
-
-        if (player == null)
-            return true;
-
+    public static boolean canBreakBlock(@NotNull Player player, @NotNull Block block, boolean inform) {
         // disabling event on world
-        if (Residence.getInstance().isDisabledWorldListener(loc))
+        if (Residence.getInstance().isDisabledWorldListener(block))
             return true;
 
         if (ResAdmin.isResAdmin(player)) {
             return true;
         }
+        ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
+        FlagPermissions perms;
 
-        ClaimedResidence res = Residence.getInstance().getResidenceManager().getByLoc(loc);
-
-        if (Residence.getInstance().getConfigManager().enabledRentSystem() && res != null) {
-            if (Residence.getInstance().getConfigManager().preventRentModify() && res.isRented()) {
-                if (inform)
+        if (res != null) {
+            if (Residence.getInstance().getConfigManager().enabledRentSystem()
+                    && Residence.getInstance().getConfigManager().preventRentModify()
+                    && res.isRented()) {
+                if (inform) {
                     lm.Rent_ModifyDeny.sendMessage(player);
+                }
                 return false;
             }
+            // In Residence, get Residence permission status
+            perms = res.getPermissions();
+        } else {
+            // Not in Residence, get World permission status
+            perms = Residence.getInstance().getWorldFlags().getPerms(player);
         }
-
-        FlagPermissions perms = FlagPermissions.getPerms(loc, player);
-
-        boolean hasdestroy = perms.playerHas(player, Flags.destroy, perms.playerHas(player, Flags.build, true));
-
-        if (res != null && res.getRaid().isUnderRaid()) {
-            if (res.getRaid().isAttacker(player.getUniqueId()) && ConfigManager.RaidAttackerBlockBreak || res.getRaid().isDefender(player.getUniqueId()) && ConfigManager.RaidDefenderBlockBreak) {
-                hasdestroy = true;
+        boolean canBreak = perms.playerHas(player, Flags.destroy, perms.playerHas(player, Flags.build, true));
+        // Residence raid active (not vanilla raid)
+        if (res != null && ConfigManager.RaidEnabled && res.getRaid().isUnderRaid()) {
+            if ((ConfigManager.RaidAttackerBlockBreak && res.getRaid().isAttacker(player.getUniqueId()))
+                    || (ConfigManager.RaidDefenderBlockBreak && res.getRaid().isDefender(player.getUniqueId()))) {
+                canBreak = true;
             }
         }
-        Material mat = null;
+        if (canBreak) {
+            return true;
+        }
+        Material mat = block.getType();
 
-        if (!hasdestroy) {
-            mat = loc.getBlock().getType();
-            String world = loc.getWorld().getName();
-
-            ResidencePlayer resPlayer = Residence.getInstance().getPlayerManager().getResidencePlayer(player);
-            PermissionGroup group = resPlayer.getGroup();
-            if (Residence.getInstance().getItemManager().isIgnored(mat, group, world)) {
-                return true;
+        if (Residence.getInstance().getItemManager().isIgnored(player, mat, block.getWorld())) {
+            return true;
+        }
+        if (res != null && res.getItemIgnoreList().isListed(mat)) {
+            return true;
+        }
+        if (ResPerm.bypass_destroy.hasPermission(player, 10000L)) {
+            // With destroy bypass, breaking chests still requires container permission
+            if (Utils.isContainer(mat) && !perms.playerHas(player, Flags.container, true)) {
+                if (inform) {
+                    lm.Flag_Deny.sendMessage(player, Flags.container);
+                }
+                return false;
             }
-            if (res != null && res.getItemIgnoreList().isListed(mat))
-                return true;
+            return true;
         }
-
-        if (!hasdestroy && !ResPerm.bypass_destroy.hasPermission(player, 10000L)) {
-            if (inform)
-                lm.Flag_Deny.sendMessage(player, Flags.destroy);
-            return false;
-        } else if (mat == Material.CHEST && !perms.playerHas(player, Flags.container, true)) {
-            if (inform)
-                lm.Flag_Deny.sendMessage(player, Flags.container);
-            return false;
+        if (inform) {
+            lm.Flag_Deny.sendMessage(player, Flags.destroy);
         }
+        return false;
+    }
 
-        return true;
+    public static boolean canBreakBlock(@NotNull Player player, @NotNull Location loc, boolean inform) {
+        return canBreakBlock(player, loc.getBlock(), inform);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -599,7 +602,7 @@ public class ResidenceBlockListener implements Listener {
         }
         Block block = event.getBlock();
 
-        if (ResidenceBlockListener.canPlaceBlock(event.getPlayer(), block, true)) {
+        if (canPlaceBlock(event.getPlayer(), block, true)) {
             return;
         }
         event.setCancelled(true);
@@ -611,7 +614,7 @@ public class ResidenceBlockListener implements Listener {
         }
     }
 
-    public static boolean canPlaceBlock(Player player, Block block, boolean informPlayer) {
+    public static boolean canPlaceBlock(@NotNull Player player, @NotNull Block block, boolean informPlayer) {
         // disabling event on world
         if (Residence.getInstance().isDisabledWorldListener(block))
             return true;
@@ -619,58 +622,71 @@ public class ResidenceBlockListener implements Listener {
         if (ResAdmin.isResAdmin(player)) {
             return true;
         }
-
         Material mat = block.getType();
-        String world = block.getWorld().getName();
 
-        ResidencePlayer resPlayer = Residence.getInstance().getPlayerManager().getResidencePlayer(player);
-        PermissionGroup group = resPlayer.getGroup();
-        if (Residence.getInstance().getItemManager().isIgnored(mat, group, world)) {
-            return true;
-        }
-        ClaimedResidence res = Residence.getInstance().getResidenceManager().getByLoc(block.getLocation());
-        if (Residence.getInstance().getConfigManager().enabledRentSystem() && res != null) {
-            if (Residence.getInstance().getConfigManager().preventRentModify() && Residence.getInstance().getRentManager().isRented(res)) {
-                if (informPlayer)
+        ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
+        CMIMaterial type = null;
+        FlagPermissions perms;
+
+        if (res != null) {
+            if (Residence.getInstance().getConfigManager().enabledRentSystem()
+                    && Residence.getInstance().getConfigManager().preventRentModify()
+                    && Residence.getInstance().getRentManager().isRented(res)) {
+                if (informPlayer) {
                     lm.Rent_ModifyDeny.sendMessage(player);
+                }
                 return false;
             }
-        }
-        if (!CMIMaterial.get(mat).isNone() && res != null && !res.getItemBlacklist().isAllowed(mat)) {
-            if (informPlayer)
-                lm.General_ItemBlacklisted.sendMessage(player);
-            return false;
-        }
-        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation(), player);
-        boolean hasplace = perms.playerHas(player, Flags.place, perms.playerHas(player, Flags.build, true));
-
-        if (res != null && res.getRaid().isUnderRaid()) {
-            if (res.getRaid().isAttacker(player.getUniqueId()) && ConfigManager.RaidAttackerBlockPlace || res.getRaid().isDefender(player.getUniqueId()) && ConfigManager.RaidDefenderBlockPlace) {
-                hasplace = true;
-            }
-        }
-
-        if (!hasplace && !ResPerm.bypass_build.hasPermission(player, 10000L)) {
-            if (informPlayer)
-                lm.Flag_Deny.sendMessage(player, Flags.place);
-            return false;
-        }
-
-        if (CMIMaterial.isBed(mat)) {
-            CMIBlock cb = new CMIBlock(block);
-            Block sec = cb.getSecondaryBedBlock();
-            if (sec != null) {
-                perms = FlagPermissions.getPerms(sec.getLocation(), player);
-                hasplace = perms.playerHas(player, Flags.place, perms.playerHas(player, Flags.build, true));
-                if (!hasplace
-                        && !ResPerm.bypass_build.hasPermission(player, 10000L)) {
-                    if (informPlayer)
-                        lm.Flag_Deny.sendMessage(player, Flags.place);
-                    return false;
+            type = CMIMaterial.get(mat);
+            // Residence item blacklist
+            if (!type.isNone() && !res.getItemBlacklist().isAllowed(mat)) {
+                if (informPlayer) {
+                    lm.General_ItemBlacklisted.sendMessage(player);
                 }
+                return false;
+            }
+            // In Residence, get Residence permission status
+            perms = res.getPermissions();
+        } else {
+            // Not in Residence, get World permission status
+            perms = Residence.getInstance().getWorldFlags().getPerms(player);
+        }
+        boolean canPlace = perms.playerHas(player, Flags.place, perms.playerHas(player, Flags.build, true));
+        // Residence raid active (not vanilla raid)
+        if (res != null && ConfigManager.RaidEnabled && res.getRaid().isUnderRaid()) {
+            if ((ConfigManager.RaidAttackerBlockPlace && res.getRaid().isAttacker(player.getUniqueId()))
+                    || (ConfigManager.RaidDefenderBlockPlace && res.getRaid().isDefender(player.getUniqueId()))) {
+                canPlace = true;
             }
         }
-        return true;
+        if (canPlace) {
+            if (type == null) {
+                type = CMIMaterial.get(mat);
+            }
+            if (type.containsCriteria(CMIMC.BED) && !ResPerm.bypass_build.hasPermission(player, 10000L)) {
+                return canPlaceBedOtherHalf(block, player);
+            }
+            return true;
+        }
+        if (Residence.getInstance().getItemManager().isIgnored(player, mat, block.getWorld())) {
+            return true;
+        }
+        if (ResPerm.bypass_build.hasPermission(player, 10000L)) {
+            return true;
+        }
+        if (informPlayer) {
+            lm.Flag_Deny.sendMessage(player, Flags.place);
+        }
+        return false;
+    }
+
+    private static boolean canPlaceBedOtherHalf(Block block, Player player) {
+        Block bed = new CMIBlock(block).getSecondaryBedBlock();
+        if (bed == null) {
+            return true;
+        }
+        FlagPermissions perms = FlagPermissions.getPerms(bed.getLocation(), player);
+        return perms.playerHas(player, Flags.place, perms.playerHas(player, Flags.build, true));
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

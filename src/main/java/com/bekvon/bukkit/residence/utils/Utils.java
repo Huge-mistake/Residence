@@ -41,9 +41,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.bekvon.bukkit.residence.Residence;
+import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
+import com.bekvon.bukkit.residence.protection.FlagPermissions;
 
 import net.Zrips.CMILib.Entities.CMIEntityType;
 import net.Zrips.CMILib.Items.CMIItemStack;
@@ -388,5 +390,10 @@ public class Utils {
         } catch (Throwable ignored) {
         }
         return item;
+    }
+
+    public static boolean isContainer(Material mat) {
+        return FlagPermissions.getMaterialUseFlagList().get(mat) == Flags.container
+                || Residence.getInstance().getConfigManager().getCustomContainers().contains(mat);
     }
 }

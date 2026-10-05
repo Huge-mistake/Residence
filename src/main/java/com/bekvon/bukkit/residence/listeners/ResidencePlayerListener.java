@@ -1194,7 +1194,7 @@ public class ResidencePlayerListener implements Listener {
         if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
         }
-        if (isContainer(block.getType())) {
+        if (Utils.isContainer(block.getType())) {
             return;
         }
         ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
@@ -1204,11 +1204,6 @@ public class ResidencePlayerListener implements Listener {
             lm.Residence_NoResHere.sendMessage(player);
         }
         event.setCancelled(true);
-    }
-
-    private boolean isContainer(Material mat) {
-        return FlagPermissions.getMaterialUseFlagList().get(mat) == Flags.container
-                || plugin.getConfigManager().getCustomContainers().contains(mat);
     }
 
     @EventHandler(priority = EventPriority.LOWEST) // Do not use (ignoreCancelled = true)
