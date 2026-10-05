@@ -616,16 +616,15 @@ public class ResidenceBlockListener implements Listener {
 
     public static boolean canPlaceBlock(@NotNull Player player, @NotNull Block block, boolean informPlayer) {
         // disabling event on world
-        if (Residence.getInstance().isDisabledWorldListener(block))
+        if (Residence.getInstance().isDisabledWorldListener(block)) {
             return true;
-
+        }
         if (ResAdmin.isResAdmin(player)) {
             return true;
         }
-        Material mat = block.getType();
-
         ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
         CMIMaterial type = null;
+        Material mat = block.getType();
         FlagPermissions perms;
 
         if (res != null) {
