@@ -245,9 +245,9 @@ public class ResidenceBlockListener implements Listener {
 
     public static boolean canBreakBlock(@NotNull Player player, @NotNull Block block, boolean inform) {
         // disabling event on world
-        if (Residence.getInstance().isDisabledWorldListener(block))
+        if (Residence.getInstance().isDisabledWorldListener(block)) {
             return true;
-
+        }
         if (ResAdmin.isResAdmin(player)) {
             return true;
         }
