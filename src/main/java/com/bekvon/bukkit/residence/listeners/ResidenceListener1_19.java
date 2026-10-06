@@ -31,9 +31,9 @@ public class ResidenceListener1_19 implements Listener {
         if (FlagPermissions.shouldIgnoreCheck(Flags.goathorn, player)) {
             return;
         }
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
+        if (event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
-
+        }
         if (event.getItem() == null || event.getItem().getType() != Material.GOAT_HORN) {
             return;
         }

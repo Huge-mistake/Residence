@@ -1370,11 +1370,11 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         Player player = event.getPlayer();
+        CMIMaterial held = null;
         Flags mainFlag = null;
         Flags subFlag = null;
 
         ItemStack item = Utils.getItemInUseHand(event);
-        CMIMaterial held = null;
         if (item != null) {
             // Check held item blacklist
             if (Utils.isItemBlacklisted(item, player)) {
