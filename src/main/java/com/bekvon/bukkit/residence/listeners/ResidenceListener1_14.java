@@ -11,7 +11,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -24,14 +23,11 @@ import org.bukkit.event.raid.RaidTriggerEvent;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.lm;
-import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.Version.Version;
-
-import org.jetbrains.annotations.NotNull;
 
 public class ResidenceListener1_14 implements Listener {
 
@@ -88,25 +84,8 @@ public class ResidenceListener1_14 implements Listener {
         if (block.getType() != Material.BELL) {
             return;
         }
-        if (shouldDenyProjectileHit(block, event.getEntity(), Flags.use)) {
+        if (ResidenceEntityListener.shouldDenyEntityHit(event.getEntity(), block.getLocation(), Flags.use, null)) {
             event.setCancelled(true);
-        }
-    }
-
-    public static boolean shouldDenyProjectileHit(@NotNull Block block, @NotNull Projectile projectile, @NotNull Flags flag) {
-        Player player = Utils.potentialProjectileToPlayer(projectile);
-        if (player != null) {
-
-            return FlagPermissions.shouldDenyAndNotify(player, block, flag, null);
-
-        } else {
-            // projectile not player source
-            // Check potential block as a shooter which should be allowed if its inside same
-            // residence
-            if (Utils.isSourceBlockInsideSameResidence(projectile, ClaimedResidence.getByLoc(block.getLocation()))) {
-                return false;
-            }
-            return FlagPermissions.has(block.getLocation(), flag, FlagCombo.OnlyFalse);
         }
     }
 

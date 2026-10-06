@@ -1771,7 +1771,7 @@ public class FlagPermissions {
         return !flag.isGlobalyEnabled() || Residence.getInstance().isDisabledWorldListener(world);
     }
 
-    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Location target, @NotNull Flags mainFlag, @Nullable Flags subFlag) {
+    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Location target, @NotNull Flags mainFlag, @Nullable Flags subFlag, boolean shouldNotify) {
         if (player.hasMetadata("NPC")) {
             return false;
         }
@@ -1782,16 +1782,30 @@ public class FlagPermissions {
         if (perms.playerHas(player, mainFlag, result) || ResAdmin.isResAdmin(player)) {
             return false;
         }
-        // if mainFlag state is false, deny and notify the player
-        lm.Flag_Deny.sendMessage(player, mainFlag);
+        // if mainFlag state is false, deny (and notify if requested)
+        if (shouldNotify) {
+            lm.Flag_Deny.sendMessage(player, mainFlag);
+        }
         return true;
     }
 
+    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Block target, @NotNull Flags mainFlag, @Nullable Flags subFlag, boolean shouldNotify) {
+        return shouldDenyAndNotify(player, target.getLocation(), mainFlag, subFlag, shouldNotify);
+    }
+
+    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Entity target, @NotNull Flags mainFlag, @Nullable Flags subFlag, boolean shouldNotify) {
+        return shouldDenyAndNotify(player, target.getLocation(), mainFlag, subFlag, shouldNotify);
+    }
+
+    public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Location target, @NotNull Flags mainFlag, @Nullable Flags subFlag) {
+        return shouldDenyAndNotify(player, target, mainFlag, subFlag, true);
+    }
+
     public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Block target, @NotNull Flags mainFlag, @Nullable Flags subFlag) {
-        return shouldDenyAndNotify(player, target.getLocation(), mainFlag, subFlag);
+        return shouldDenyAndNotify(player, target.getLocation(), mainFlag, subFlag, true);
     }
 
     public static boolean shouldDenyAndNotify(@NotNull Player player, @NotNull Entity target, @NotNull Flags mainFlag, @Nullable Flags subFlag) {
-        return shouldDenyAndNotify(player, target.getLocation(), mainFlag, subFlag);
+        return shouldDenyAndNotify(player, target.getLocation(), mainFlag, subFlag, true);
     }
 }

@@ -143,21 +143,41 @@ public class ResidenceBlockListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onVineGrow(BlockSpreadEvent event) {
+    public void onBlockSpread(BlockSpreadEvent event) {
 
         Block block = event.getBlock();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.grow, block)) {
+        if (plugin.isDisabledWorldListener(block)) {
             return;
         }
-        CMIMaterial type = CMIMaterial.get(event.getSource().getType());
+        Block source = event.getSource();
+        CMIMaterial type = CMIMaterial.get(source.getType());
 
-        if (!type.equals(CMIMaterial.VINE) && !type.toString().contains("_VINES"))
-            return;
+        if (Flags.grow.isGlobalyEnabled() && (type == CMIMaterial.VINE || type.name().contains("_VINES"))) {
+            if (FlagPermissions.has(block.getLocation(), Flags.grow, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+                return;
+            }
 
-        FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
-        if (!perms.has(Flags.grow, true)) {
-            event.setCancelled(true);
+        } else if (Flags.skulk.isGlobalyEnabled() && type == CMIMaterial.SCULK_CATALYST) {
+            if (FlagPermissions.has(block.getLocation(), Flags.skulk, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+                return;
+            }
+
+        } else if (Flags.spread.isGlobalyEnabled()) {
+            if (FlagPermissions.has(block.getLocation(), Flags.spread, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+                return;
+            }
+
+        }
+        // Prevent griefers from introducing vines, sculk blocks, etc. from outside into Residences
+        if (Flags.build.isGlobalyEnabled() && type != CMIMaterial.GRASS_BLOCK && type != CMIMaterial.MYCELIUM) {
+            ClaimedResidence sourceRes = ClaimedResidence.getByLoc(source.getLocation());
+            if (shouldDenySpread(event.getNewState(), sourceRes, null)) {
+                event.setCancelled(true);
+            }
         }
     }
 
@@ -187,11 +207,11 @@ public class ResidenceBlockListener implements Listener {
                 return;
             }
         }
-        if (!Flags.build.isGlobalyEnabled()) {
-            return;
-        }
-        if (handlePlantGrowCrossResidence(event.getBlocks(), event.getLocation(), event.getPlayer())) {
-            event.setCancelled(true);
+        // Prevent griefers from placing tree-related blocks from outside into Residences
+        if (Flags.build.isGlobalyEnabled()) {
+            if (handlePlantGrowCrossResidence(event.getBlocks(), event.getLocation(), event.getPlayer())) {
+                event.setCancelled(true);
+            }
         }
     }
 
@@ -320,7 +340,8 @@ public class ResidenceBlockListener implements Listener {
 
         if (Flags.build.isGlobalyEnabled() && entity instanceof Player) {
             Player player = (Player) entity;
-            if (FlagPermissions.shouldDenyAndNotify(player, block, Flags.build, null)) {
+            // Prevent Frosted Ice generation from Frost Walker without notifying players
+            if (FlagPermissions.shouldDenyAndNotify(player, block, Flags.build, null, false)) {
                 event.setCancelled(true);
             }
 
@@ -686,19 +707,6 @@ public class ResidenceBlockListener implements Listener {
         }
         FlagPermissions perms = FlagPermissions.getPerms(bed.getLocation(), player);
         return perms.playerHas(player, Flags.place, perms.playerHas(player, Flags.build, true));
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onBlockSpread(BlockSpreadEvent event) {
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.spread, event.getBlock())) {
-            return;
-        }
-        Location loc = event.getBlock().getLocation();
-        FlagPermissions perms = FlagPermissions.getPerms(loc);
-        if (!perms.has(Flags.spread, true)) {
-            event.setCancelled(true);
-        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

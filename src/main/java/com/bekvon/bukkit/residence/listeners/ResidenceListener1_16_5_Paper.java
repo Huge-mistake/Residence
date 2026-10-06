@@ -40,7 +40,7 @@ public class ResidenceListener1_16_5_Paper implements Listener {
         if (FlagPermissions.shouldIgnoreCheck(Flags.use, block)) {
             return;
         }
-        if (ResidenceListener1_14.shouldDenyProjectileHit(block, event.getEntity(), Flags.use)) {
+        if (ResidenceEntityListener.shouldDenyEntityHit(event.getEntity(), block.getLocation(), Flags.use, null)) {
             event.setCancelled(true);
         }
     }

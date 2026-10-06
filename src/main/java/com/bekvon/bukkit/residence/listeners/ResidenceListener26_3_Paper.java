@@ -30,10 +30,13 @@ public class ResidenceListener26_3_Paper implements Listener {
 
         Entity entity = event.getEntity();
 
+        if (FlagPermissions.shouldIgnoreCheck(Flags.destroy, entity)) {
+            return;
+        }
         if (!(entity instanceof Cushion)) {
             return;
         }
-        if (ResidenceEntityListener.shouldDenyEntityBreakByEntity(event.getRemover(), entity)) {
+        if (ResidenceEntityListener.shouldDenyEntityHit(event.getRemover(), entity.getLocation(), Flags.destroy, Flags.build)) {
             event.setCancelled(true);
         }
     }

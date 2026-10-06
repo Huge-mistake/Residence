@@ -79,6 +79,8 @@ import net.Zrips.CMILib.Items.CMIItemStack;
 import net.Zrips.CMILib.Items.CMIMC;
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ResidenceEntityListener implements Listener {
 
@@ -151,7 +153,7 @@ public class ResidenceEntityListener implements Listener {
 
         } else if (Flags.destroy.isGlobalyEnabled() && entity instanceof Projectile) {
             // Projectile-triggered EntityChangeBlockEvent always breaks blocks
-            shouldDeny = ResidenceListener1_14.shouldDenyProjectileHit(block, (Projectile) entity, Flags.destroy);
+            shouldDeny = shouldDenyEntityHit(entity, block.getLocation(), Flags.destroy, null);
 
         }
 
@@ -193,12 +195,9 @@ public class ResidenceEntityListener implements Listener {
             // first passenger
             rider = passengers.get(0);
         }
-        Player riderPlayer = rider instanceof Player ? (Player) rider : null;
-        if (riderPlayer != null) {
-            if (riderPlayer.hasMetadata("NPC") || ResAdmin.isResAdmin(riderPlayer)) {
-                return false;
-            }
-            return FlagPermissions.has(block.getLocation(), riderPlayer, Flags.destroy, FlagCombo.OnlyFalse);
+        Player player = rider instanceof Player ? (Player) rider : null;
+        if (player != null) {
+            return FlagPermissions.shouldDenyAndNotify(player, block, Flags.destroy, null, false);
         } else {
             return FlagPermissions.has(block.getLocation(), Flags.destroy, FlagCombo.OnlyFalse);
         }
@@ -246,7 +245,6 @@ public class ResidenceEntityListener implements Listener {
         case FARMLAND:
             flag = Flags.trample;
             break;
-
         case TURTLE_EGG:
             if (Utils.isAnimal(entity)) {
                 flag = Flags.animalgriefing;
@@ -257,7 +255,6 @@ public class ResidenceEntityListener implements Listener {
                 flag = Flags.destroy;
             }
             break;
-
         default:
             if (mat.containsCriteria(CMIMC.BUTTON)) {
                 if (entity instanceof Projectile) {
@@ -283,7 +280,6 @@ public class ResidenceEntityListener implements Listener {
                 return;
             }
             break;
-
         // Turtle Egg: Mob StepOn
         case animalgriefing:
         case mobgriefing:
@@ -292,7 +288,6 @@ public class ResidenceEntityListener implements Listener {
                 return;
             }
             break;
-
         // Turtle Egg: Other-entities StepOn
         case destroy:
             perms = FlagPermissions.getPerms(block.getLocation());
@@ -300,39 +295,33 @@ public class ResidenceEntityListener implements Listener {
                 return;
             }
             break;
-
         // Projectile hits button
         case button:
         // Projectile and Item press pressure_plate
         case pressure:
             Player player = Utils.potentialProjectileToPlayer(entity);
             if (player != null) {
-                if (ResAdmin.isResAdmin(player)) {
-                    return;
-                }
-                perms = FlagPermissions.getPerms(block.getLocation(), player);
-                if (perms.playerHas(player, flag, perms.playerHas(player, Flags.use, true))) {
+                if (!FlagPermissions.shouldDenyAndNotify(player, block, flag, Flags.use, false)) {
                     return;
                 }
             } else {
-                // Check potential block as a shooter which should be allowed if its inside same
-                // residence
-                if (Utils.isSourceBlockInsideSameResidence(entity, ClaimedResidence.getByLoc(block.getLocation()))) {
+                ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
+                // skip check if shooter is a dispenser in the same Residence
+                if (Utils.isSourceBlockInsideSameResidence(entity, res)) {
                     return;
                 }
-                perms = FlagPermissions.getPerms(block.getLocation());
+                perms = (res != null)
+                        ? res.getPermissions()
+                        : plugin.getWorldFlags().getPerms(block.getWorld());
                 if (perms.has(flag, perms.has(Flags.use, true))) {
                     return;
                 }
             }
             break;
-
         default:
             return;
         }
-
         event.setCancelled(true);
-
     }
 
     public static boolean isMonster(Entity entity) {
@@ -839,29 +828,36 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onHangingBreakByEntity(HangingBreakByEntityEvent event) {
 
-        if (shouldDenyEntityBreakByEntity(event.getRemover(), event.getEntity())) {
+        Entity entity = event.getEntity();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.destroy, entity)) {
+            return;
+        }
+        if (shouldDenyEntityHit(event.getRemover(), entity.getLocation(), Flags.destroy, Flags.build)) {
             event.setCancelled(true);
         }
     }
 
-    public static boolean shouldDenyEntityBreakByEntity(Entity remover, Entity entity) {
-        if (FlagPermissions.shouldIgnoreCheck(Flags.destroy, entity)) {
-            return false;
-        }
-        Player player = Utils.potentialProjectileToPlayer(remover);
+    public static boolean shouldDenyEntityHit(@NotNull Entity source, @NotNull Location targetLoc, @NotNull Flags mainFlag, @Nullable Flags subFlag) {
+
+        Player player = Utils.potentialProjectileToPlayer(source);
         if (player != null) {
-            if (Residence.getInstance().getResidenceManager().isOwnerOfLocation(player, entity.getLocation())) {
-                return false;
-            }
-            return FlagPermissions.shouldDenyAndNotify(player, entity, Flags.destroy, Flags.build);
+
+            return FlagPermissions.shouldDenyAndNotify(player, targetLoc, mainFlag, subFlag);
 
         } else {
-            if (Utils.isSourceBlockInsideSameResidence(remover, ClaimedResidence.getByLoc(entity.getLocation()))) {
+            ClaimedResidence res = ClaimedResidence.getByLoc(targetLoc);
+            // skip check if shooter is a dispenser in the same Residence
+            if (Utils.isSourceBlockInsideSameResidence(source, res)) {
                 return false;
             }
-            FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
+            FlagPermissions perms = (res != null)
+                    ? res.getPermissions()
+                    : Residence.getInstance().getWorldFlags().getPerms(targetLoc.getWorld());
 
-            return !perms.has(Flags.destroy, perms.has(Flags.build, true));
+            boolean result = (subFlag == null) || perms.has(subFlag, true);
+
+            return !perms.has(mainFlag, result);
         }
     }
 
@@ -1502,10 +1498,18 @@ public class ResidenceEntityListener implements Listener {
             }
             // damage from non-players or projectiles fired by non-players
         } else if (Flags.destroy.isGlobalyEnabled()) {
-            if (attacker instanceof Projectile && Utils.isSourceBlockInsideSameResidence(attacker, ClaimedResidence.getByLoc(victim.getLocation()))) {
-                return;
+            ClaimedResidence res = null;
+            if (attacker instanceof Projectile) {
+                res = ClaimedResidence.getByLoc(victim.getLocation());
+                // skip check if shooter is a dispenser in the same Residence
+                if (Utils.isSourceBlockInsideSameResidence(attacker, res)) {
+                    return;
+                }
             }
-            FlagPermissions perms = FlagPermissions.getPerms(victim.getLocation());
+            FlagPermissions perms = (res != null)
+                    ? res.getPermissions()
+                    : plugin.getWorldFlags().getPerms(victim.getWorld());
+
             if (!perms.has(Flags.destroy, perms.has(Flags.build, true))) {
                 event.setCancelled(true);
             }
