@@ -74,7 +74,7 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             }
             return shouldDeny(target, player, Flags.animalkilling, null);
         }
-        if (ResidenceEntityListener.isMonster(target)) {
+        if (Utils.isMonster(target)) {
             return shouldDeny(target, player, Flags.mobkilling, null);
         }
         return false;

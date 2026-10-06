@@ -135,7 +135,7 @@ public class ResidenceListener1_21 implements Listener {
                 return;
             }
 
-        } else if (Flags.mobgriefing.isGlobalyEnabled() && ResidenceEntityListener.isMonster(ent)) {
+        } else if (Flags.mobgriefing.isGlobalyEnabled() && Utils.isMonster(ent)) {
             FlagPermissions perms = FlagPermissions.getPerms(ent.getLocation());
             if (perms.has(Flags.mobgriefing, perms.has(Flags.build, true))) {
                 return;

@@ -18,6 +18,7 @@ import org.bukkit.entity.Bat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Monster;
 import org.bukkit.entity.NPC;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -281,31 +282,58 @@ public class Utils {
         return loc;
     }
 
-    public static boolean isAnimal(Entity ent) {
-        if (ent == null) {
+    public static boolean isAnimal(@Nullable Entity entity) {
+        if (entity == null) {
             return false;
         }
-        if (ent instanceof Animals
-                || ent instanceof WaterMob
-                || ent instanceof NPC
-                || ent instanceof Bat
-                || ent instanceof Snowman
-                || ent instanceof IronGolem
+        if (entity instanceof Animals
+                || entity instanceof WaterMob
+                || entity instanceof NPC
+                || entity instanceof Bat
+                || entity instanceof Snowman
+                || entity instanceof IronGolem
                 // Temporary code, replace with enum after CMILib new GitHub Releases release
-                || (Version.isCurrentEqualOrHigher(Version.v26_2_0) && ent instanceof org.bukkit.entity.SulfurCube)) {
+                || (Version.isCurrentEqualOrHigher(Version.v26_2_0) && entity instanceof org.bukkit.entity.SulfurCube)) {
             return true;
         }
-        CMIEntityType type = CMIEntityType.get(ent);
-        if (type != null) {
-            switch (type) {
-            case ALLAY:
-            case COPPER_GOLEM:
-                return true;
-            default:
-                return false;
-            }
+        CMIEntityType type = CMIEntityType.get(entity);
+        if (type == null) {
+            return false;
         }
-        return false;
+        switch (type) {
+        case ALLAY:
+        case COPPER_GOLEM:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    public static boolean isMonster(@Nullable Entity entity) {
+        if (entity == null) {
+            return false;
+        }
+        if (Version.isCurrentEqualOrHigher(Version.v1_19_3)) {
+            return entity instanceof org.bukkit.entity.Enemy;
+        }
+        if (entity instanceof Monster) {
+            return true;
+        }
+        CMIEntityType type = CMIEntityType.get(entity);
+        if (type == null) {
+            return false;
+        }
+        switch (type) {
+        case ENDER_DRAGON:
+        case GHAST:
+        case HOGLIN:
+        case PHANTOM:
+        case SHULKER:
+        case SLIME:
+            return true;
+        default:
+            return false;
+        }
     }
 
     public static boolean isTamed(Entity entity) {

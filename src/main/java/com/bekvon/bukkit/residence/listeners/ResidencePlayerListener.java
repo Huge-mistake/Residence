@@ -1394,7 +1394,7 @@ public class ResidencePlayerListener implements Listener {
             mainFlag = Flags.nametag;
             if (Utils.isAnimal(entity)) {
                 subFlag = Flags.animalkilling;
-            } else if (ResidenceEntityListener.isMonster(entity)) {
+            } else if (Utils.isMonster(entity)) {
                 subFlag = Flags.mobkilling;
             }
         }
@@ -2478,7 +2478,7 @@ public class ResidencePlayerListener implements Listener {
 
     public static void processEntities(Set<Entity> entities, ClaimedResidence res) {
         for (Entity ent : entities) {
-            if (!ResidenceEntityListener.isMonster(ent))
+            if (!Utils.isMonster(ent))
                 continue;
             if (!res.containsLoc(ent.getLocation()))
                 continue;

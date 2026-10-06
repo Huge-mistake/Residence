@@ -141,7 +141,7 @@ public class ResidenceEntityListener implements Listener {
             FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             shouldDeny = !perms.has(Flags.witherdestruction, perms.has(Flags.destroy, true));
 
-        } else if (Flags.mobgriefing.isGlobalyEnabled() && isMonster(entity)) {
+        } else if (Flags.mobgriefing.isGlobalyEnabled() && Utils.isMonster(entity)) {
             FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             shouldDeny = !perms.has(Flags.mobgriefing, perms.has(Flags.destroy, true));
 
@@ -215,9 +215,9 @@ public class ResidenceEntityListener implements Listener {
         if (!(entity instanceof LivingEntity))
             return;
 
-        if (!isMonster(entity))
+        if (!Utils.isMonster(entity)) {
             return;
-
+        }
         // disabling event on world
         if (plugin.isDisabledWorldListener(entity))
             return;
@@ -248,7 +248,7 @@ public class ResidenceEntityListener implements Listener {
         case TURTLE_EGG:
             if (Utils.isAnimal(entity)) {
                 flag = Flags.animalgriefing;
-            } else if (isMonster(entity)) {
+            } else if (Utils.isMonster(entity)) {
                 flag = Flags.mobgriefing;
             } else {
                 // Other entities
@@ -322,33 +322,6 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         event.setCancelled(true);
-    }
-
-    public static boolean isMonster(Entity entity) {
-        if (entity == null) {
-            return false;
-        }
-        if (Version.isCurrentEqualOrHigher(Version.v1_19_3)) {
-            return entity instanceof org.bukkit.entity.Enemy;
-        }
-        if (entity instanceof Monster) {
-            return true;
-        }
-        CMIEntityType type = CMIEntityType.get(entity);
-        if (type != null) {
-            switch (type) {
-            case ENDER_DRAGON:
-            case GHAST:
-            case HOGLIN:
-            case PHANTOM:
-            case SHULKER:
-            case SLIME:
-                return true;
-            default:
-                return false;
-            }
-        }
-        return false;
     }
 
     private static boolean damageableProjectile(Entity ent) {
@@ -572,9 +545,9 @@ public class ResidenceEntityListener implements Listener {
         if (FlagPermissions.shouldIgnoreCheck(Flags.mobkilling, entity)) {
             return;
         }
-        if (!isMonster(entity))
+        if (!Utils.isMonster(entity)) {
             return;
-
+        }
         Entity damager = event.getDamager();
 
         if (!damageableProjectile(damager) && !(damager instanceof Player))
@@ -684,7 +657,7 @@ public class ResidenceEntityListener implements Listener {
             default:
                 break;
             }
-        } else if (isMonster(ent)) {
+        } else if (Utils.isMonster(ent)) {
             if (perms.has(Flags.monsters, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
                 return;
@@ -1557,7 +1530,7 @@ public class ResidenceEntityListener implements Listener {
                 if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse)) {
                     event.setCancelled(true);
                 }
-            } else if (Flags.mobkilling.isGlobalyEnabled() && isMonster(entity)) {
+            } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(entity)) {
                 if (FlagPermissions.has(entity.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse)) {
                     event.setCancelled(true);
                 }

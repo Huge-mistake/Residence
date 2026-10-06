@@ -357,7 +357,7 @@ public class ResidenceBlockListener implements Listener {
                 event.setCancelled(true);
             }
 
-        } else if (Flags.mobgriefing.isGlobalyEnabled() && ResidenceEntityListener.isMonster(entity)) {
+        } else if (Flags.mobgriefing.isGlobalyEnabled() && Utils.isMonster(entity)) {
             FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
             if (!perms.has(Flags.mobgriefing, perms.has(Flags.build, true))) {
                 event.setCancelled(true);
