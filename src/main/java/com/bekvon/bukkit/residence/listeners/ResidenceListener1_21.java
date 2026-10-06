@@ -160,8 +160,8 @@ public class ResidenceListener1_21 implements Listener {
         ent.removePotionEffect(PotionEffectType.WEAVING);
     }
 
-    public static void onInteractCopperGolem(PlayerInteractEntityEvent event) {
-        Entity entity = event.getRightClicked();
+    public static void handleInteractCopperGolem(PlayerInteractEntityEvent event, Entity entity) {
+
         if (Flags.container.isGlobalyEnabled()) {
             EntityEquipment golemInv = ((LivingEntity) entity).getEquipment();
             // Right-click to remove items from holding copper_golem

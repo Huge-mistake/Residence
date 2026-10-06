@@ -698,7 +698,7 @@ public class ResidencePlayerListener implements Listener {
 
     }
 
-    private void handleMarketSignClick(PlayerInteractEvent event, Block block, Player player) {
+    private void handlePlayerClickMarketSign(PlayerInteractEvent event, Player player, Block block) {
 
         if (event.useInteractedBlock() == Result.DENY) {
             return;
@@ -1061,7 +1061,7 @@ public class ResidencePlayerListener implements Listener {
 
     // Handle player placement or block modification when no specific event is available
     // Even if dedicated events are added in the future, legacy version servers still exist
-    private void handlePlayerBuildViaInteract(PlayerInteractEvent event, Block block, Player player) {
+    private void handlePlayerInteractBuild(PlayerInteractEvent event, Player player, Block block) {
 
         if (!Flags.build.isGlobalyEnabled()) {
             return;
@@ -1155,7 +1155,7 @@ public class ResidencePlayerListener implements Listener {
         event.setCancelled(true);
     }
 
-    private void handleSelectionTool(PlayerInteractEvent event, Block block, Player player) {
+    private void handlePlayerUseSelectionTool(PlayerInteractEvent event, Player player, Block block) {
 
         if (plugin.getWorldEditTool() == plugin.getConfigManager().getSelectionTool())
             return;
@@ -1189,7 +1189,7 @@ public class ResidencePlayerListener implements Listener {
         }
     }
 
-    private void handleInfoTool(PlayerInteractEvent event, Block block, Player player) {
+    private void handlePlayerUseInfoTool(PlayerInteractEvent event, Player player, Block block) {
 
         if (event.getAction() != Action.LEFT_CLICK_BLOCK) {
             return;
@@ -1229,30 +1229,30 @@ public class ResidencePlayerListener implements Listener {
             handlePlayerPhysicalInteract(event, block, player);
             return;
         }
-        if (action != Action.LEFT_CLICK_BLOCK && action != Action.RIGHT_CLICK_BLOCK) {
-            return;
-        }
-        if (event.useItemInHand() != Result.DENY) {
-            CMIMaterial held = CMIMaterial.get(event.getItem());
-            ConfigManager config = plugin.getConfigManager();
+        if (action == Action.LEFT_CLICK_BLOCK || action == Action.RIGHT_CLICK_BLOCK) {
 
-            if (held == config.getSelectionTool()) {
-                handleSelectionTool(event, block, player);
+            if (event.useItemInHand() != Result.DENY) {
+                CMIMaterial held = CMIMaterial.get(event.getItem());
 
-            } else if (held == config.getInfoTool()) {
-                handleInfoTool(event, block, player);
+                if (held == plugin.getConfigManager().getSelectionTool()) {
+                    handlePlayerUseSelectionTool(event, player, block);
+
+                } else if (held == plugin.getConfigManager().getInfoTool()) {
+                    handlePlayerUseInfoTool(event, player, block);
+
+                }
+                handlePlayerPlaceVehicle(event, player, block, held);
 
             }
-            handlePlayerPlaceVehicle(event, block, player, held);
+            handlePlayerClickMarketSign(event, player, block);
+
+            handlePlayerInteractBuild(event, player, block);
+
+            handlePlayerClickBlockFlags(event, player, block);
         }
-        handleMarketSignClick(event, block, player);
-
-        handlePlayerBuildViaInteract(event, block, player);
-
-        handleBlockClickFlag(event, block, player);
     }
 
-    private void handleBlockClickFlag(PlayerInteractEvent event, Block block, Player player) {
+    private void handlePlayerClickBlockFlags(PlayerInteractEvent event, Player player, Block block) {
 
         if (event.useInteractedBlock() == Result.DENY) {
             return;
@@ -1336,75 +1336,7 @@ public class ResidencePlayerListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-        Entity entity = event.getRightClicked();
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(entity)) {
-            return;
-        }
-        Player player = event.getPlayer();
-        Flags mainFlag = null;
-        Flags subFlag = null;
-
-        ItemStack item = Utils.getItemInUseHand(event);
-        if (item != null) {
-            // Check held item blacklist
-            if (Utils.isItemBlacklisted(item, player) || shouldDenyItemUseOnEntity(item, entity, player)) {
-                event.setCancelled(true);
-                return;
-            }
-        }
-        if (Flags.commandblock.isGlobalyEnabled() && entity instanceof CommandMinecart) {
-            mainFlag = Flags.commandblock;
-
-        } else if (Flags.container.isGlobalyEnabled() && Utils.isContainerEntityWithoutGui(entity)) {
-            mainFlag = Flags.container;
-            subFlag = Flags.use;
-
-        } else if (Flags.leash.isGlobalyEnabled() && entity instanceof LeashHitch) {
-            mainFlag = Flags.leash;
-
-        } else if (Flags.trade.isGlobalyEnabled() && Utils.isVillagerOrTrader(entity)) {
-            mainFlag = Flags.trade;
-
-        } else if (Utils.isCopperGolem(entity)) {
-            ResidenceListener1_21.onInteractCopperGolem(event);
-            return;
-        }
-        if (mainFlag == null) {
-            return;
-        }
-        if (FlagPermissions.shouldDenyAndNotify(player, entity, mainFlag, subFlag)) {
-            event.setCancelled(true);
-        }
-    }
-
-    private boolean shouldDenyItemUseOnEntity(ItemStack item, Entity entity, Player player) {
-
-        CMIMaterial held = CMIMaterial.get(item);
-        Flags mainFlag = null;
-        Flags subFlag = null;
-
-        if (Flags.dye.isGlobalyEnabled() && entity instanceof Sheep && held.containsCriteria(CMIMC.DYE)) {
-            mainFlag = Flags.dye;
-            subFlag = Flags.animalkilling;
-
-        } else if (Flags.nametag.isGlobalyEnabled() && entity instanceof LivingEntity && held == CMIMaterial.NAME_TAG) {
-            mainFlag = Flags.nametag;
-            if (Utils.isAnimal(entity)) {
-                subFlag = Flags.animalkilling;
-            } else if (Utils.isMonster(entity)) {
-                subFlag = Flags.mobkilling;
-            }
-        }
-        if (mainFlag == null) {
-            return false;
-        }
-        return FlagPermissions.shouldDenyAndNotify(player, entity, mainFlag, subFlag);
-    }
-
-    private void handlePlayerPlaceVehicle(PlayerInteractEvent event, Block block, Player player, CMIMaterial held) {
+    private void handlePlayerPlaceVehicle(PlayerInteractEvent event, Player player, Block block, CMIMaterial held) {
 
         if (!Flags.vehicleplacing.isGlobalyEnabled()) {
             return;
@@ -1419,14 +1351,73 @@ public class ResidencePlayerListener implements Listener {
 
         if (held.containsCriteria(CMIMC.BOAT)) {
             loc = block.getRelative(event.getBlockFace()).getLocation();
-        } else if (held.containsCriteria(CMIMC.MINECART)
-                && CMIMaterial.get(block.getType()).containsCriteria(CMIMC.RAIL)) {
+        } else if (held.containsCriteria(CMIMC.MINECART) && CMIMaterial.get(block.getType()).containsCriteria(CMIMC.RAIL)) {
             loc = block.getLocation();
         }
         if (loc == null) {
             return;
         }
         if (FlagPermissions.shouldDenyAndNotify(player, loc, Flags.vehicleplacing, Flags.build)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+
+        Entity entity = event.getRightClicked();
+        // disabling event on world
+        if (plugin.isDisabledWorldListener(entity)) {
+            return;
+        }
+        Player player = event.getPlayer();
+        Flags mainFlag = null;
+        Flags subFlag = null;
+
+        ItemStack item = Utils.getItemInUseHand(event);
+        CMIMaterial held = null;
+        if (item != null) {
+            // Check held item blacklist
+            if (Utils.isItemBlacklisted(item, player)) {
+                event.setCancelled(true);
+                return;
+            }
+            held = CMIMaterial.get(item);
+        }
+        if (Flags.nametag.isGlobalyEnabled() && entity instanceof LivingEntity && held == CMIMaterial.NAME_TAG) {
+            mainFlag = Flags.nametag;
+            if (Utils.isAnimal(entity)) {
+                subFlag = Flags.animalkilling;
+            } else if (Utils.isMonster(entity)) {
+                subFlag = Flags.mobkilling;
+            }
+
+        } else if (Flags.dye.isGlobalyEnabled() && entity instanceof Sheep && held != null && held.containsCriteria(CMIMC.DYE)) {
+            mainFlag = Flags.dye;
+            subFlag = Flags.animalkilling;
+
+        } else if (Flags.commandblock.isGlobalyEnabled() && entity instanceof CommandMinecart) {
+            mainFlag = Flags.commandblock;
+
+        } else if (Flags.container.isGlobalyEnabled() && Utils.isContainerEntityWithoutGui(entity)) {
+            mainFlag = Flags.container;
+            subFlag = Flags.use;
+
+        } else if (Flags.leash.isGlobalyEnabled() && entity instanceof LeashHitch) {
+            mainFlag = Flags.leash;
+
+        } else if (Flags.trade.isGlobalyEnabled() && Utils.isVillagerOrTrader(entity)) {
+            mainFlag = Flags.trade;
+
+        } else if (Utils.isCopperGolem(entity)) {
+            ResidenceListener1_21.handleInteractCopperGolem(event, entity);
+            return;
+
+        }
+        if (mainFlag == null) {
+            return;
+        }
+        if (FlagPermissions.shouldDenyAndNotify(player, entity, mainFlag, subFlag)) {
             event.setCancelled(true);
         }
     }
