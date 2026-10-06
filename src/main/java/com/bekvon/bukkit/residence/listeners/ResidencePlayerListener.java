@@ -1242,7 +1242,6 @@ public class ResidencePlayerListener implements Listener {
 
                 }
                 handlePlayerPlaceVehicle(event, player, block, held);
-
             }
             handlePlayerClickMarketSign(event, player, block);
 
