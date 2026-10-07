@@ -21,6 +21,7 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
+import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.projectiles.ProjectileSource;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -119,8 +120,8 @@ public class ResidenceListener1_09 implements Listener {
 
         boolean harmfull = false;
         mein: for (PotionEffect one : potion.getEffects()) {
-            for (String oneHarm : Residence.getInstance().getConfigManager().getNegativePotionEffects()) {
-                if (oneHarm.equalsIgnoreCase(one.getType().getName())) {
+            for (String oneHarm : plugin.getConfigManager().getNegativePotionEffects()) {
+                if (oneHarm.equalsIgnoreCase(one.getType().toString())) {
                     harmfull = true;
                     break mein;
                 }
@@ -141,7 +142,24 @@ public class ResidenceListener1_09 implements Listener {
             }
 
         } else {
-            if (FlagPermissions.has(potion.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+            // Non-player-spawned area effect cloud
+            // Prevent effect clouds from being spawned into a Residence from outside
+            ClaimedResidence potionHitRes = ClaimedResidence.getByLoc(potion.getLocation());
+            if (potionHitRes == null) {
+                return;
+            }
+            Location shooterLoc = null;
+
+            if (shooter instanceof Entity) {
+                shooterLoc = ((Entity) shooter).getLocation();
+            } else if (shooter instanceof BlockProjectileSource) {
+                shooterLoc = ((BlockProjectileSource) shooter).getBlock().getLocation();
+            }
+            // Skip the check if the shooter and the hit location are in the same Residence
+            if (potionHitRes == ClaimedResidence.getByLoc(shooterLoc)) {
+                return;
+            }
+            if (potionHitRes.getPermissions().has(Flags.pvp, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
             }
         }
@@ -169,10 +187,12 @@ public class ResidenceListener1_09 implements Listener {
                 if (type == null) {
                     return;
                 }
-                for (String oneHarm : plugin.getConfigManager().getNegativeLingeringPotionEffects()) {
-                    if (type.name().equalsIgnoreCase(oneHarm)) {
-                        harmfull = true;
-                        break;
+                mein: for (PotionEffect one : type.getPotionEffects()) {
+                    for (String oneHarm : plugin.getConfigManager().getNegativeLingeringPotionEffects()) {
+                        if (oneHarm.equalsIgnoreCase(one.getType().toString())) {
+                            harmfull = true;
+                            break mein;
+                        }
                     }
                 }
 
