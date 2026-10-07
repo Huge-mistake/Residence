@@ -39,7 +39,7 @@ import net.Zrips.CMILib.Version.Schedulers.CMIScheduler;
 
 public class ResidenceListener1_09 implements Listener {
 
-    private Residence plugin;
+    private final Residence plugin;
 
     public ResidenceListener1_09(Residence plugin) {
         this.plugin = plugin;
@@ -121,7 +121,7 @@ public class ResidenceListener1_09 implements Listener {
         boolean harmfull = false;
         mein: for (PotionEffect one : potion.getEffects()) {
             for (String oneHarm : plugin.getConfigManager().getNegativePotionEffects()) {
-                if (oneHarm.equalsIgnoreCase(one.getType().toString())) {
+                if (oneHarm.equalsIgnoreCase(one.getType().getName())) {
                     harmfull = true;
                     break mein;
                 }
@@ -189,7 +189,7 @@ public class ResidenceListener1_09 implements Listener {
                 }
                 mein: for (PotionEffect one : type.getPotionEffects()) {
                     for (String oneHarm : plugin.getConfigManager().getNegativeLingeringPotionEffects()) {
-                        if (oneHarm.equalsIgnoreCase(one.getType().toString())) {
+                        if (oneHarm.equalsIgnoreCase(one.getType().getName())) {
                             harmfull = true;
                             break mein;
                         }
