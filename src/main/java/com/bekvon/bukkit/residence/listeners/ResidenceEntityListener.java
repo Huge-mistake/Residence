@@ -1163,17 +1163,19 @@ public class ResidenceEntityListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onSplashPotion(PotionSplashEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.pvp, event.getEntity())) {
+        ThrownPotion potion = event.getPotion();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.pvp, potion)) {
             return;
         }
-        ProjectileSource shooter = event.getPotion().getShooter();
+        ProjectileSource shooter = potion.getShooter();
 
         if (shooter instanceof Witch)
             return;
 
         boolean harmfull = false;
 
-        mein: for (PotionEffect one : event.getPotion().getEffects()) {
+        mein: for (PotionEffect one : potion.getEffects()) {
             for (String oneHarm : plugin.getConfigManager().getNegativePotionEffects()) {
                 if (oneHarm.equalsIgnoreCase(one.getType().getName())) {
                     harmfull = true;
@@ -1185,46 +1187,68 @@ public class ResidenceEntityListener implements Listener {
         if (!harmfull)
             return;
 
-        Entity ent = event.getEntity();
-        boolean srcpvp = FlagPermissions.getPerms(ent.getLocation()).has(Flags.pvp, FlagCombo.TrueOrNone);
-        boolean animalKilling = FlagPermissions.getPerms(ent.getLocation()).has(Flags.animalkilling, FlagCombo.TrueOrNone);
-        Iterator<LivingEntity> it = event.getAffectedEntities().iterator();
-        boolean animalDamage = false;
-        while (it.hasNext()) {
-            LivingEntity target = it.next();
+        boolean shooterIsPlayer = shooter instanceof Player && !((Player)shooter).hasMetadata("NPC");
+        boolean shouldDenyAttackerPVP = false;
 
-            if (Utils.isAnimal(target)) {
-                if (!animalKilling) {
-                    event.setIntensity(target, 0);
-                    animalDamage = true;
+        ClaimedResidence attackerRes = null;
+        FlagPermissions attackerPerms = null;
+
+        if (shooterIsPlayer) {
+            Player player = (Player) shooter;
+            attackerRes = ClaimedResidence.getByLoc(player.getLocation());
+            attackerPerms = (attackerRes != null)
+                    ? attackerRes.getPermissions()
+                    : plugin.getWorldFlags().getPerms(player.getWorld());
+
+            shouldDenyAttackerPVP = attackerPerms.has(Flags.pvp, FlagCombo.OnlyFalse);
+        }
+        Flags flag = null;
+
+        for (LivingEntity victim : event.getAffectedEntities()) {
+
+            boolean shouldDenyDamage = false;
+
+            if (Utils.isAnimal(victim)) {
+                shouldDenyDamage = shooterIsPlayer
+                        ? FlagPermissions.has(victim.getLocation(), (Player) shooter, Flags.animalkilling, FlagCombo.OnlyFalse)
+                        : FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse);
+
+                if (shouldDenyDamage) {
+                    flag = Flags.animalkilling;
                 }
-                continue;
-            }
-            if (!(target instanceof Player)) {
-                continue;
-            }
-            boolean tgtpvp = FlagPermissions.getPerms(target.getLocation()).has(Flags.pvp, FlagCombo.TrueOrNone);
-            if (!srcpvp || !tgtpvp) {
-                event.setIntensity(target, 0);
-                continue;
-            }
+                // Now both the attacker and the victim are guaranteed to be players
+            } else if (shooterIsPlayer && victim instanceof Player && !victim.hasMetadata("NPC")) {
+                // if PVP disabled at attacker location
+                if (shouldDenyAttackerPVP) {
+                    shouldDenyDamage = true;
 
-            ClaimedResidence area = ClaimedResidence.getByLoc(target.getLocation());
+                } else {
+                    Player victimPlayer = (Player) victim;
+                    ClaimedResidence victimRes = ClaimedResidence.getByLoc(victimPlayer.getLocation());
+                    FlagPermissions victimPerms = (victimRes != null)
+                            ? victimRes.getPermissions()
+                            : plugin.getWorldFlags().getPerms(victimPlayer.getWorld());
+                    // if PVP disabled at victim location
+                    if (victimPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
+                        shouldDenyDamage = true;
 
-            if (shooter instanceof Player) {
-                Player attacker = (Player) shooter;
-                ClaimedResidence srcarea = ClaimedResidence.getByLoc(attacker.getLocation());
-                if (srcarea != null && srcarea == area
-                        && srcarea.getPermissions().playerHas((Player) target, Flags.friendlyfire, FlagCombo.OnlyFalse)
-                        && srcarea.getPermissions().playerHas(attacker, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
-                    CMIActionBar.send(attacker, plugin.getLM().getMessage(lm.General_NoFriendlyFire));
-                    event.setIntensity(target, 0);
+                    } else {
+                        Player attackerPlayer = (Player) shooter;
+                        if (attackerRes != null && attackerRes == victimRes
+                                && attackerPerms.playerHas(attackerPlayer, Flags.friendlyfire, FlagCombo.OnlyFalse)
+                                && attackerPerms.playerHas(victimPlayer, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
+                            CMIActionBar.send(attackerPlayer, plugin.getLM().getMessage(lm.General_NoFriendlyFire));
+                            shouldDenyDamage = true;
+                        }
+                    }
                 }
+            }
+            if (shouldDenyDamage) {
+                event.setIntensity(victim, 0);
             }
         }
-
-        if (!animalKilling && animalDamage && shooter instanceof Player) {
-            lm.Flag_Deny.sendMessage((Player) shooter, Flags.animalkilling);
+        if (shooterIsPlayer && flag != null) {
+            lm.Flag_Deny.sendMessage((Player) shooter, flag);
         }
     }
 
@@ -1343,7 +1367,7 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         // Now both the attacker and the victim are guaranteed to be players
-        ClaimedResidence attackerRes = ClaimedResidence.getByLoc(attacker.getLocation());
+        ClaimedResidence attackerRes = ClaimedResidence.getByLoc(attackerPlayer.getLocation());
         ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());
         // Attacker and victim are in the same Residence
         if (attackerRes != null && attackerRes == victimRes) {
@@ -1358,12 +1382,14 @@ public class ResidenceEntityListener implements Listener {
                     return;
                 }
             }
-            if (attackerRes.getPermissions().has(Flags.pvp, FlagCombo.OnlyFalse)) {
+            FlagPermissions attackerPerms = attackerRes.getPermissions();
+
+            if (attackerPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
                 process(lm.General_NoPVPZone, attackerPlayer, isOnFire, victim, event);
                 return;
             }
-            if (attackerRes.getPermissions().playerHas((Player) victim, Flags.friendlyfire, FlagCombo.OnlyFalse)
-                    && attackerRes.getPermissions().playerHas(attackerPlayer, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
+            if (attackerPerms.playerHas((Player) victim, Flags.friendlyfire, FlagCombo.OnlyFalse)
+                    && attackerPerms.playerHas(attackerPlayer, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
                 CMIActionBar.send(attackerPlayer, plugin.getLM().getMessage(lm.General_NoFriendlyFire));
                 event.setCancelled(true);
                 if (isOnFire) {
