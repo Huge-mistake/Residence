@@ -1,13 +1,12 @@
 package com.bekvon.bukkit.residence.listeners;
 
 import java.lang.reflect.Method;
-import java.util.Iterator;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
@@ -21,6 +20,8 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionType;
+import org.bukkit.projectiles.ProjectileSource;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
@@ -108,7 +109,7 @@ public class ResidenceListener1_09 implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onLingeringSplashPotion(LingeringPotionSplashEvent event) {
+    public void onSpawnEffectCloud(LingeringPotionSplashEvent event) {
 
         ThrownPotion potion = event.getEntity();
 
@@ -128,18 +129,33 @@ public class ResidenceListener1_09 implements Listener {
         if (!harmfull)
             return;
 
-        boolean srcpvp = FlagPermissions.has(potion.getLocation(), Flags.pvp, FlagCombo.TrueOrNone);
-        if (!srcpvp)
-            event.setCancelled(true);
+        ProjectileSource shooter = potion.getShooter();
+        // If PvP is disabled at either the shooter's position or the potion hit location,
+        // cancel the effect cloud spawn.
+        if (shooter instanceof Player) {
+            Player shooterPlayer = (Player) shooter;
+            if (FlagPermissions.has(shooterPlayer.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)
+                    || FlagPermissions.has(potion.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+                lm.Flag_Deny.sendMessage(shooterPlayer, Flags.pvp);
+                event.setCancelled(true);
+            }
+
+        } else {
+            if (FlagPermissions.has(potion.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+            }
+        }
     }
 
     private static Method basePotionData = null;
     private static Method basePotionType = null;
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onLingeringEffectApply(AreaEffectCloudApplyEvent event) {
+    public void onPlayerDamagedByEffectCloud(AreaEffectCloudApplyEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.pvp, event.getEntity())) {
+        AreaEffectCloud cloud = event.getEntity();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.pvp, cloud)) {
             return;
         }
         boolean harmfull = false;
@@ -148,24 +164,29 @@ public class ResidenceListener1_09 implements Listener {
         // fix roles out
         try {
 
-            if (Version.isCurrentEqualOrHigher(Version.v1_20_R4)) {
-                for (String oneHarm : Residence.getInstance().getConfigManager().getNegativeLingeringPotionEffects()) {
-                    if (!event.getEntity().getBasePotionType().name().equalsIgnoreCase(oneHarm))
-                        continue;
-                    harmfull = true;
-                    break;
+            if (Version.isCurrentEqualOrHigher(Version.v1_20_2)) {
+                PotionType type = cloud.getBasePotionType();
+                if (type == null) {
+                    return;
                 }
+                for (String oneHarm : plugin.getConfigManager().getNegativeLingeringPotionEffects()) {
+                    if (type.name().equalsIgnoreCase(oneHarm)) {
+                        harmfull = true;
+                        break;
+                    }
+                }
+
             } else {
                 try {
 
                     if (basePotionData == null) {
-                        basePotionData = event.getEntity().getClass().getMethod("getBasePotionData");
-                        Object data = basePotionData.invoke(event.getEntity());
+                        basePotionData = cloud.getClass().getMethod("getBasePotionData");
+                        Object data = basePotionData.invoke(cloud);
                         basePotionType = data.getClass().getMethod("getType");
                     }
-                    Object data = basePotionData.invoke(event.getEntity());
+                    Object data = basePotionData.invoke(cloud);
                     org.bukkit.potion.PotionType type = (org.bukkit.potion.PotionType) basePotionType.invoke(data);
-                    for (String oneHarm : Residence.getInstance().getConfigManager().getNegativeLingeringPotionEffects()) {
+                    for (String oneHarm : plugin.getConfigManager().getNegativeLingeringPotionEffects()) {
                         if (type.name().equalsIgnoreCase(oneHarm)) {
                             harmfull = true;
                             break;
@@ -182,20 +203,22 @@ public class ResidenceListener1_09 implements Listener {
         if (!harmfull)
             return;
 
-        Entity ent = event.getEntity();
-        boolean srcpvp = FlagPermissions.has(ent.getLocation(), Flags.pvp, true);
-        Iterator<LivingEntity> it = event.getAffectedEntities().iterator();
-        while (it.hasNext()) {
-            LivingEntity target = it.next();
-            if (!(target instanceof Player))
-                continue;
-            Boolean tgtpvp = FlagPermissions.has(target.getLocation(), Flags.pvp, true);
-            if (!srcpvp || !tgtpvp) {
-                event.getAffectedEntities().remove(target);
-                event.getEntity().remove();
-                break;
-            }
+        ProjectileSource shooter = cloud.getSource();
+        boolean shouldDenyEffect;
+
+        if (shooter instanceof Player) {
+            Player shooterPlayer = (Player) shooter;
+            shouldDenyEffect = FlagPermissions.has(shooterPlayer.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
+
+        } else {
+            shouldDenyEffect = false;
         }
+        event.getAffectedEntities().removeIf(victim -> {
+            if (!(victim instanceof Player)) {
+                return false;
+            }
+            return shouldDenyEffect || FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
+        });
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
