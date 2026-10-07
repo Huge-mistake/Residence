@@ -1213,14 +1213,13 @@ public class ResidenceEntityListener implements Listener {
                         ? FlagPermissions.has(victim.getLocation(), (Player) shooter, Flags.animalkilling, FlagCombo.OnlyFalse)
                         : FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse);
 
-                if (shouldDenyDamage) {
-                    flag = Flags.animalkilling;
-                }
+                flag = shouldDenyDamage ? Flags.animalkilling : null;
                 // Now both the attacker and the victim are guaranteed to be players
             } else if (shooterIsPlayer && victim instanceof Player && !victim.hasMetadata("NPC")) {
                 // if PVP disabled at attacker location
                 if (shouldDenyAttackerPVP) {
                     shouldDenyDamage = true;
+                    flag = Flags.pvp;
 
                 } else {
                     Player victimPlayer = (Player) victim;
@@ -1231,14 +1230,15 @@ public class ResidenceEntityListener implements Listener {
                     // if PVP disabled at victim location
                     if (victimPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
                         shouldDenyDamage = true;
+                        flag = Flags.pvp;
 
                     } else {
                         Player attackerPlayer = (Player) shooter;
                         if (attackerRes != null && attackerRes == victimRes
                                 && attackerPerms.playerHas(attackerPlayer, Flags.friendlyfire, FlagCombo.OnlyFalse)
                                 && attackerPerms.playerHas(victimPlayer, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
-                            CMIActionBar.send(attackerPlayer, plugin.getLM().getMessage(lm.General_NoFriendlyFire));
                             shouldDenyDamage = true;
+                            flag = Flags.friendlyfire;
                         }
                     }
                 }
@@ -1247,8 +1247,12 @@ public class ResidenceEntityListener implements Listener {
                 event.setIntensity(victim, 0);
             }
         }
-        if (shooterIsPlayer && flag != null) {
-            lm.Flag_Deny.sendMessage((Player) shooter, flag);
+        if (shooterIsPlayer) {
+            if (flag == Flags.friendlyfire) {
+                CMIActionBar.send((Player) shooter, plugin.getLM().getMessage(lm.General_NoFriendlyFire));
+            } else if (flag != null) {
+                lm.Flag_Deny.sendMessage((Player) shooter, flag);
+            }
         }
     }
 
