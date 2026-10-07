@@ -1098,7 +1098,7 @@ public class ResidencePlayerListener implements Listener {
         }
     }
 
-    private void handlePlayerPhysicalInteract(PlayerInteractEvent event, Block block, Player player) {
+    private void handlePlayerPhysicalInteract(PlayerInteractEvent event, Player player, Block block) {
 
         if (event.useInteractedBlock() == Result.DENY) {
             return;
@@ -1226,7 +1226,7 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         if (isPhysical) {
-            handlePlayerPhysicalInteract(event, block, player);
+            handlePlayerPhysicalInteract(event, player, block);
             return;
         }
         if (action == Action.LEFT_CLICK_BLOCK || action == Action.RIGHT_CLICK_BLOCK) {
