@@ -52,13 +52,14 @@ public class ResidenceListener1_21_8_Paper implements Listener {
         }
         if (victim instanceof Player) {
             // Monster-on-player knockback doesn't need to check Flags.pvp
-            // Allow players to knock themselves back (e.g., by Wind Charges)
-            if (attackerPlayer != null && attackerPlayer != victim) {
-                if (FlagPermissions.has(attackerPlayer.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)
-                        || FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
-                    lm.Flag_Deny.sendMessage(attackerPlayer, Flags.pvp);
-                    return true;
-                }
+            // Skip the check when players knock themselves back (e.g., by Wind Charges)
+            if (attackerPlayer == null || attackerPlayer == victim) {
+                return false;
+            }
+            if (FlagPermissions.has(attackerPlayer.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)
+                    || FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+                lm.Flag_Deny.sendMessage(attackerPlayer, Flags.pvp);
+                return true;
             }
             return false;
         }
