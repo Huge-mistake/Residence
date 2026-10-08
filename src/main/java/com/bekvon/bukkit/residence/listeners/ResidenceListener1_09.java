@@ -270,15 +270,15 @@ public class ResidenceListener1_09 implements Listener {
         }
     }
 
-    public static boolean shouldDenyHealingEffect(LivingEntity entity, ProjectileSource attacker, boolean isPlayerAttacker) {
+    public static boolean shouldDenyHealingEffect(LivingEntity victim, ProjectileSource attacker, boolean isPlayerAttacker) {
         // healing potions damaging undead mobs
         if (isPlayerAttacker) {
-            if (Utils.isUndead(entity)) {
-                return FlagPermissions.shouldDenyAndNotify((Player) attacker, entity, Flags.mobkilling, null);
+            if (Utils.isUndead(victim)) {
+                return FlagPermissions.shouldDenyAndNotify((Player) attacker, victim, Flags.mobkilling, null);
             }
         } else {
-            if (Utils.isUndead(entity)) {
-                return FlagPermissions.has(entity.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
+            if (Utils.isUndead(victim)) {
+                return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
             }
         }
         return false;
