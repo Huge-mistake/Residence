@@ -174,9 +174,9 @@ public class ResidenceListener1_09 implements Listener {
         ProjectileSource attacker = cloud.getSource();
         Location attackerLoc = null;
 
-        // Temporarily comment out this section that exempts AreaEffectClouds spawned by dispensers
+        // Temporarily comment out this section. It exempts AreaEffectClouds spawned by dispensers
         // inside a Residence from the effect application check.
-        // Reason: (https://hub.spigotmc.org/jira/browse/SPIGOT-6340)
+        // Reason: SPIGOT-6340 (https://hub.spigotmc.org/jira/browse/SPIGOT-6340)
 
 /*        if (attacker instanceof BlockProjectileSource) {
             attackerLoc = ((BlockProjectileSource) attacker).getBlock().getLocation();
