@@ -738,6 +738,10 @@ public class ResidenceEntityListener implements Listener {
             case WIND_CHARGE:
                 flag = Flags.windexplode;
                 break;
+            case SPLASH_POTION:
+            case LINGERING_POTION:
+                flag = Flags.potionthrowing;
+                break;
             default:
                 break;
             }

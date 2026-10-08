@@ -288,6 +288,9 @@ public class ResidenceListener1_09 implements Listener {
         if (isPlayerAttacker) {
             Player player = (Player) attacker;
             if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                if (attacker == victim) {
+                    return false;
+                }
                 FlagPermissions attackerPerms = (attackerRes != null)
                         ? attackerRes.getPermissions()
                         : Residence.getInstance().getWorldFlags().getPerms(player.getWorld());
@@ -346,6 +349,9 @@ public class ResidenceListener1_09 implements Listener {
         if (isPlayerAttacker) {
             Player player = (Player) attacker;
             if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                if (attacker == victim) {
+                    return false;
+                }
                 FlagPermissions attackerPerms = (attackerRes != null)
                         ? attackerRes.getPermissions()
                         : Residence.getInstance().getWorldFlags().getPerms(player.getWorld());
