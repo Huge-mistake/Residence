@@ -1188,14 +1188,14 @@ public class ResidenceEntityListener implements Listener {
                 return;
             }
             Player player = (Player) attacker;
-            if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
+            if (player.hasMetadata("NPC")) {
                 return;
             }
             attackerRes = ClaimedResidence.getByLoc(player.getLocation());
             FlagPermissions attackerPerms = (attackerRes != null)
                     ? attackerRes.getPermissions()
                     : Residence.getInstance().getWorldFlags().getPerms(player.getWorld());
-            if (attackerPerms.playerHas(player, Flags.potionthrowing, FlagCombo.OnlyFalse)) {
+            if (attackerPerms.playerHas(player, Flags.potionthrowing, FlagCombo.OnlyFalse) && !ResAdmin.isResAdmin(player)) {
                 lm.Flag_Deny.sendMessage(player, Flags.potionthrowing);
                 event.setCancelled(true);
                 return;
