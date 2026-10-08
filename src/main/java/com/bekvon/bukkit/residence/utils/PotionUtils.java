@@ -47,7 +47,7 @@ public class PotionUtils {
 
         String name = potionEffectType.getName();
         //
-        System.out.println("PotionEffectType name = [" + name + "]");
+        org.bukkit.Bukkit.getLogger().info("PotionEffectType name = [" + name + "]");
         //
         if (effect.equalsIgnoreCase("BENEFICIAL")) {
             for (String string : getLegacyBeneficialList()){
