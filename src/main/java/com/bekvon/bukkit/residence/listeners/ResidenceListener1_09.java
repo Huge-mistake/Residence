@@ -295,8 +295,8 @@ public class ResidenceListener1_09 implements Listener {
                     lm.Flag_Deny.sendMessage(player, Flags.pvp);
                     return true;
                 }
-                ClaimedResidence victimRes = ClaimedResidence.getByLoc(player.getLocation());
-                FlagPermissions victimPerms = attackerRes != null
+                ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());
+                FlagPermissions victimPerms = victimRes != null
                         ? victimRes.getPermissions()
                         : Residence.getInstance().getWorldFlags().getPerms(victim.getWorld());
                 if (victimPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
@@ -353,8 +353,8 @@ public class ResidenceListener1_09 implements Listener {
                     lm.Flag_Deny.sendMessage(player, Flags.pvp);
                     return true;
                 }
-                ClaimedResidence victimRes = ClaimedResidence.getByLoc(player.getLocation());
-                FlagPermissions victimPerms = attackerRes != null
+                ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());
+                FlagPermissions victimPerms = victimRes != null
                         ? victimRes.getPermissions()
                         : Residence.getInstance().getWorldFlags().getPerms(victim.getWorld());
                 if (victimPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
