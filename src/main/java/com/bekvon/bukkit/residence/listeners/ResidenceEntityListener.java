@@ -1379,6 +1379,9 @@ public class ResidenceEntityListener implements Listener {
         if (attackerPlayer == null || attackerPlayer.hasMetadata("NPC")) {
             return;
         }
+        if (attackerPlayer == victim) {
+            return;
+        }
         // Now both the attacker and the victim are guaranteed to be players
         ClaimedResidence attackerRes = ClaimedResidence.getByLoc(attackerPlayer.getLocation());
         ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());

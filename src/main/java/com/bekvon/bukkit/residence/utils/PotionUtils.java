@@ -46,9 +46,7 @@ public class PotionUtils {
     private static boolean isLegacyPotionEffectType(PotionEffectType potionEffectType, String effect) {
 
         String name = potionEffectType.getName();
-        //
-        org.bukkit.Bukkit.getLogger().info("PotionEffectType name = [" + name + "]");
-        //
+
         if (effect.equalsIgnoreCase("BENEFICIAL")) {
             for (String string : getLegacyBeneficialList()){
                 if (string.equalsIgnoreCase(name)) {
