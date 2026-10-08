@@ -60,7 +60,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.potion.PotionType;
 import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.projectiles.ProjectileSource;
 
@@ -1228,53 +1227,18 @@ public class ResidenceEntityListener implements Listener {
         if (!(itemMeta instanceof PotionMeta)) {
             return;
         }
-        PotionMeta potionMeta = (PotionMeta) itemMeta;
-        PotionType potionType = null;
         // Start - Get the potion effect type
-        if (Version.isCurrentEqualOrHigher(Version.v1_20_2)) {
-            potionType = potionMeta.getBasePotionType();
-
-            if (potionType == null) {
-                return;
-            }
-            for (PotionEffect effect : potionType.getPotionEffects()) {
-                PotionEffectType type = effect.getType();
-                if (PotionUtils.isPotionEffectType(type, "Healing")) {
-                    isHealingEffect = true;
-                    break;
-
-                } else if (PotionUtils.isPotionEffectType(type, "Damage")) {
-                    isDamageEffect = true;
-                    break;
-
-                } else if (PotionUtils.isPotionEffectType(type, "Harmful")) {
-                    isHarmfulEffect = true;
-                    break;
-                }
-            }
-        } else {
-            org.bukkit.potion.PotionData data = potionMeta.getBasePotionData();
-            if (data != null) {
-                potionType = data.getType();
-            }
-            if (potionType == null) {
-                org.bukkit.Bukkit.getLogger().info("potionType == null");
-                return;
-            }
-            PotionEffectType type = potionType.getEffectType();
-            if (type == null) {
-                org.bukkit.Bukkit.getLogger().info("type == null");
-                return;
-            }
+        for (PotionEffect effect : potion.getEffects()) {
+            PotionEffectType type = effect.getType();
             if (PotionUtils.isPotionEffectType(type, "Healing")) {
                 isHealingEffect = true;
-
+                break;
             } else if (PotionUtils.isPotionEffectType(type, "Damage")) {
                 isDamageEffect = true;
-
+                break;
             } else if (PotionUtils.isPotionEffectType(type, "Harmful")) {
                 isHarmfulEffect = true;
-
+                break;
             }
         }
         // End - Get the potion effect type
