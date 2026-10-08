@@ -73,6 +73,7 @@ import com.bekvon.bukkit.residence.permissions.PermissionManager.ResPerm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
+import com.bekvon.bukkit.residence.utils.PotionUtils;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.ActionBar.CMIActionBar;
@@ -1235,15 +1236,15 @@ public class ResidenceEntityListener implements Listener {
             }
             for (PotionEffect effect : potionType.getPotionEffects()) {
                 PotionEffectType type = effect.getType();
-                if (Utils.isPotionEffectType(type, "Healing")) {
+                if (PotionUtils.isPotionEffectType(type, "Healing")) {
                     isHealingEffect = true;
                     break;
 
-                } else if (Utils.isPotionEffectType(type, "Damage")) {
+                } else if (PotionUtils.isPotionEffectType(type, "Damage")) {
                     isDamageEffect = true;
                     break;
 
-                } else if (Utils.isPotionEffectType(type, "Harmful")) {
+                } else if (PotionUtils.isPotionEffectType(type, "Harmful")) {
                     isHarmfulEffect = true;
                     break;
                 }
@@ -1257,13 +1258,13 @@ public class ResidenceEntityListener implements Listener {
                 return;
             }
             PotionEffectType type = potionType.getEffectType();
-            if (Utils.isPotionEffectType(type, "Healing")) {
+            if (PotionUtils.isPotionEffectType(type, "Healing")) {
                 isHealingEffect = true;
 
-            } else if (Utils.isPotionEffectType(type, "Damage")) {
+            } else if (PotionUtils.isPotionEffectType(type, "Damage")) {
                 isDamageEffect = true;
 
-            } else if (Utils.isPotionEffectType(type, "Harmful")) {
+            } else if (PotionUtils.isPotionEffectType(type, "Harmful")) {
                 isHarmfulEffect = true;
 
             }
@@ -1271,21 +1272,21 @@ public class ResidenceEntityListener implements Listener {
         // End - Get the potion effect type
         if (isHealingEffect && Flags.mobkilling.isGlobalyEnabled()) {
             for (LivingEntity victim : event.getAffectedEntities()) {
-                if (ResidenceListener1_09.shouldDenyHealingEffect(victim, attacker, isPlayerAttacker)) {
+                if (PotionUtils.shouldDenyHealingEffect(victim, attacker, isPlayerAttacker)) {
                     event.setIntensity(victim, 0);
                 }
             }
 
         } else if (isDamageEffect) {
             for (LivingEntity victim : event.getAffectedEntities()) {
-                if (ResidenceListener1_09.shouldDenyDamageEffect(victim, attacker, attackerRes, isPlayerAttacker)) {
+                if (PotionUtils.shouldDenyDamageEffect(victim, attacker, attackerRes, isPlayerAttacker)) {
                     event.setIntensity(victim, 0);
                 }
             }
 
         } else if (isHarmfulEffect) {
             for (LivingEntity victim : event.getAffectedEntities()) {
-                if (ResidenceListener1_09.shouldDenyHarmfulEffect(victim, attacker, attackerRes, isPlayerAttacker)) {
+                if (PotionUtils.shouldDenyHarmfulEffect(victim, attacker, attackerRes, isPlayerAttacker)) {
                     event.setIntensity(victim, 0);
                 }
             }

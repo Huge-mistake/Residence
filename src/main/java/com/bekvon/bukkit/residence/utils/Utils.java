@@ -1,7 +1,6 @@
 package com.bekvon.bukkit.residence.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +42,6 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.util.BlockIterator;
 import org.jetbrains.annotations.NotNull;
@@ -431,83 +429,6 @@ public class Utils {
     public static boolean isContainer(Material mat) {
         return FlagPermissions.getMaterialUseFlagList().get(mat) == Flags.container
                 || Residence.getInstance().getConfigManager().getCustomContainers().contains(mat);
-    }
-
-    private static List<String> getLegacyBeneficialList() {
-        return Arrays.asList("ABSORPTION", "CONDUIT_POWER", "DAMAGE_RESISTANCE", "DOLPHINS_GRACE",
-                "FAST_DIGGING", "FIRE_RESISTANCE", "HEAL", "HEALTH_BOOST", "HERO_OF_THE_VILLAGE",
-                "INCREASE_DAMAGE", "INVISIBILITY", "JUMP", "LUCK", "NIGHT_VISION", "REGENERATION",
-                "SATURATION", "SLOW_FALLING", "SPEED", "WATER_BREATHING");
-    }
-
-    private static List<String> getLegacyHarmfulList() {
-        return Arrays.asList("BAD_OMEN", "BLINDNESS", "CONFUSION", "DARKNESS", "HARM", "HUNGER",
-                "LEVITATION", "POISON", "SLOW", "SLOW_DIGGING", "UNLUCK", "WEAKNESS", "WITHER");
-    }
-
-    private static List<String> getLegacyNeutralList() {
-        return Collections.singletonList("GLOWING");
-    }
-
-    private static boolean isLegacyPotionEffectType(PotionEffectType potionEffectType, String effect) {
-
-        String name = potionEffectType.getName();
-
-        if (effect.equalsIgnoreCase("BENEFICIAL")) {
-            for (String string : getLegacyBeneficialList()){
-                if (string.equalsIgnoreCase(name)) {
-                    return true;
-                }
-            }
-
-        } else if (effect.equalsIgnoreCase("HARMFUL")) {
-            for (String string : getLegacyHarmfulList()){
-                if (string.equalsIgnoreCase(name)) {
-                    return true;
-                }
-            }
-
-        } else if (effect.equalsIgnoreCase("NEUTRAL")) {
-            for (String string : getLegacyNeutralList()){
-                if (string.equalsIgnoreCase(name)) {
-                    return true;
-                }
-            }
-
-        } else if (effect.equalsIgnoreCase("Healing")) {
-            return name.equalsIgnoreCase("HEAL");
-
-        } else if (effect.equalsIgnoreCase("Damage")) {
-            return name.equalsIgnoreCase("HARM");
-
-        }
-        return false;
-    }
-
-    public static boolean isPotionEffectType(PotionEffectType potionEffectType, String effect) {
-
-        if (potionEffectType == null) {
-            return false;
-        }
-        if (Version.isCurrentEqualOrHigher(Version.v1_20_5)) {
-            if (effect.equalsIgnoreCase("BENEFICIAL")) {
-                return potionEffectType.getEffectCategory() == PotionEffectType.Category.BENEFICIAL;
-            }
-            if (effect.equalsIgnoreCase("HARMFUL")) {
-                return potionEffectType.getEffectCategory() == PotionEffectType.Category.HARMFUL;
-            }
-            if (effect.equalsIgnoreCase("NEUTRAL")) {
-                return potionEffectType.getEffectCategory() == PotionEffectType.Category.NEUTRAL;
-            }
-            if (effect.equalsIgnoreCase("Healing")) {
-                return potionEffectType == PotionEffectType.INSTANT_HEALTH;
-            }
-            if (effect.equalsIgnoreCase("Damage")) {
-                return potionEffectType == PotionEffectType.INSTANT_DAMAGE;
-            }
-            return false;
-        }
-        return isLegacyPotionEffectType(potionEffectType, effect);
     }
 
     public static boolean isUndead(Entity entity) {
