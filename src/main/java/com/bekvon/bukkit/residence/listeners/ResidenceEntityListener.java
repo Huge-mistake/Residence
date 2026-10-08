@@ -1252,12 +1252,19 @@ public class ResidenceEntityListener implements Listener {
         } else {
             if (potionItem instanceof PotionMeta) {
                 org.bukkit.potion.PotionData data = ((PotionMeta) potionItem).getBasePotionData();
-                potionType = data.getType();
+                if (data != null) {
+                    potionType = data.getType();
+                }
             }
             if (potionType == null) {
+                org.bukkit.Bukkit.getLogger().info("potionType == null");
                 return;
             }
             PotionEffectType type = potionType.getEffectType();
+            if (type == null) {
+                org.bukkit.Bukkit.getLogger().info("type == null");
+                return;
+            }
             if (PotionUtils.isPotionEffectType(type, "Healing")) {
                 isHealingEffect = true;
 
