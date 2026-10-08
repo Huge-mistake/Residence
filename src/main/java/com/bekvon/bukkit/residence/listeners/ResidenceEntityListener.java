@@ -759,6 +759,10 @@ public class ResidenceEntityListener implements Listener {
             }
 
         } else {
+            // Flags.potionthrowing only controls player-thrown potions
+            if (flag == Flags.potionthrowing) {
+                return;
+            }
             FlagPermissions perms = FlagPermissions.getPerms(projectile.getLocation());
             if (perms.has(flag, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
