@@ -174,14 +174,18 @@ public class ResidenceListener1_09 implements Listener {
         ProjectileSource attacker = cloud.getSource();
         Location attackerLoc = null;
 
-        if (attacker instanceof BlockProjectileSource) {
+        // Temporarily comment out this section that exempts AreaEffectClouds spawned by dispensers
+        // inside a Residence from the effect application check.
+        // Reason: (https://hub.spigotmc.org/jira/browse/SPIGOT-6340)
+
+/*        if (attacker instanceof BlockProjectileSource) {
             attackerLoc = ((BlockProjectileSource) attacker).getBlock().getLocation();
 
-        } else if (attacker instanceof Entity && !(attacker instanceof Player)) {
-            attackerLoc = ((Entity) attacker).getLocation();
+        } else */if (Version.isCurrentEqualOrHigher(Version.v1_21_0) && attacker instanceof org.bukkit.entity.OminousItemSpawner) {
+            attackerLoc = ((org.bukkit.entity.OminousItemSpawner) attacker).getLocation();
 
         }
-        // Now handling effect clouds spawned by dispensers or ominous item spawner
+        // Now handling effect clouds spawned by ominous item spawner
         if (attackerLoc != null) {
             ClaimedResidence attackerRes = ClaimedResidence.getByLoc(attackerLoc);
 
@@ -200,6 +204,7 @@ public class ResidenceListener1_09 implements Listener {
             });
             return;
         }
+
         // Now handling AreaEffectClouds spawned by player throws or unknown sources
         boolean isHealingCloud = false;
         boolean isDamageCloud = false;
