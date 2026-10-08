@@ -319,7 +319,7 @@ Global:
     # Allows or denys only placement of blocks, overrides the build flag
     place: true
     # Applies to: Both
-    # Allow or deny throwing potions
+    # Allow or deny player throwing potions
     potionthrowing: true
     # Applies to: Both
     # Allow or deny players pushing entities(not for player-player)

@@ -1,7 +1,5 @@
 package com.bekvon.bukkit.residence.listeners;
 
-import java.util.List;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -10,6 +8,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ThrownPotion;
+import org.bukkit.entity.Witch;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -36,6 +35,7 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Teleporting;
 import com.bekvon.bukkit.residence.utils.Utils;
 
+import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
 import net.Zrips.CMILib.Version.Schedulers.CMIScheduler;
@@ -117,40 +117,48 @@ public class ResidenceListener1_09 implements Listener {
 
         ThrownPotion potion = event.getEntity();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.potionthrowing, potion)) {
+        if (plugin.isDisabledWorldListener(potion)) {
             return;
         }
         ProjectileSource shooter = potion.getShooter();
 
         if (shooter instanceof Player) {
+            if (!Flags.potionthrowing.isGlobalyEnabled()) {
+                return;
+            }
             Player shooterPlayer = (Player) shooter;
             if (FlagPermissions.shouldDenyAndNotify(shooterPlayer, potion, Flags.potionthrowing, null)) {
                 event.setCancelled(true);
             }
+            return;
+        }
+        if (!Flags.build.isGlobalyEnabled()) {
+            return;
+        }
+        // Now handling LingeringPotion thrown by non-player entities
+        // (e.g., dispensers, ominous item spawner)
+        ClaimedResidence potionHitRes = ClaimedResidence.getByLoc(potion.getLocation());
+        // There is no Residence at the hit location; skip the check
+        if (potionHitRes == null) {
+            return;
+        }
+        Location shooterLoc = null;
 
-        } else {
-            // Non-player-spawned area effect cloud
-            // Prevent effect clouds from being spawned into a Residence from outside
-            ClaimedResidence potionHitRes = ClaimedResidence.getByLoc(potion.getLocation());
-            if (potionHitRes == null) {
-                return;
-            }
-            Location shooterLoc = null;
+        if (shooter instanceof BlockProjectileSource) {
+            shooterLoc = ((BlockProjectileSource) shooter).getBlock().getLocation();
 
-            if (shooter instanceof Entity) {
-                shooterLoc = ((Entity) shooter).getLocation();
-            } else if (shooter instanceof BlockProjectileSource) {
-                shooterLoc = ((BlockProjectileSource) shooter).getBlock().getLocation();
-            }
-            ClaimedResidence shooterRes = ClaimedResidence.getByLoc(shooterLoc);
-            // Skip the check if the shooter and the hit location are in the same Residence
-            if (potionHitRes == shooterRes) {
-                return;
-            }
-            if (potionHitRes.getPermissions().has(Flags.potionthrowing, FlagCombo.OnlyFalse)
-                    || shooterRes.getPermissions().has(Flags.potionthrowing, FlagCombo.OnlyFalse)) {
-                event.setCancelled(true);
-            }
+        } else if (shooter instanceof Entity) {
+            shooterLoc = ((Entity) shooter).getLocation();
+
+        }
+        ClaimedResidence shooterRes = ClaimedResidence.getByLoc(shooterLoc);
+        // Non-player shooter and hit location in same Residence or same owner; skip check
+        if (potionHitRes == shooterRes || (shooterRes != null && shooterRes.isOwner(potionHitRes.getOwner()))) {
+            return;
+        }
+        // Prevent effect clouds from being spawned into a Residence from outside
+        if (potionHitRes.getPermissions().has(Flags.build, FlagCombo.OnlyFalse)) {
+            event.setCancelled(true);
         }
     }
 
@@ -163,15 +171,28 @@ public class ResidenceListener1_09 implements Listener {
         if (plugin.isDisabledWorldListener(cloud)) {
             return;
         }
-        ProjectileSource shooter = cloud.getSource();
-        if (shooter instanceof BlockProjectileSource) {
-            Location sourceLoc = ((BlockProjectileSource) shooter).getBlock().getLocation();
-            ClaimedResidence shooterRes = ClaimedResidence.getByLoc(sourceLoc);
+        ProjectileSource attacker = cloud.getSource();
+        Location attackerLoc = null;
+
+        if (attacker instanceof BlockProjectileSource) {
+            attackerLoc = ((BlockProjectileSource) attacker).getBlock().getLocation();
+
+        } else if (attacker instanceof Entity && !(attacker instanceof Player)) {
+            attackerLoc = ((Entity) attacker).getLocation();
+
+        }
+        // Now handling effect clouds spawned by dispensers or ominous item spawner
+        if (attackerLoc != null) {
+            ClaimedResidence attackerRes = ClaimedResidence.getByLoc(attackerLoc);
 
             event.getAffectedEntities().removeIf(victim -> {
                 ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());
-                // Allow clouds generated by blocks within the Residence to bypass the check
-                if (victimRes == null || victimRes == shooterRes) {
+                // There is no Residence at the hit location; skip the check
+                if (victimRes == null) {
+                    return false;
+                }
+                // Non-player shooter and hit location in same Residence or same owner; skip check
+                if (victimRes == attackerRes || (attackerRes != null && attackerRes.isOwner(victimRes.getOwner()))) {
                     return false;
                 }
                 // Prevent clouds generated by external blocks from taking effect inside the Residence
@@ -179,149 +200,196 @@ public class ResidenceListener1_09 implements Listener {
             });
             return;
         }
+        // Now handling AreaEffectClouds spawned by player throws or unknown sources
         boolean isHealingCloud = false;
         boolean isDamageCloud = false;
         boolean isHarmfulCloud = false;
 
         PotionType potionType = null;
+        // Start - Get AreaEffectCloud effect type
         if (Version.isCurrentEqualOrHigher(Version.v1_20_2)) {
             potionType = cloud.getBasePotionType();
+            if (potionType == null) {
+                return;
+            }
+            for (PotionEffect effect : potionType.getPotionEffects()) {
+                PotionEffectType type = effect.getType();
+                if (Utils.isPotionEffectType(type, "Healing")) {
+                    isHealingCloud = true;
+                    break;
+
+                } else if (Utils.isPotionEffectType(type, "Damage")) {
+                    isDamageCloud = true;
+                    break;
+
+                } else if (Utils.isPotionEffectType(type, "Harmful")) {
+                    isHarmfulCloud = true;
+                    break;
+
+                }
+            }
         } else {
             org.bukkit.potion.PotionData data = cloud.getBasePotionData();
             if (data != null) {
                 potionType = data.getType();
             }
-        }
-        if (potionType == null) {
-            return;
-        }
-        for (PotionEffect effect : potionType.getPotionEffects()) {
-            PotionEffectType type = effect.getType();
-
+            if (potionType == null) {
+                return;
+            }
+            PotionEffectType type = potionType.getEffectType();
             if (Utils.isPotionEffectType(type, "Healing")) {
                 isHealingCloud = true;
-                break;
-            }
-            if (Utils.isPotionEffectType(type, "Damage")) {
+
+            } else if (Utils.isPotionEffectType(type, "Damage")) {
                 isDamageCloud = true;
-                break;
-            }
-            if (Utils.isPotionEffectType(type, "Harmful")) {
+
+            } else if (Utils.isPotionEffectType(type, "Harmful")) {
                 isHarmfulCloud = true;
-                break;
+
             }
         }
-
+        // End - Get AreaEffectCloud effect type
         if (isHealingCloud && Flags.mobkilling.isGlobalyEnabled()) {
-            handleHealingCloud(event.getAffectedEntities(), shooter);
+            boolean isPlayerAttacker = attacker instanceof Player;
+            event.getAffectedEntities().removeIf(victim -> shouldDenyHealingEffect(victim, attacker, isPlayerAttacker));
 
         } else if (isDamageCloud) {
-            handleDamageCloud(event.getAffectedEntities(), shooter);
+            boolean isPlayerAttacker = attacker instanceof Player;
+            ClaimedResidence attackerRes = isPlayerAttacker
+                    ? ClaimedResidence.getByLoc(((Player) attacker).getLocation())
+                    : null;
+            event.getAffectedEntities().removeIf(victim -> shouldDenyDamageEffect(victim, attacker, attackerRes, isPlayerAttacker));
 
         } else if (isHarmfulCloud) {
-            handleHarmfulCloud(event.getAffectedEntities(), shooter);
+            boolean isPlayerAttacker = attacker instanceof Player;
+            ClaimedResidence attackerRes = isPlayerAttacker
+                    ? ClaimedResidence.getByLoc(((Player) attacker).getLocation())
+                    : null;
+            event.getAffectedEntities().removeIf(victim -> shouldDenyHarmfulEffect(victim, attacker, attackerRes, isPlayerAttacker));
 
         }
     }
 
-    private void handleHealingCloud(List<LivingEntity> affectedEntities, ProjectileSource shooter) {
+    public static boolean shouldDenyHealingEffect(LivingEntity entity, ProjectileSource attacker, boolean isPlayerAttacker) {
         // healing potions damaging undead mobs
-        if (shooter instanceof Player) {
-            Player player = (Player) shooter;
-            affectedEntities.removeIf(victim -> {
-                if (Utils.isUndead(victim)) {
-                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.mobkilling, null);
-                }
-                return false;
-            });
+        if (isPlayerAttacker) {
+            if (Utils.isUndead(entity)) {
+                return FlagPermissions.shouldDenyAndNotify((Player) attacker, entity, Flags.mobkilling, null);
+            }
         } else {
-            affectedEntities.removeIf(victim -> {
-                if (Utils.isUndead(victim)) {
-                    return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
-                }
-                return false;
-            });
+            if (Utils.isUndead(entity)) {
+                return FlagPermissions.has(entity.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
+            }
         }
+        return false;
     }
 
-    private void handleDamageCloud(List<LivingEntity> affectedEntities, ProjectileSource shooter) {
-        if (shooter instanceof Player) {
-            Player player = (Player) shooter;
-            affectedEntities.removeIf(victim -> {
-                if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
-                    if (FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
-                        lm.Flag_Deny.sendMessage(player, Flags.pvp);
-                        return true;
-                    }
-
-                } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
-                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.animalkilling, null);
-
-                } else if (Utils.isUndead(victim)) {
-                    // Damage cloud is not harmful to undead
-                    return false;
-
-                } else if (Utils.isMonster(victim)) {
-                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.mobkilling, null);
-
+    public static boolean shouldDenyDamageEffect(LivingEntity victim, ProjectileSource attacker, ClaimedResidence attackerRes, boolean isPlayerAttacker) {
+        if (isPlayerAttacker) {
+            Player player = (Player) attacker;
+            if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                FlagPermissions attackerPerms = (attackerRes != null)
+                        ? attackerRes.getPermissions()
+                        : Residence.getInstance().getWorldFlags().getPerms(player.getWorld());
+                if (attackerPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
+                    lm.Flag_Deny.sendMessage(player, Flags.pvp);
+                    return true;
                 }
+                ClaimedResidence victimRes = ClaimedResidence.getByLoc(player.getLocation());
+                FlagPermissions victimPerms = attackerRes != null
+                        ? victimRes.getPermissions()
+                        : Residence.getInstance().getWorldFlags().getPerms(victim.getWorld());
+                if (victimPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
+                    lm.Flag_Deny.sendMessage(player, Flags.pvp);
+                    return true;
+                }
+                if (attackerRes != null && attackerRes == victimRes
+                        && attackerPerms.playerHas(player, Flags.friendlyfire, FlagCombo.OnlyFalse)
+                        && attackerPerms.playerHas((Player) victim, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
+                    CMIActionBar.send(player, Residence.getInstance().getLM().getMessage(lm.General_NoFriendlyFire));
+                    return true;
+                }
+            } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+                return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.animalkilling, null);
+
+            } else if (Utils.isUndead(victim)) {
+                // Damage cloud is not harmful to undead
                 return false;
-            });
+
+            } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
+                return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.mobkilling, null);
+
+            }
         } else {
-            affectedEntities.removeIf(victim -> {
-                if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
-                    return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
-
-                } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
-                    return FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse);
-
-                } else if (Utils.isUndead(victim)) {
-                    // Damage cloud is not harmful to undead
+            if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                if (attacker instanceof Witch) {
                     return false;
-
-                } else if (Utils.isMonster(victim)) {
-                    return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
-
                 }
+                return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
+
+            } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+                return FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse);
+
+            } else if (Utils.isUndead(victim)) {
+                // Damage cloud is not harmful to undead
                 return false;
-            });
+
+            } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
+                return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
+
+            }
         }
+        return false;
     }
 
-    private void handleHarmfulCloud(List<LivingEntity> affectedEntities, ProjectileSource shooter) {
-        if (shooter instanceof Player) {
-            Player player = (Player) shooter;
-            affectedEntities.removeIf(victim -> {
-                if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
-                    if (FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
-                        lm.Flag_Deny.sendMessage(player, Flags.pvp);
-                        return true;
-                    }
-
-                } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
-                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.animalkilling, null);
-
-                } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
-                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.mobkilling, null);
-
+    public static boolean shouldDenyHarmfulEffect(LivingEntity victim, ProjectileSource attacker, ClaimedResidence attackerRes, boolean isPlayerAttacker) {
+        if (isPlayerAttacker) {
+            Player player = (Player) attacker;
+            if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                FlagPermissions attackerPerms = (attackerRes != null)
+                        ? attackerRes.getPermissions()
+                        : Residence.getInstance().getWorldFlags().getPerms(player.getWorld());
+                if (attackerPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
+                    lm.Flag_Deny.sendMessage(player, Flags.pvp);
+                    return true;
                 }
-                return false;
-            });
+                ClaimedResidence victimRes = ClaimedResidence.getByLoc(player.getLocation());
+                FlagPermissions victimPerms = attackerRes != null
+                        ? victimRes.getPermissions()
+                        : Residence.getInstance().getWorldFlags().getPerms(victim.getWorld());
+                if (victimPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
+                    lm.Flag_Deny.sendMessage(player, Flags.pvp);
+                    return true;
+                }
+                if (attackerRes != null && attackerRes == victimRes
+                        && attackerPerms.playerHas(player, Flags.friendlyfire, FlagCombo.OnlyFalse)
+                        && attackerPerms.playerHas((Player) victim, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
+                    CMIActionBar.send(player, Residence.getInstance().getLM().getMessage(lm.General_NoFriendlyFire));
+                    return true;
+                }
+            } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+                return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.animalkilling, null);
+
+            } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
+                return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.mobkilling, null);
+
+            }
         } else {
-            affectedEntities.removeIf(victim -> {
-                if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
-                    return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
-
-                } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
-                    return FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse);
-
-                } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
-                    return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
-
+            if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                if (attacker instanceof Witch) {
+                    return false;
                 }
-                return false;
-            });
+                return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
+
+            } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+                return FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse);
+
+            } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
+                return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
+
+            }
         }
+        return false;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
