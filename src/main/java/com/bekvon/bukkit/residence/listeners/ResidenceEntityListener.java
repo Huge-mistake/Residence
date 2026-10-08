@@ -54,7 +54,7 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
@@ -1224,13 +1224,16 @@ public class ResidenceEntityListener implements Listener {
         boolean isDamageEffect = false;
         boolean isHarmfulEffect = false;
 
-        ItemStack potionItem = potion.getItem();
+        ItemMeta itemMeta = potion.getItem().getItemMeta();
+        if (!(itemMeta instanceof PotionMeta)) {
+            return;
+        }
+        PotionMeta potionMeta = (PotionMeta) itemMeta;
         PotionType potionType = null;
         // Start - Get the potion effect type
         if (Version.isCurrentEqualOrHigher(Version.v1_20_2)) {
-            if (potionItem instanceof PotionMeta) {
-                potionType = ((PotionMeta) potionItem).getBasePotionType();
-            }
+            potionType = potionMeta.getBasePotionType();
+
             if (potionType == null) {
                 return;
             }
@@ -1250,11 +1253,9 @@ public class ResidenceEntityListener implements Listener {
                 }
             }
         } else {
-            if (potionItem instanceof PotionMeta) {
-                org.bukkit.potion.PotionData data = ((PotionMeta) potionItem).getBasePotionData();
-                if (data != null) {
-                    potionType = data.getType();
-                }
+            org.bukkit.potion.PotionData data = potionMeta.getBasePotionData();
+            if (data != null) {
+                potionType = data.getType();
             }
             if (potionType == null) {
                 org.bukkit.Bukkit.getLogger().info("potionType == null");
