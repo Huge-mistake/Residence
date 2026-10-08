@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.DragonFireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ThrownPotion;
@@ -330,7 +331,7 @@ public class ResidenceListener1_09 implements Listener {
             }
         } else {
             if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
-                if (attacker instanceof Witch) {
+                if (attacker instanceof Witch || attacker instanceof DragonFireball) {
                     return false;
                 }
                 return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
