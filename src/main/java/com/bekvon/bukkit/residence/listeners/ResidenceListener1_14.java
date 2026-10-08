@@ -9,6 +9,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -39,6 +40,7 @@ public class ResidenceListener1_14 implements Listener {
 
     private static final Map<String, Tag<Material>> BLOCK_TAG_CACHE = new ConcurrentHashMap<>();
     private static final Map<String, Tag<Material>> ITEM_TAG_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Tag<EntityType>> ENTITY_TAG_CACHE = new ConcurrentHashMap<>();
 
     // https://minecraft.wiki/w/Block_tag_(Java_Edition)
     public static boolean isBlockTag(Material block, String tagName) {
@@ -56,6 +58,15 @@ public class ResidenceListener1_14 implements Listener {
         }
         Tag<Material> tag = ITEM_TAG_CACHE.computeIfAbsent(tagName, key -> Bukkit.getTag(Tag.REGISTRY_ITEMS, NamespacedKey.minecraft(key), Material.class));
         return tag != null && tag.isTagged(item);
+    }
+
+    // https://minecraft.wiki/w/Entity_type_tag_(Java_Edition)
+    public static boolean isEntityTag(EntityType type, String tagName) {
+        if (type == null || tagName == null) {
+            return false;
+        }
+        Tag<EntityType> tag = ENTITY_TAG_CACHE.computeIfAbsent(tagName, key -> Bukkit.getTag(Tag.REGISTRY_ENTITY_TYPES, NamespacedKey.minecraft(key), EntityType.class));
+        return tag != null && tag.isTagged(type);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

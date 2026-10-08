@@ -1,12 +1,13 @@
 package com.bekvon.bukkit.residence.listeners;
 
-import java.lang.reflect.Method;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
@@ -20,6 +21,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.projectiles.ProjectileSource;
@@ -32,6 +34,7 @@ import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Teleporting;
+import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.Items.CMIMaterial;
 import net.Zrips.CMILib.Version.Version;
@@ -110,34 +113,18 @@ public class ResidenceListener1_09 implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onSpawnEffectCloud(LingeringPotionSplashEvent event) {
+    public void onLingeringPotionSplash(LingeringPotionSplashEvent event) {
 
         ThrownPotion potion = event.getEntity();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.pvp, potion)) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.potionthrowing, potion)) {
             return;
         }
-
-        boolean harmfull = false;
-        mein: for (PotionEffect one : potion.getEffects()) {
-            for (String oneHarm : plugin.getConfigManager().getNegativePotionEffects()) {
-                if (oneHarm.equalsIgnoreCase(one.getType().getName())) {
-                    harmfull = true;
-                    break mein;
-                }
-            }
-        }
-        if (!harmfull)
-            return;
-
         ProjectileSource shooter = potion.getShooter();
-        // If PvP is disabled at either the shooter's position or the potion hit location,
-        // cancel the effect cloud spawn.
+
         if (shooter instanceof Player) {
             Player shooterPlayer = (Player) shooter;
-            if (FlagPermissions.has(shooterPlayer.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)
-                    || FlagPermissions.has(potion.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
-                lm.Flag_Deny.sendMessage(shooterPlayer, Flags.pvp);
+            if (FlagPermissions.shouldDenyAndNotify(shooterPlayer, potion, Flags.potionthrowing, null)) {
                 event.setCancelled(true);
             }
 
@@ -155,90 +142,186 @@ public class ResidenceListener1_09 implements Listener {
             } else if (shooter instanceof BlockProjectileSource) {
                 shooterLoc = ((BlockProjectileSource) shooter).getBlock().getLocation();
             }
+            ClaimedResidence shooterRes = ClaimedResidence.getByLoc(shooterLoc);
             // Skip the check if the shooter and the hit location are in the same Residence
-            if (potionHitRes == ClaimedResidence.getByLoc(shooterLoc)) {
+            if (potionHitRes == shooterRes) {
                 return;
             }
-            if (potionHitRes.getPermissions().has(Flags.pvp, FlagCombo.OnlyFalse)) {
+            if (potionHitRes.getPermissions().has(Flags.potionthrowing, FlagCombo.OnlyFalse)
+                    || shooterRes.getPermissions().has(Flags.potionthrowing, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
             }
         }
     }
 
-    private static Method basePotionData = null;
-    private static Method basePotionType = null;
-
+    @SuppressWarnings("removal")
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerDamagedByEffectCloud(AreaEffectCloudApplyEvent event) {
+    public void onAreaEffectCloudApply(AreaEffectCloudApplyEvent event) {
 
         AreaEffectCloud cloud = event.getEntity();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.pvp, cloud)) {
+        if (plugin.isDisabledWorldListener(cloud)) {
             return;
         }
-        boolean harmfull = false;
-
-        // Temporally fail safe to avoid console spam for getting base potion data until
-        // fix roles out
-        try {
-
-            if (Version.isCurrentEqualOrHigher(Version.v1_20_2)) {
-                PotionType type = cloud.getBasePotionType();
-                if (type == null) {
-                    return;
-                }
-                mein: for (PotionEffect one : type.getPotionEffects()) {
-                    for (String oneHarm : plugin.getConfigManager().getNegativeLingeringPotionEffects()) {
-                        if (oneHarm.equalsIgnoreCase(one.getType().getName())) {
-                            harmfull = true;
-                            break mein;
-                        }
-                    }
-                }
-
-            } else {
-                try {
-
-                    if (basePotionData == null) {
-                        basePotionData = cloud.getClass().getMethod("getBasePotionData");
-                        Object data = basePotionData.invoke(cloud);
-                        basePotionType = data.getClass().getMethod("getType");
-                    }
-                    Object data = basePotionData.invoke(cloud);
-                    org.bukkit.potion.PotionType type = (org.bukkit.potion.PotionType) basePotionType.invoke(data);
-                    for (String oneHarm : plugin.getConfigManager().getNegativeLingeringPotionEffects()) {
-                        if (type.name().equalsIgnoreCase(oneHarm)) {
-                            harmfull = true;
-                            break;
-                        }
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (Exception e) {
-            return;
-        }
-
-        if (!harmfull)
-            return;
-
         ProjectileSource shooter = cloud.getSource();
-        boolean shouldDenyEffect;
+        if (shooter instanceof BlockProjectileSource) {
+            Location sourceLoc = ((BlockProjectileSource) shooter).getBlock().getLocation();
+            ClaimedResidence shooterRes = ClaimedResidence.getByLoc(sourceLoc);
 
-        if (shooter instanceof Player) {
-            Player shooterPlayer = (Player) shooter;
-            shouldDenyEffect = FlagPermissions.has(shooterPlayer.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
-
-        } else {
-            shouldDenyEffect = false;
+            event.getAffectedEntities().removeIf(victim -> {
+                ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());
+                // Allow clouds generated by blocks within the Residence to bypass the check
+                if (victimRes == null || victimRes == shooterRes) {
+                    return false;
+                }
+                // Prevent clouds generated by external blocks from taking effect inside the Residence
+                return victimRes.getPermissions().has(Flags.build, FlagCombo.OnlyFalse);
+            });
+            return;
         }
-        event.getAffectedEntities().removeIf(victim -> {
-            if (!(victim instanceof Player)) {
-                return false;
+        boolean isHealingCloud = false;
+        boolean isDamageCloud = false;
+        boolean isHarmfulCloud = false;
+
+        PotionType potionType = null;
+        if (Version.isCurrentEqualOrHigher(Version.v1_20_2)) {
+            potionType = cloud.getBasePotionType();
+        } else {
+            org.bukkit.potion.PotionData data = cloud.getBasePotionData();
+            if (data != null) {
+                potionType = data.getType();
             }
-            return shouldDenyEffect || FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
-        });
+        }
+        if (potionType == null) {
+            return;
+        }
+        for (PotionEffect effect : potionType.getPotionEffects()) {
+            PotionEffectType type = effect.getType();
+
+            if (Utils.isPotionEffectType(type, "Healing")) {
+                isHealingCloud = true;
+                break;
+            }
+            if (Utils.isPotionEffectType(type, "Damage")) {
+                isDamageCloud = true;
+                break;
+            }
+            if (Utils.isPotionEffectType(type, "Harmful")) {
+                isHarmfulCloud = true;
+                break;
+            }
+        }
+
+        if (isHealingCloud && Flags.mobkilling.isGlobalyEnabled()) {
+            handleHealingCloud(event.getAffectedEntities(), shooter);
+
+        } else if (isDamageCloud) {
+            handleDamageCloud(event.getAffectedEntities(), shooter);
+
+        } else if (isHarmfulCloud) {
+            handleHarmfulCloud(event.getAffectedEntities(), shooter);
+
+        }
+    }
+
+    private void handleHealingCloud(List<LivingEntity> affectedEntities, ProjectileSource shooter) {
+        // healing potions damaging undead mobs
+        if (shooter instanceof Player) {
+            Player player = (Player) shooter;
+            affectedEntities.removeIf(victim -> {
+                if (Utils.isUndead(victim)) {
+                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.mobkilling, null);
+                }
+                return false;
+            });
+        } else {
+            affectedEntities.removeIf(victim -> {
+                if (Utils.isUndead(victim)) {
+                    return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
+                }
+                return false;
+            });
+        }
+    }
+
+    private void handleDamageCloud(List<LivingEntity> affectedEntities, ProjectileSource shooter) {
+        if (shooter instanceof Player) {
+            Player player = (Player) shooter;
+            affectedEntities.removeIf(victim -> {
+                if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                    if (FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+                        lm.Flag_Deny.sendMessage(player, Flags.pvp);
+                        return true;
+                    }
+
+                } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.animalkilling, null);
+
+                } else if (Utils.isUndead(victim)) {
+                    // Damage cloud is not harmful to undead
+                    return false;
+
+                } else if (Utils.isMonster(victim)) {
+                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.mobkilling, null);
+
+                }
+                return false;
+            });
+        } else {
+            affectedEntities.removeIf(victim -> {
+                if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                    return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
+
+                } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+                    return FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse);
+
+                } else if (Utils.isUndead(victim)) {
+                    // Damage cloud is not harmful to undead
+                    return false;
+
+                } else if (Utils.isMonster(victim)) {
+                    return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
+
+                }
+                return false;
+            });
+        }
+    }
+
+    private void handleHarmfulCloud(List<LivingEntity> affectedEntities, ProjectileSource shooter) {
+        if (shooter instanceof Player) {
+            Player player = (Player) shooter;
+            affectedEntities.removeIf(victim -> {
+                if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                    if (FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+                        lm.Flag_Deny.sendMessage(player, Flags.pvp);
+                        return true;
+                    }
+
+                } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.animalkilling, null);
+
+                } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
+                    return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.mobkilling, null);
+
+                }
+                return false;
+            });
+        } else {
+            affectedEntities.removeIf(victim -> {
+                if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                    return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse);
+
+                } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+                    return FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse);
+
+                } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
+                    return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse);
+
+                }
+                return false;
+            });
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
