@@ -252,6 +252,7 @@ public class ResidenceListener1_09 implements Listener {
         }
         // End - Get AreaEffectCloud effect type
         if (isHealingCloud && Flags.mobkilling.isGlobalyEnabled()) {
+            // Healing effect damages undead mobs
             boolean isPlayerAttacker = attacker instanceof Player;
             event.getAffectedEntities().removeIf(victim -> PotionUtils.shouldDenyHealingEffect(victim, attacker, isPlayerAttacker));
 

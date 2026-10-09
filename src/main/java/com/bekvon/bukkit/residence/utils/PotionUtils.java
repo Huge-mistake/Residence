@@ -4,8 +4,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.bukkit.entity.DragonFireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Witch;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
@@ -103,7 +105,7 @@ public class PotionUtils {
     }
 
     public static boolean shouldDenyHealingEffect(LivingEntity victim, ProjectileSource attacker, boolean isPlayerAttacker) {
-        // healing potions damaging undead mobs
+        // Healing effect damages undead mobs
         if (isPlayerAttacker) {
             if (Utils.isUndead(victim)) {
                 return FlagPermissions.shouldDenyAndNotify((Player) attacker, victim, Flags.mobkilling, null);
@@ -117,7 +119,7 @@ public class PotionUtils {
     }
 
     public static boolean shouldDenyDamageEffect(LivingEntity victim, ProjectileSource attacker, ClaimedResidence attackerRes, boolean isPlayerAttacker) {
-        // Damage cloud is not harmful to undead
+        // Damage effect heals undead instead of harming them
         if (Utils.isUndead(victim)) {
             return false;
         }
@@ -163,7 +165,13 @@ public class PotionUtils {
 
             }
         } else {
-            if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+            if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                if (attacker instanceof Witch || attacker instanceof DragonFireball) {
+                    return false;
+                }
+                return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagPermissions.FlagCombo.OnlyFalse);
+
+            } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
                 return FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagPermissions.FlagCombo.OnlyFalse);
 
             } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {

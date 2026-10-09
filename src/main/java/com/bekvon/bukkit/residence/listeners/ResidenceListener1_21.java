@@ -160,30 +160,25 @@ public class ResidenceListener1_21 implements Listener {
         ent.removePotionEffect(PotionEffectType.WEAVING);
     }
 
-    public static void handleInteractCopperGolem(PlayerInteractEntityEvent event, Entity entity) {
+    public static boolean shouldDenyInteractCopperGolem(Player player, Entity entity, ItemStack itemStack) {
 
         if (Flags.container.isGlobalyEnabled()) {
             EntityEquipment golemInv = ((LivingEntity) entity).getEquipment();
             // Right-click to remove items from holding copper_golem
             if (golemInv != null && golemInv.getItemInMainHand().getType() != Material.AIR) {
-                if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.container, null)) {
-                    event.setCancelled(true);
-                }
-                return;
+                return FlagPermissions.shouldDenyAndNotify(player, entity, Flags.container, null);
             }
         }
         // Now Copper_golem has no item in hand
-        if (!Flags.copper.isGlobalyEnabled()) {
-            return;
+        if (!Flags.copper.isGlobalyEnabled() || itemStack == null) {
+            return false;
         }
-        Material held = ResidenceListener1_09.getHeldMaterial(event);
+        Material held = itemStack.getType();
         // Honeycomb and Axes can change CopperGolem
         if (held != Material.HONEYCOMB && !isItemTag(held, "axes")) {
-            return;
+            return false;
         }
-        if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.copper, Flags.animalkilling)) {
-            event.setCancelled(true);
-        }
+        return FlagPermissions.shouldDenyAndNotify(player, entity, Flags.copper, Flags.animalkilling);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

@@ -1383,6 +1383,12 @@ public class ResidencePlayerListener implements Listener {
             }
             held = CMIMaterial.get(item);
         }
+        if (Utils.isCopperGolem(entity)) {
+            if (ResidenceListener1_21.shouldDenyInteractCopperGolem(player, entity, item)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
         if (Flags.nametag.isGlobalyEnabled() && entity instanceof LivingEntity && held == CMIMaterial.NAME_TAG) {
             mainFlag = Flags.nametag;
             if (Utils.isAnimal(entity)) {
@@ -1407,10 +1413,6 @@ public class ResidencePlayerListener implements Listener {
 
         } else if (Flags.trade.isGlobalyEnabled() && Utils.isVillagerOrTrader(entity)) {
             mainFlag = Flags.trade;
-
-        } else if (Utils.isCopperGolem(entity)) {
-            ResidenceListener1_21.handleInteractCopperGolem(event, entity);
-            return;
 
         }
         if (mainFlag == null) {
