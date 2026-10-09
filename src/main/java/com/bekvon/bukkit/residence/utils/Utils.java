@@ -17,6 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Bat;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Monster;
@@ -24,7 +25,6 @@ import org.bukkit.entity.NPC;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.SkeletonHorse;
 import org.bukkit.entity.Snowman;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Vehicle;
@@ -432,13 +432,17 @@ public class Utils {
     }
 
     public static boolean isUndead(Entity entity) {
+        if (entity == null) {
+            return false;
+        }
+        EntityType type = entity.getType();
         if (Version.isCurrentEqualOrHigher(Version.v1_14_0)) {
-            return ResidenceListener1_14.isEntityTag(entity.getType(), "undead");
+            return ResidenceListener1_14.isEntityTag(type, "undead");
         }
         return entity instanceof Zombie
                 || entity instanceof Skeleton
-                || entity instanceof SkeletonHorse
                 || entity instanceof ZombieHorse
-                || entity instanceof Wither;
+                || entity instanceof Wither
+                || CMIEntityType.get(type) == CMIEntityType.SKELETON_HORSE;
     }
 }
