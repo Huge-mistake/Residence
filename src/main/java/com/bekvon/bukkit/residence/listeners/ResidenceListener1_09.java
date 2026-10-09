@@ -184,6 +184,9 @@ public class ResidenceListener1_09 implements Listener {
 
         // Now handling effect clouds spawned by ominous item spawner
         if (attackerLoc != null) {
+            if (!Flags.build.isGlobalyEnabled()) {
+                return;
+            }
             ClaimedResidence attackerRes = ClaimedResidence.getByLoc(attackerLoc);
 
             event.getAffectedEntities().removeIf(victim -> {
