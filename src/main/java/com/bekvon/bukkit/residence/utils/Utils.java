@@ -33,7 +33,6 @@ import org.bukkit.entity.WaterMob;
 import org.bukkit.entity.Wither;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.entity.Zombie;
-import org.bukkit.entity.ZombieHorse;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -439,10 +438,19 @@ public class Utils {
         if (Version.isCurrentEqualOrHigher(Version.v1_14_0)) {
             return ResidenceListener1_14.isEntityTag(type, "undead");
         }
-        return entity instanceof Zombie
-                || entity instanceof Skeleton
-                || entity instanceof ZombieHorse
-                || entity instanceof Wither
-                || CMIEntityType.get(type) == CMIEntityType.SKELETON_HORSE;
+        if (entity instanceof Zombie || entity instanceof Skeleton || entity instanceof Wither) {
+            return true;
+        }
+        CMIEntityType cType = CMIEntityType.get(type);
+        if (cType == null) {
+            return false;
+        }
+        switch (cType) {
+        case SKELETON_HORSE:
+        case ZOMBIE_HORSE:
+            return true;
+        default:
+            return false;
+        }
     }
 }
