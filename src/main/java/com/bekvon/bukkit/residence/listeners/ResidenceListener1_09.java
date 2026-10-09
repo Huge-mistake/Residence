@@ -109,9 +109,15 @@ public class ResidenceListener1_09 implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onLingeringPotionSplash(LingeringPotionSplashEvent event) {
 
-        LingeringPotion potion = (LingeringPotion) event.getEntity();
+        Entity entity = event.getEntity();
 
-        if (plugin.isDisabledWorldListener(potion)) {
+        if (plugin.isDisabledWorldListener(entity)) {
+            return;
+        }
+        LingeringPotion potion;
+        if (entity instanceof LingeringPotion) {
+            potion = (LingeringPotion) entity;
+        } else {
             return;
         }
         ProjectileSource shooter = potion.getShooter();
