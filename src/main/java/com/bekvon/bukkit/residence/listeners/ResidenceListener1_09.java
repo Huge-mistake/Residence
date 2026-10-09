@@ -115,13 +115,11 @@ public class ResidenceListener1_09 implements Listener {
             return;
         }
         ProjectileSource shooter = null;
-        // getEntity(): modern ThrownPotion, legacy LingeringPotion
-        if (potion instanceof ThrownPotion) {
-            shooter = ((ThrownPotion) potion).getShooter();
-        } else if (potion instanceof LingeringPotion) {
+        // Legacy version compatibility
+        // getEntity(): (1.14+ -> ThrownPotion), (1.9 ~ 1.13.2 -> LingeringPotion)
+        if (potion instanceof LingeringPotion) {
             shooter = ((LingeringPotion) potion).getShooter();
         }
-
         if (shooter instanceof Player) {
             if (!Flags.potionthrowing.isGlobalyEnabled()) {
                 return;
@@ -132,11 +130,11 @@ public class ResidenceListener1_09 implements Listener {
             }
             return;
         }
+        // Now handling LingeringPotion thrown by non-player entities
+        // (e.g., dispensers, ominous item spawner)
         if (!Flags.build.isGlobalyEnabled()) {
             return;
         }
-        // Now handling LingeringPotion thrown by non-player entities
-        // (e.g., dispensers, ominous item spawner)
         ClaimedResidence potionHitRes = ClaimedResidence.getByLoc(potion.getLocation());
         // There is no Residence at the hit location; skip the check
         if (potionHitRes == null) {
@@ -174,17 +172,16 @@ public class ResidenceListener1_09 implements Listener {
         ProjectileSource attacker = cloud.getSource();
         Location attackerLoc = null;
 
-        // Temporarily comment out this section. It exempts AreaEffectClouds spawned by dispensers
-        // inside a Residence from the effect application check.
-        // Reason: SPIGOT-6340 (https://hub.spigotmc.org/jira/browse/SPIGOT-6340)
+        if (Version.isCurrentEqualOrHigher(Version.v1_21_0) && attacker instanceof org.bukkit.entity.OminousItemSpawner) {
+            attackerLoc = ((Entity) attacker).getLocation();
 
-/*        if (attacker instanceof BlockProjectileSource) {
+        }/* else if (attacker instanceof BlockProjectileSource) {
             attackerLoc = ((BlockProjectileSource) attacker).getBlock().getLocation();
+            // Temporarily comment out this section. It exempts AreaEffectClouds spawned by dispensers
+            // inside a Residence from the effect application check.
+            // Reason: SPIGOT-6340 (https://hub.spigotmc.org/jira/browse/SPIGOT-6340)
+        }*/
 
-        } else */if (Version.isCurrentEqualOrHigher(Version.v1_21_0) && attacker instanceof org.bukkit.entity.OminousItemSpawner) {
-            attackerLoc = ((org.bukkit.entity.OminousItemSpawner) attacker).getLocation();
-
-        }
         // Now handling effect clouds spawned by ominous item spawner
         if (attackerLoc != null) {
             ClaimedResidence attackerRes = ClaimedResidence.getByLoc(attackerLoc);
