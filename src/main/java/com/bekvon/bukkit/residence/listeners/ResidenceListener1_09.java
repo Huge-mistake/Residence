@@ -115,8 +115,9 @@ public class ResidenceListener1_09 implements Listener {
             return;
         }
         ProjectileSource shooter = null;
-        // Legacy version compatibility
-        // getEntity(): (1.14+ -> ThrownPotion), (1.9 ~ 1.13.2 -> LingeringPotion)
+        // Legacy version compatibility:
+        // getEntity() signature: 1.14+ -> ThrownPotion, 1.9-1.13.2 -> LingeringPotion.
+        // Runtime entity: always LingeringPotion because this is LingeringPotionSplashEvent.
         if (potion instanceof LingeringPotion) {
             shooter = ((LingeringPotion) potion).getShooter();
         }
