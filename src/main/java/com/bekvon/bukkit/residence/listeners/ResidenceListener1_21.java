@@ -452,7 +452,7 @@ public class ResidenceListener1_21 implements Listener {
             FlagPermissions playerPerms = FlagPermissions.getPerms(triggerLoc, player);
             // Because Flags.explode is not FlagMode.Both
             boolean result = (subFlag == Flags.explode)
-                    ? FlagPermissions.has(triggerLoc, subFlag, true)
+                    ? playerPerms.has(subFlag, true)
                     : playerPerms.playerHas(player, subFlag, true);
             if (!playerPerms.playerHas(player, mainFlag, result)) {
                 lm.Flag_Deny.sendMessage(player, mainFlag);
