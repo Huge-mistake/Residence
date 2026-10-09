@@ -25,48 +25,41 @@ public class PotionUtils {
     public PotionUtils() {
     }
 
-    // Start - 1.7.10 ~ 1.20.4
-    private static List<String> getLegacyBeneficialList() {
-        return Arrays.asList("ABSORPTION", "CONDUIT_POWER", "DAMAGE_RESISTANCE", "DOLPHINS_GRACE",
-                "FAST_DIGGING", "FIRE_RESISTANCE", "HEAL", "HEALTH_BOOST", "HERO_OF_THE_VILLAGE",
-                "INCREASE_DAMAGE", "INVISIBILITY", "JUMP", "LUCK", "NIGHT_VISION", "REGENERATION",
-                "SATURATION", "SLOW_FALLING", "SPEED", "WATER_BREATHING");
-    }
+    private static final List<String> LEGACY_BENEFICIAL = Collections.unmodifiableList(Arrays.asList(
+            "ABSORPTION", "CONDUIT_POWER", "DAMAGE_RESISTANCE", "DOLPHINS_GRACE",
+            "FAST_DIGGING", "FIRE_RESISTANCE", "HEAL", "HEALTH_BOOST", "HERO_OF_THE_VILLAGE",
+            "INCREASE_DAMAGE", "INVISIBILITY", "JUMP", "LUCK", "NIGHT_VISION", "REGENERATION",
+            "SATURATION", "SLOW_FALLING", "SPEED", "WATER_BREATHING"
+    ));
 
-    private static List<String> getLegacyHarmfulList() {
-        return Arrays.asList("BAD_OMEN", "BLINDNESS", "CONFUSION", "DARKNESS", "HARM", "HUNGER",
-                "LEVITATION", "POISON", "SLOW", "SLOW_DIGGING", "UNLUCK", "WEAKNESS", "WITHER");
-    }
+    private static final List<String> LEGACY_HARMFUL = Collections.unmodifiableList(Arrays.asList(
+            "BAD_OMEN", "BLINDNESS", "CONFUSION", "DARKNESS", "HARM", "HUNGER",
+            "LEVITATION", "POISON", "SLOW", "SLOW_DIGGING", "UNLUCK", "WEAKNESS", "WITHER"
+    ));
 
-    private static List<String> getLegacyNeutralList() {
-        return Collections.singletonList("GLOWING");
+    private static final List<String> LEGACY_NEUTRAL = Collections.singletonList("GLOWING");
+
+    private static boolean containsIgnoreCase(List<String> list, String name) {
+        for (String string : list) {
+            if (string.equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
     }
-    // End - 1.7.10 ~ 1.20.4
 
     private static boolean isLegacyPotionEffectType(PotionEffectType potionEffectType, String effect) {
 
         String name = potionEffectType.getName();
 
         if (effect.equalsIgnoreCase("BENEFICIAL")) {
-            for (String string : getLegacyBeneficialList()){
-                if (string.equalsIgnoreCase(name)) {
-                    return true;
-                }
-            }
+            return containsIgnoreCase(LEGACY_BENEFICIAL, name);
 
         } else if (effect.equalsIgnoreCase("HARMFUL")) {
-            for (String string : getLegacyHarmfulList()){
-                if (string.equalsIgnoreCase(name)) {
-                    return true;
-                }
-            }
+            return containsIgnoreCase(LEGACY_HARMFUL, name);
 
         } else if (effect.equalsIgnoreCase("NEUTRAL")) {
-            for (String string : getLegacyNeutralList()){
-                if (string.equalsIgnoreCase(name)) {
-                    return true;
-                }
-            }
+            return containsIgnoreCase(LEGACY_NEUTRAL, name);
 
         } else if (effect.equalsIgnoreCase("Healing")) {
             return name.equalsIgnoreCase("HEAL");
