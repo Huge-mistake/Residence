@@ -219,15 +219,12 @@ public class ResidenceListener1_09 implements Listener {
                 if (PotionUtils.isPotionEffectType(type, "Healing")) {
                     isHealingCloud = true;
                     break;
-
                 } else if (PotionUtils.isPotionEffectType(type, "Damage")) {
                     isDamageCloud = true;
                     break;
-
                 } else if (PotionUtils.isPotionEffectType(type, "Harmful")) {
                     isHarmfulCloud = true;
                     break;
-
                 }
             }
         } else {

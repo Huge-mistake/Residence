@@ -1170,7 +1170,6 @@ public class ResidenceEntityListener implements Listener {
         event.setCancelled(true);
     }
 
-    @SuppressWarnings("removal")
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPotionSplash(PotionSplashEvent event) {
 
@@ -1262,6 +1261,7 @@ public class ResidenceEntityListener implements Listener {
                     event.setIntensity(victim, 0);
                 }
             }
+
         }
     }
 
@@ -1379,6 +1379,8 @@ public class ResidenceEntityListener implements Listener {
         if (attackerPlayer == null || attackerPlayer.hasMetadata("NPC")) {
             return;
         }
+        // Skip the PvP check when players attack themselves
+        // e.g. Players fire an arrow from above and deliberately step into it to hit themselves
         if (attackerPlayer == victim) {
             return;
         }

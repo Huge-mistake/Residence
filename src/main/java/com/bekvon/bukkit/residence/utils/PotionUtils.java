@@ -4,10 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.bukkit.entity.DragonFireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Witch;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
@@ -119,76 +117,25 @@ public class PotionUtils {
     }
 
     public static boolean shouldDenyDamageEffect(LivingEntity victim, ProjectileSource attacker, ClaimedResidence attackerRes, boolean isPlayerAttacker) {
-        if (isPlayerAttacker) {
-            Player player = (Player) attacker;
-            if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
-                if (attacker == victim) {
-                    return false;
-                }
-                FlagPermissions attackerPerms = (attackerRes != null)
-                        ? attackerRes.getPermissions()
-                        : Residence.getInstance().getWorldFlags().getPerms(player.getWorld());
-                if (attackerPerms.has(Flags.pvp, FlagPermissions.FlagCombo.OnlyFalse)) {
-                    lm.Flag_Deny.sendMessage(player, Flags.pvp);
-                    return true;
-                }
-                ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());
-                FlagPermissions victimPerms = victimRes != null
-                        ? victimRes.getPermissions()
-                        : Residence.getInstance().getWorldFlags().getPerms(victim.getWorld());
-                if (victimPerms.has(Flags.pvp, FlagPermissions.FlagCombo.OnlyFalse)) {
-                    lm.Flag_Deny.sendMessage(player, Flags.pvp);
-                    return true;
-                }
-                if (attackerRes != null && attackerRes == victimRes
-                        && attackerPerms.playerHas(player, Flags.friendlyfire, FlagPermissions.FlagCombo.OnlyFalse)
-                        && attackerPerms.playerHas((Player) victim, Flags.friendlyfire, FlagPermissions.FlagCombo.OnlyFalse)) {
-                    CMIActionBar.send(player, Residence.getInstance().getLM().getMessage(lm.General_NoFriendlyFire));
-                    return true;
-                }
-            } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
-                return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.animalkilling, null);
-
-            } else if (Utils.isUndead(victim)) {
-                // Damage cloud is not harmful to undead
-                return false;
-
-            } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
-                return FlagPermissions.shouldDenyAndNotify(player, victim, Flags.mobkilling, null);
-
-            }
-        } else {
-            if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
-                if (attacker instanceof Witch || attacker instanceof DragonFireball) {
-                    return false;
-                }
-                return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagPermissions.FlagCombo.OnlyFalse);
-
-            } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
-                return FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagPermissions.FlagCombo.OnlyFalse);
-
-            } else if (Utils.isUndead(victim)) {
-                // Damage cloud is not harmful to undead
-                return false;
-
-            } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
-                return FlagPermissions.has(victim.getLocation(), Flags.mobkilling, FlagPermissions.FlagCombo.OnlyFalse);
-
-            }
+        // Damage cloud is not harmful to undead
+        if (Utils.isUndead(victim)) {
+            return false;
         }
-        return false;
+        return shouldDenyHarmfulEffect(victim, attacker, attackerRes, isPlayerAttacker);
     }
 
     public static boolean shouldDenyHarmfulEffect(LivingEntity victim, ProjectileSource attacker, ClaimedResidence attackerRes, boolean isPlayerAttacker) {
         if (isPlayerAttacker) {
             Player player = (Player) attacker;
             if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
+                // Skip the PvP check when players apply negative effects to themselves
                 if (attacker == victim) {
                     return false;
                 }
                 FlagPermissions attackerPerms = (attackerRes != null)
                         ? attackerRes.getPermissions()
                         : Residence.getInstance().getWorldFlags().getPerms(player.getWorld());
+                // if PVP disabled at attacker location, deny the effect
                 if (attackerPerms.has(Flags.pvp, FlagPermissions.FlagCombo.OnlyFalse)) {
                     lm.Flag_Deny.sendMessage(player, Flags.pvp);
                     return true;
@@ -197,6 +144,7 @@ public class PotionUtils {
                 FlagPermissions victimPerms = victimRes != null
                         ? victimRes.getPermissions()
                         : Residence.getInstance().getWorldFlags().getPerms(victim.getWorld());
+                // if PVP disabled at victim location, deny the effect
                 if (victimPerms.has(Flags.pvp, FlagPermissions.FlagCombo.OnlyFalse)) {
                     lm.Flag_Deny.sendMessage(player, Flags.pvp);
                     return true;
@@ -215,13 +163,7 @@ public class PotionUtils {
 
             }
         } else {
-            if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
-                if (attacker instanceof Witch) {
-                    return false;
-                }
-                return FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagPermissions.FlagCombo.OnlyFalse);
-
-            } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
+            if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
                 return FlagPermissions.has(victim.getLocation(), Flags.animalkilling, FlagPermissions.FlagCombo.OnlyFalse);
 
             } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(victim)) {
