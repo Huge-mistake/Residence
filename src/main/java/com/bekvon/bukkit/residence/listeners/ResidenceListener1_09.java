@@ -109,18 +109,18 @@ public class ResidenceListener1_09 implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onLingeringPotionSplash(LingeringPotionSplashEvent event) {
 
-        Entity entity = event.getEntity();
+        Entity potion = event.getEntity();
 
-        if (plugin.isDisabledWorldListener(entity)) {
+        if (plugin.isDisabledWorldListener(potion)) {
             return;
         }
-        LingeringPotion potion;
-        if (entity instanceof LingeringPotion) {
-            potion = (LingeringPotion) entity;
-        } else {
-            return;
+        ProjectileSource shooter = null;
+        // getEntity(): modern ThrownPotion, legacy LingeringPotion
+        if (potion instanceof ThrownPotion) {
+            shooter = ((ThrownPotion) potion).getShooter();
+        } else if (potion instanceof LingeringPotion) {
+            shooter = ((LingeringPotion) potion).getShooter();
         }
-        ProjectileSource shooter = potion.getShooter();
 
         if (shooter instanceof Player) {
             if (!Flags.potionthrowing.isGlobalyEnabled()) {
