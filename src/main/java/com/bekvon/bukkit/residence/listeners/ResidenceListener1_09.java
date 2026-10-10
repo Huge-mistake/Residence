@@ -14,6 +14,7 @@ import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.entity.AreaEffectCloudApplyEvent;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.event.entity.LingeringPotionSplashEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -113,7 +114,7 @@ public class ResidenceListener1_09 implements Listener {
     public void onLingeringPotionSplash(LingeringPotionSplashEvent event) {
         // Legacy version compatibility:
         // getEntity() signature: 1.14+ -> ThrownPotion, 1.9-1.13.2 -> LingeringPotion.
-        Projectile potion = event.getEntity();
+        Projectile potion = ((ProjectileHitEvent) event).getEntity();
 
         if (plugin.isDisabledWorldListener(potion)) {
             return;
