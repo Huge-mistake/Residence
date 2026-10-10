@@ -7,6 +7,7 @@ import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LingeringPotion;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.ThrownPotion;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -120,8 +121,9 @@ public class ResidenceListener1_09 implements Listener {
         ProjectileSource shooter = null;
         // Legacy version compatibility:
         // getEntity() signature: 1.14+ -> ThrownPotion, 1.9-1.13.2 -> LingeringPotion.
-        // Runtime entity: always LingeringPotion because this is LingeringPotionSplashEvent.
-        if (potion instanceof LingeringPotion) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_14_0)) {
+            shooter = ((ThrownPotion) potion).getShooter();
+        } else {
             shooter = ((LingeringPotion) potion).getShooter();
         }
         if (shooter instanceof Player) {
