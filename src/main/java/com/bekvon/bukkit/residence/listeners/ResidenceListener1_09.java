@@ -5,9 +5,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LingeringPotion;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.ThrownPotion;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -112,20 +111,15 @@ public class ResidenceListener1_09 implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onLingeringPotionSplash(LingeringPotionSplashEvent event) {
-
-        Entity potion = event.getEntity();
+        // Legacy version compatibility:
+        // getEntity() signature: 1.14+ -> ThrownPotion, 1.9-1.13.2 -> LingeringPotion.
+        Projectile potion = event.getEntity();
 
         if (plugin.isDisabledWorldListener(potion)) {
             return;
         }
-        ProjectileSource shooter = null;
-        // Legacy version compatibility:
-        // getEntity() signature: 1.14+ -> ThrownPotion, 1.9-1.13.2 -> LingeringPotion.
-        if (Version.isCurrentEqualOrHigher(Version.v1_14_0)) {
-            shooter = ((ThrownPotion) potion).getShooter();
-        } else {
-            shooter = ((LingeringPotion) potion).getShooter();
-        }
+        ProjectileSource shooter = potion.getShooter();
+
         if (shooter instanceof Player) {
             if (!Flags.potionthrowing.isGlobalyEnabled()) {
                 return;
