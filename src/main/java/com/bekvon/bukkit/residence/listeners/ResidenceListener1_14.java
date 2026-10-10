@@ -1,6 +1,7 @@
 package com.bekvon.bukkit.residence.listeners;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
@@ -29,6 +30,7 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.Version.Version;
+import org.jetbrains.annotations.NotNull;
 
 public class ResidenceListener1_14 implements Listener {
 
@@ -38,34 +40,28 @@ public class ResidenceListener1_14 implements Listener {
         this.plugin = plugin;
     }
 
-    private static final Map<String, Tag<Material>> BLOCK_TAG_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, Tag<Material>> ITEM_TAG_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, Tag<EntityType>> ENTITY_TAG_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Optional<Tag<Material>>> BLOCK_TAG_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Optional<Tag<Material>>> ITEM_TAG_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Optional<Tag<EntityType>>> ENTITY_TAG_CACHE = new ConcurrentHashMap<>();
 
     // https://minecraft.wiki/w/Block_tag_(Java_Edition)
-    public static boolean isBlockTag(Material block, String tagName) {
-        if (block == null || tagName == null) {
-            return false;
-        }
-        Tag<Material> tag = BLOCK_TAG_CACHE.computeIfAbsent(tagName, key -> Bukkit.getTag(Tag.REGISTRY_BLOCKS, NamespacedKey.minecraft(key), Material.class));
+    public static boolean isBlockTag(@NotNull Material block, @NotNull String tagName) {
+        Optional<Tag<Material>> cached = BLOCK_TAG_CACHE.computeIfAbsent(tagName, key -> Optional.ofNullable(Bukkit.getTag(Tag.REGISTRY_BLOCKS, NamespacedKey.minecraft(key), Material.class)));
+        Tag<Material> tag = cached.orElse(null);
         return tag != null && tag.isTagged(block);
     }
 
     // https://minecraft.wiki/w/Item_tag_(Java_Edition)
-    public static boolean isItemTag(Material item, String tagName) {
-        if (item == null || tagName == null) {
-            return false;
-        }
-        Tag<Material> tag = ITEM_TAG_CACHE.computeIfAbsent(tagName, key -> Bukkit.getTag(Tag.REGISTRY_ITEMS, NamespacedKey.minecraft(key), Material.class));
+    public static boolean isItemTag(@NotNull Material item, @NotNull String tagName) {
+        Optional<Tag<Material>> cached = ITEM_TAG_CACHE.computeIfAbsent(tagName, key -> Optional.ofNullable(Bukkit.getTag(Tag.REGISTRY_ITEMS, NamespacedKey.minecraft(key), Material.class)));
+        Tag<Material> tag = cached.orElse(null);
         return tag != null && tag.isTagged(item);
     }
 
     // https://minecraft.wiki/w/Entity_type_tag_(Java_Edition)
-    public static boolean isEntityTag(EntityType type, String tagName) {
-        if (type == null || tagName == null) {
-            return false;
-        }
-        Tag<EntityType> tag = ENTITY_TAG_CACHE.computeIfAbsent(tagName, key -> Bukkit.getTag(Tag.REGISTRY_ENTITY_TYPES, NamespacedKey.minecraft(key), EntityType.class));
+    public static boolean isEntityTag(@NotNull EntityType type, @NotNull String tagName) {
+        Optional<Tag<EntityType>> cached = ENTITY_TAG_CACHE.computeIfAbsent(tagName, key -> Optional.ofNullable(Bukkit.getTag(Tag.REGISTRY_ENTITY_TYPES, NamespacedKey.minecraft(key), EntityType.class)));
+        Tag<EntityType> tag = cached.orElse(null);
         return tag != null && tag.isTagged(type);
     }
 
