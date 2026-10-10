@@ -327,17 +327,6 @@ public class ResidenceEntityListener implements Listener {
     }
 
     private static boolean damageableProjectile(Entity ent) {
-        if (ent instanceof Projectile && CMIEntityType.get(ent) == CMIEntityType.SPLASH_POTION) {
-
-            if (((ThrownPotion) ent).getEffects().isEmpty())
-                return true;
-            for (PotionEffect one : ((ThrownPotion) ent).getEffects()) {
-                for (String oneHarm : Residence.getInstance().getConfigManager().getNegativePotionEffects()) {
-                    if (oneHarm.equalsIgnoreCase(one.getType().getName()))
-                        return true;
-                }
-            }
-        }
         return ent instanceof Projectile;
     }
 
@@ -1229,13 +1218,13 @@ public class ResidenceEntityListener implements Listener {
         // Start - Get the potion effect type
         for (PotionEffect effect : potion.getEffects()) {
             PotionEffectType type = effect.getType();
-            if (PotionUtils.isPotionEffectType(type, "Healing")) {
+            if (PotionUtils.isHealingEffect(type)) {
                 isHealingEffect = true;
                 break;
-            } else if (PotionUtils.isPotionEffectType(type, "Damage")) {
+            } else if (PotionUtils.isDamageEffect(type)) {
                 isDamageEffect = true;
                 break;
-            } else if (PotionUtils.isPotionEffectType(type, "Harmful")) {
+            } else if (PotionUtils.isHarmfulEffect(type)) {
                 isHarmfulEffect = true;
                 break;
             }

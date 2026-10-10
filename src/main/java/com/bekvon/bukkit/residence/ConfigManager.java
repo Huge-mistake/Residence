@@ -232,8 +232,8 @@ public class ConfigManager {
     protected List<String> BlockFallWorlds;
     protected List<String> CleanWorlds;
     protected List<String> FlagsList;
-    protected List<String> NegativePotionEffects;
-    protected List<String> NegativeLingeringPotionEffects;
+    //protected List<String> NegativePotionEffects;
+    //protected List<String> NegativeLingeringPotionEffects;
     private double WalkSpeed1;
     private double WalkSpeed2;
     private int SignsMaxPerResidence;
@@ -806,13 +806,13 @@ public class ConfigManager {
         SafeZoneInterval = c.get("Global.Optimizations.Intervals.SafeZone", 3);
 
         // negative potion effect list
-        c.addComment("Global.Optimizations.NegativePotionEffects",
-                "Potions containing one of thos effects will be ignored if residence don't have pvp true flag set");
-        NegativePotionEffects = c.get("Global.Optimizations.NegativePotionEffects", Arrays.asList("blindness", "confusion", "harm", "hunger", "poison", "slow",
-                "slow_digging", "weakness", "wither"));
+        //c.addComment("Global.Optimizations.NegativePotionEffects",
+                //"Potions containing one of thos effects will be ignored if residence don't have pvp true flag set");
+        //NegativePotionEffects = c.get("Global.Optimizations.NegativePotionEffects", Arrays.asList("blindness", "confusion", "harm", "hunger", "poison", "slow",
+                //"slow_digging", "weakness", "wither"));
 
-        NegativeLingeringPotionEffects = c.get("Global.Optimizations.NegativeLingeringPotions", Arrays.asList("slowness", "instant_damage", "poison",
-                "slowness"));
+        //NegativeLingeringPotionEffects = c.get("Global.Optimizations.NegativeLingeringPotions", Arrays.asList("slowness", "instant_damage", "poison",
+                //"slowness"));
 
         c.addComment("Global.Optimizations.WalkSpeed",
                 "Defines speed for particular wspeed1 and wspeed2 flags. It can be from 0 up to 5");
@@ -2015,13 +2015,13 @@ public class ConfigManager {
         return BlockFallWorlds;
     }
 
-    public List<String> getNegativePotionEffects() {
-        return NegativePotionEffects;
-    }
+    //public List<String> getNegativePotionEffects() {
+        //return NegativePotionEffects;
+    //}
 
-    public List<String> getNegativeLingeringPotionEffects() {
-        return NegativeLingeringPotionEffects;
-    }
+    //public List<String> getNegativeLingeringPotionEffects() {
+        //return NegativeLingeringPotionEffects;
+    //}
 
     public List<String> getCleanWorlds() {
         return CleanWorlds;

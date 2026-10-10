@@ -20,84 +20,74 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Version.Version;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 public class PotionUtils {
 
     public PotionUtils() {
     }
 
-    private static final List<String> LEGACY_BENEFICIAL = Collections.unmodifiableList(Arrays.asList(
+    private static final List<String> LEGACY_BENEFICIAL_EFFECTS = Collections.unmodifiableList(Arrays.asList(
             "ABSORPTION", "CONDUIT_POWER", "DAMAGE_RESISTANCE", "DOLPHINS_GRACE",
             "FAST_DIGGING", "FIRE_RESISTANCE", "HEAL", "HEALTH_BOOST", "HERO_OF_THE_VILLAGE",
             "INCREASE_DAMAGE", "INVISIBILITY", "JUMP", "LUCK", "NIGHT_VISION", "REGENERATION",
             "SATURATION", "SLOW_FALLING", "SPEED", "WATER_BREATHING"
     ));
 
-    private static final List<String> LEGACY_HARMFUL = Collections.unmodifiableList(Arrays.asList(
+    private static final List<String> LEGACY_HARMFUL_EFFECTS = Collections.unmodifiableList(Arrays.asList(
             "BAD_OMEN", "BLINDNESS", "CONFUSION", "DARKNESS", "HARM", "HUNGER",
             "LEVITATION", "POISON", "SLOW", "SLOW_DIGGING", "UNLUCK", "WEAKNESS", "WITHER"
     ));
 
-    private static final List<String> LEGACY_NEUTRAL = Collections.singletonList("GLOWING");
+    private static final List<String> LEGACY_NEUTRAL_EFFECTS = Collections.singletonList("GLOWING");
 
-    private static boolean containsIgnoreCase(List<String> list, String name) {
-        for (String string : list) {
-            if (string.equalsIgnoreCase(name)) {
+    private static boolean containsIgnoreCase(@NotNull List<String> list, @NotNull PotionEffectType type) {
+        String name = type.getName();
+        for (String one : list) {
+            if (one.equalsIgnoreCase(name)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean isLegacyPotionEffectType(PotionEffectType potionEffectType, String effect) {
-
-        String name = potionEffectType.getName();
-
-        if (effect.equalsIgnoreCase("BENEFICIAL")) {
-            return containsIgnoreCase(LEGACY_BENEFICIAL, name);
-
-        } else if (effect.equalsIgnoreCase("HARMFUL")) {
-            return containsIgnoreCase(LEGACY_HARMFUL, name);
-
-        } else if (effect.equalsIgnoreCase("NEUTRAL")) {
-            return containsIgnoreCase(LEGACY_NEUTRAL, name);
-
-        } else if (effect.equalsIgnoreCase("Healing")) {
-            return name.equalsIgnoreCase("HEAL");
-
-        } else if (effect.equalsIgnoreCase("Damage")) {
-            return name.equalsIgnoreCase("HARM");
-
-        }
-        return false;
-    }
-
-    public static boolean isPotionEffectType(PotionEffectType potionEffectType, String effect) {
-
-        if (potionEffectType == null) {
-            return false;
-        }
+    public static boolean isBeneficialEffect(@NotNull PotionEffectType type) {
         if (Version.isCurrentEqualOrHigher(Version.v1_20_5)) {
-            if (effect.equalsIgnoreCase("BENEFICIAL")) {
-                return potionEffectType.getEffectCategory() == PotionEffectType.Category.BENEFICIAL;
-            }
-            if (effect.equalsIgnoreCase("HARMFUL")) {
-                return potionEffectType.getEffectCategory() == PotionEffectType.Category.HARMFUL;
-            }
-            if (effect.equalsIgnoreCase("NEUTRAL")) {
-                return potionEffectType.getEffectCategory() == PotionEffectType.Category.NEUTRAL;
-            }
-            if (effect.equalsIgnoreCase("Healing")) {
-                return potionEffectType == PotionEffectType.INSTANT_HEALTH;
-            }
-            if (effect.equalsIgnoreCase("Damage")) {
-                return potionEffectType == PotionEffectType.INSTANT_DAMAGE;
-            }
-            return false;
+            return type.getEffectCategory() == PotionEffectType.Category.BENEFICIAL;
         }
-        return isLegacyPotionEffectType(potionEffectType, effect);
+        return containsIgnoreCase(LEGACY_BENEFICIAL_EFFECTS, type);
     }
 
-    public static boolean shouldDenyHealingEffect(LivingEntity victim, ProjectileSource attacker, boolean isPlayerAttacker) {
+    public static boolean isHarmfulEffect(@NotNull PotionEffectType type) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_20_5)) {
+            return type.getEffectCategory() == PotionEffectType.Category.HARMFUL;
+        }
+        return containsIgnoreCase(LEGACY_HARMFUL_EFFECTS, type);
+    }
+
+    public static boolean isNeutralEffect(@NotNull PotionEffectType type) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_20_5)) {
+            return type.getEffectCategory() == PotionEffectType.Category.NEUTRAL;
+        }
+        return containsIgnoreCase(LEGACY_NEUTRAL_EFFECTS, type);
+    }
+
+    public static boolean isHealingEffect(@NotNull PotionEffectType type) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_20_5)) {
+            return type == PotionEffectType.INSTANT_HEALTH;
+        }
+        return type.getName().equalsIgnoreCase("HEAL");
+    }
+
+    public static boolean isDamageEffect(@NotNull PotionEffectType type) {
+        if (Version.isCurrentEqualOrHigher(Version.v1_20_5)) {
+            return type == PotionEffectType.INSTANT_DAMAGE;
+        }
+        return type.getName().equalsIgnoreCase("HARM");
+    }
+
+    public static boolean shouldDenyHealingEffect(@NotNull LivingEntity victim, ProjectileSource attacker, boolean isPlayerAttacker) {
         // Healing effect damages undead mobs
         if (isPlayerAttacker) {
             if (Utils.isUndead(victim)) {
@@ -111,7 +101,7 @@ public class PotionUtils {
         return false;
     }
 
-    public static boolean shouldDenyDamageEffect(LivingEntity victim, ProjectileSource attacker, ClaimedResidence attackerRes, boolean isPlayerAttacker) {
+    public static boolean shouldDenyDamageEffect(@NotNull LivingEntity victim, ProjectileSource attacker, ClaimedResidence attackerRes, boolean isPlayerAttacker) {
         // Damage effect heals undead instead of harming them
         if (Utils.isUndead(victim)) {
             return false;
@@ -119,7 +109,7 @@ public class PotionUtils {
         return shouldDenyHarmfulEffect(victim, attacker, attackerRes, isPlayerAttacker);
     }
 
-    public static boolean shouldDenyHarmfulEffect(LivingEntity victim, ProjectileSource attacker, ClaimedResidence attackerRes, boolean isPlayerAttacker) {
+    public static boolean shouldDenyHarmfulEffect(@NotNull LivingEntity victim, ProjectileSource attacker, ClaimedResidence attackerRes, boolean isPlayerAttacker) {
         if (isPlayerAttacker) {
             Player player = (Player) attacker;
             if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {

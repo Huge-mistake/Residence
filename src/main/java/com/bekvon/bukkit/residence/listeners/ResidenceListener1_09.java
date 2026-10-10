@@ -223,13 +223,13 @@ public class ResidenceListener1_09 implements Listener {
             }
             for (PotionEffect effect : potionType.getPotionEffects()) {
                 PotionEffectType type = effect.getType();
-                if (PotionUtils.isPotionEffectType(type, "Healing")) {
+                if (PotionUtils.isHealingEffect(type)) {
                     isHealingCloud = true;
                     break;
-                } else if (PotionUtils.isPotionEffectType(type, "Damage")) {
+                } else if (PotionUtils.isDamageEffect(type)) {
                     isDamageCloud = true;
                     break;
-                } else if (PotionUtils.isPotionEffectType(type, "Harmful")) {
+                } else if (PotionUtils.isHarmfulEffect(type)) {
                     isHarmfulCloud = true;
                     break;
                 }
@@ -243,13 +243,16 @@ public class ResidenceListener1_09 implements Listener {
                 return;
             }
             PotionEffectType type = potionType.getEffectType();
-            if (PotionUtils.isPotionEffectType(type, "Healing")) {
+            if (type == null) {
+                return;
+            }
+            if (PotionUtils.isHealingEffect(type)) {
                 isHealingCloud = true;
 
-            } else if (PotionUtils.isPotionEffectType(type, "Damage")) {
+            } else if (PotionUtils.isDamageEffect(type)) {
                 isDamageCloud = true;
 
-            } else if (PotionUtils.isPotionEffectType(type, "Harmful")) {
+            } else if (PotionUtils.isHarmfulEffect(type)) {
                 isHarmfulCloud = true;
 
             }

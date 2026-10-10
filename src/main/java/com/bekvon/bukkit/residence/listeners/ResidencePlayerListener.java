@@ -63,6 +63,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import com.bekvon.bukkit.residence.ConfigManager;
 import com.bekvon.bukkit.residence.Residence;
@@ -97,6 +98,7 @@ import com.bekvon.bukkit.residence.signsStuff.Signs;
 import com.bekvon.bukkit.residence.utils.GetTime;
 import com.bekvon.bukkit.residence.utils.PlayerLocationChecker;
 import com.bekvon.bukkit.residence.utils.Teleporting;
+import com.bekvon.bukkit.residence.utils.PotionUtils;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import net.Zrips.CMILib.ActionBar.CMIActionBar;
@@ -2390,8 +2392,10 @@ public class ResidencePlayerListener implements Listener {
                 if (player.getActivePotionEffects().isEmpty())
                     continue;
                 for (PotionEffect one : player.getActivePotionEffects()) {
-                    if (plugin.getConfigManager().getNegativePotionEffects().contains(one.getType().getName().toLowerCase()))
-                        player.removePotionEffect(one.getType());
+                    PotionEffectType type = one.getType();
+                    if (PotionUtils.isHarmfulEffect(type)) {
+                        player.removePotionEffect(type);
+                    }
                 }
             }
         } catch (Exception ex) {
