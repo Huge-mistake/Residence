@@ -4,7 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.WeatherType;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
+import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -47,7 +47,7 @@ public class ResidenceListener1_20 implements Listener {
             return;
         }
 
-        if (event.useItemInHand() == Event.Result.DENY) {
+        if (event.useItemInHand() == Result.DENY) {
             return;
         }
 
