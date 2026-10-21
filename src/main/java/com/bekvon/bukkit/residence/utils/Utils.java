@@ -122,7 +122,7 @@ public class Utils {
         return name.length() <= Residence.getInstance().getConfigManager().getResidenceNameLength();
     }
 
-    public static @Nullable Player potentialProjectileToPlayer(Entity entity) {
+    public static @Nullable Player getPlayerSource(Entity entity) {
         if (entity instanceof Player) {
             return (Player) entity;
         }

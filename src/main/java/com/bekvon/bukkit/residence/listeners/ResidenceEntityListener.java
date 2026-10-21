@@ -54,8 +54,6 @@ import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleDestroyEvent;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffect;
@@ -66,7 +64,6 @@ import org.bukkit.projectiles.ProjectileSource;
 import com.bekvon.bukkit.residence.ConfigManager;
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
-import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.permissions.PermissionManager.ResPerm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
@@ -301,7 +298,7 @@ public class ResidenceEntityListener implements Listener {
         case button:
         // Projectile and Item press pressure_plate
         case pressure:
-            Player player = Utils.potentialProjectileToPlayer(entity);
+            Player player = Utils.getPlayerSource(entity);
             if (player != null) {
                 if (!FlagPermissions.shouldDenyAndNotify(player, block, flag, Flags.use, false)) {
                     return;
@@ -356,7 +353,7 @@ public class ResidenceEntityListener implements Listener {
         if (!Utils.isAnimal(entity))
             return;
 
-        Player player = Utils.potentialProjectileToPlayer(event.getCombuster());
+        Player player = Utils.getPlayerSource(event.getCombuster());
 
         if (player == null) {
             return;
@@ -377,7 +374,7 @@ public class ResidenceEntityListener implements Listener {
         if (!Utils.isAnimal(entity))
             return;
 
-        Player player = Utils.potentialProjectileToPlayer(event.getDamager());
+        Player player = Utils.getPlayerSource(event.getDamager());
 
         if (player != null) {
             if (FlagPermissions.shouldDenyAndNotify(player, entity, Flags.animalkilling)) {
@@ -475,7 +472,7 @@ public class ResidenceEntityListener implements Listener {
     }
 
     private boolean shouldDenyEntityDestroyVehicle(Entity attacker, Vehicle vehicle) {
-        Player player = Utils.potentialProjectileToPlayer(attacker);
+        Player player = Utils.getPlayerSource(attacker);
         if (player != null) {
             return FlagPermissions.shouldDenyAndNotify(player, vehicle, Flags.vehicledestroy);
         } else {
@@ -494,7 +491,7 @@ public class ResidenceEntityListener implements Listener {
         if (!Utils.isMonster(entity)) {
             return;
         }
-        Player player = Utils.potentialProjectileToPlayer(event.getDamager());
+        Player player = Utils.getPlayerSource(event.getDamager());
 
         if (player == null) {
             return;
@@ -757,7 +754,7 @@ public class ResidenceEntityListener implements Listener {
 
     public static boolean shouldDenyEntityHit(@NotNull Entity source, @NotNull Location targetLoc, @NotNull Flags mainFlag, @Nullable Flags subFlag) {
 
-        Player player = Utils.potentialProjectileToPlayer(source);
+        Player player = Utils.getPlayerSource(source);
         if (player != null) {
 
             return FlagPermissions.shouldDenyAndNotify(player, targetLoc, mainFlag, subFlag);
@@ -1206,7 +1203,7 @@ public class ResidenceEntityListener implements Listener {
         if (!(victim instanceof Player)) {
             return;
         }
-        Player attackerPlayer = Utils.potentialProjectileToPlayer(event.getCombuster());
+        Player attackerPlayer = Utils.getPlayerSource(event.getCombuster());
 
         if (attackerPlayer == null || attackerPlayer == victim) {
             return;
@@ -1414,7 +1411,7 @@ public class ResidenceEntityListener implements Listener {
     private void handleDecorativeEntityDamage(EntityDamageByEntityEvent event) {
         Entity attacker = event.getDamager();
         Entity victim = event.getEntity();
-        Player player = Utils.potentialProjectileToPlayer(attacker);
+        Player player = Utils.getPlayerSource(attacker);
         // if player damages ItemFrame with items inside, check Flags.container
         // this corresponds to taking the item out of the ItemFrame
         if (Flags.container.isGlobalyEnabled() && player != null && victim instanceof ItemFrame
