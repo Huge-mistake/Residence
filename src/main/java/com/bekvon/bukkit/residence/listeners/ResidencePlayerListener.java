@@ -1025,6 +1025,10 @@ public class ResidencePlayerListener implements Listener {
         switch (block) {
         case CAULDRON:
             return !player.isSneaking() && isLegacyCauldronInteraction(held);
+        case END_PORTAL_FRAME:
+            // Fix upstream dupe
+            // bug(https://github.com/PaperMC/Paper/issues/13586)
+            return held == CMIMaterial.ENDER_EYE;
         case PUMPKIN:
             return held == CMIMaterial.SHEARS;
         case REDSTONE_WIRE:
@@ -1065,7 +1069,7 @@ public class ResidencePlayerListener implements Listener {
     // Even if dedicated events are added in the future, legacy version servers still exist
     private void handlePlayerInteractBuild(PlayerInteractEvent event, Player player, Block block) {
 
-        if (!Flags.build.isGlobalyEnabled()) {
+        if (!Flags.place.isGlobalyEnabled()) {
             return;
         }
         if (event.useInteractedBlock() == Result.DENY) {
