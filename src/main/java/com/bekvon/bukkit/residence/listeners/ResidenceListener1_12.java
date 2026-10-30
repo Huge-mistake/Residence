@@ -1,6 +1,7 @@
 package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -10,6 +11,7 @@ import org.bukkit.event.player.PlayerItemDamageEvent;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
+import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.permissions.PermissionManager.ResPerm;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
@@ -18,7 +20,7 @@ import net.Zrips.CMILib.Items.CMIMaterial;
 
 public class ResidenceListener1_12 implements Listener {
 
-    private Residence plugin;
+    private final Residence plugin;
 
     public ResidenceListener1_12(Residence plugin) {
         this.plugin = plugin;
@@ -27,7 +29,9 @@ public class ResidenceListener1_12 implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityPickupItemEvent(EntityPickupItemEvent event) {
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.itempickup, event.getItem())) {
+        Item item = event.getItem();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.itempickup, item)) {
             return;
         }
         Entity entity = event.getEntity();
@@ -38,21 +42,22 @@ public class ResidenceListener1_12 implements Listener {
 
             Player player = (Player) entity;
 
-            if (FlagPermissions.has(event.getItem().getLocation(), player, Flags.itempickup, true))
+            if (FlagPermissions.has(item.getLocation(), player, Flags.itempickup, true)) {
                 return;
-
-            if (ResPerm.bypass_itempickup.hasPermission(player, 10000L))
+            }
+            if (ResPerm.bypass_itempickup.hasPermission(player, 10000L)) {
                 return;
+            }
+            lm.Flag_Deny.sendMessage(player, Flags.itempickup);
 
         } else {
-
-            if (FlagPermissions.has(event.getItem().getLocation(), Flags.itempickup, true))
+            if (FlagPermissions.has(item.getLocation(), Flags.itempickup, true)) {
                 return;
-
+            }
         }
 
         event.setCancelled(true);
-        event.getItem().setPickupDelay(plugin.getConfigManager().getItemPickUpDelay() * 20);
+        item.setPickupDelay(plugin.getConfigManager().getItemPickUpDelay() * 20);
 
     }
 

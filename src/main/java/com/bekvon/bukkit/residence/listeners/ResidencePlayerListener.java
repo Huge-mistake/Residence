@@ -20,6 +20,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LeashHitch;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -45,7 +46,6 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -163,50 +163,51 @@ public class ResidencePlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPlayerPickupItemEvent(PlayerPickupItemEvent event) {
-        if (!Flags.itempickup.isGlobalyEnabled())
-            return;
-
         // As of 1.12 version EntityPickupItemEvent event needs to be used. This is only
         // for older servers
         // New handling located at ResidencePlayerListener1_12
-        if (Version.isCurrentEqualOrHigher(Version.v1_12_R1))
+        if (Version.isCurrentEqualOrHigher(Version.v1_12_0)) {
             return;
+        }
+        Item item = event.getItem();
 
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(event.getItem().getLocation());
-        if (res == null)
+        if (FlagPermissions.shouldIgnoreCheck(Flags.itempickup, item)) {
             return;
-        if (event.getPlayer().hasMetadata("NPC"))
+        }
+        Player player = event.getPlayer();
+
+        if (player.hasMetadata("NPC")) {
             return;
-        if (!res.getPermissions().playerHas(event.getPlayer(), Flags.itempickup, FlagCombo.OnlyFalse))
+        }
+        if (FlagPermissions.has(item.getLocation(), player, Flags.itempickup, true)) {
             return;
-        if (ResPerm.bypass_itempickup.hasPermission(event.getPlayer(), 10000L))
+        }
+        if (ResPerm.bypass_itempickup.hasPermission(player, 10000L)) {
             return;
+        }
+        lm.Flag_Deny.sendMessage(player, Flags.itempickup);
         event.setCancelled(true);
-        event.getItem().setPickupDelay(plugin.getConfigManager().getItemPickUpDelay() * 20);
+        item.setPickupDelay(plugin.getConfigManager().getItemPickUpDelay() * 20);
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPlayerDropItemEvent(PlayerDropItemEvent event) {
 
-        if (!Flags.itemdrop.isGlobalyEnabled())
-            return;
-
         Player player = event.getPlayer();
 
-        ClaimedResidence res = ClaimedResidence.getByLoc(player.getLocation());
-
-        if (res == null)
+        if (FlagPermissions.shouldIgnoreCheck(Flags.itemdrop, player)) {
             return;
-
-        if (player.hasMetadata("NPC"))
+        }
+        if (player.hasMetadata("NPC")) {
             return;
-
-        if (!res.getPermissions().playerHas(player, Flags.itemdrop, FlagCombo.OnlyFalse))
+        }
+        if (FlagPermissions.has(player.getLocation(), player, Flags.itemdrop, true)) {
             return;
-
-        if (ResPerm.bypass_itemdrop.hasPermission(player, 10000L))
+        }
+        if (ResPerm.bypass_itemdrop.hasPermission(player, 10000L)) {
             return;
-
+        }
+        lm.Flag_Deny.sendMessage(player, Flags.itempickup);
         event.setCancelled(true);
     }
 
@@ -1450,7 +1451,7 @@ public class ResidencePlayerListener implements Listener {
         if (FlagPermissions.shouldIgnoreCheck(Flags.leash, entity)) {
             return;
         }
-        if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.leash, null)) {
+        if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.leash)) {
             event.setCancelled(true);
         }
     }
@@ -1463,7 +1464,7 @@ public class ResidencePlayerListener implements Listener {
         if (FlagPermissions.shouldIgnoreCheck(Flags.shear, player)) {
             return;
         }
-        if (FlagPermissions.shouldDenyAndNotify(player, event.getEntity(), Flags.shear, null)) {
+        if (FlagPermissions.shouldDenyAndNotify(player, event.getEntity(), Flags.shear)) {
             event.setCancelled(true);
         }
     }
@@ -1477,7 +1478,7 @@ public class ResidencePlayerListener implements Listener {
             if (FlagPermissions.shouldIgnoreCheck(Flags.riding, entity)) {
                 return;
             }
-            if (FlagPermissions.shouldDenyAndNotify((Player) entity, event.getVehicle(), Flags.riding, null)) {
+            if (FlagPermissions.shouldDenyAndNotify((Player) entity, event.getVehicle(), Flags.riding)) {
                 event.setCancelled(true);
             }
         } else {
@@ -1503,7 +1504,7 @@ public class ResidencePlayerListener implements Listener {
         if (!(holder instanceof Vehicle)) {
             return;
         }
-        if (FlagPermissions.shouldDenyAndNotify(player, (Vehicle) holder, Flags.container, null)) {
+        if (FlagPermissions.shouldDenyAndNotify(player, (Vehicle) holder, Flags.container)) {
             event.setCancelled(true);
         }
     }
@@ -2565,5 +2566,91 @@ public class ResidencePlayerListener implements Listener {
 
     public ClaimedResidence getCurrentResidence(UUID uuid) {
         return playerTempData.getCurrentResidence(uuid);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEggLaunch(org.bukkit.event.entity.ProjectileLaunchEvent event) {
+        if (Version.isCurrentLower(Version.v26_2_0)) {
+            return;
+        }
+        org.bukkit.entity.Projectile projectile = event.getEntity();
+
+        if (!(projectile instanceof org.bukkit.entity.Egg)) {
+            return;
+        }
+        org.bukkit.projectiles.ProjectileSource shooter = projectile.getShooter();
+
+        if (!(shooter instanceof Player)) {
+            return;
+        }
+        if (FlagPermissions.shouldDenyAndNotify((Player) shooter, projectile, Flags.build)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onPlayerInteractEndPortalFrame(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+        Block block = event.getClickedBlock();
+        if (block == null) {
+            return;
+        }
+        if (Version.isCurrentLower(Version.v26_2_0)) {
+            return;
+        }
+        if (block.getType() != Material.END_PORTAL_FRAME) {
+            return;
+        }
+        ItemStack item = event.getItem();
+        if (item == null || item.getType() != Material.ENDER_EYE) {
+            return;
+        }
+        Player player = event.getPlayer();
+        if (ResAdmin.isResAdmin(player)) {
+            return;
+        }
+        lm.Flag_Deny.sendMessage(player, Flags.build);
+        event.setCancelled(true);
+
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onPlayerShearAnimals(PlayerInteractEntityEvent event) {
+        Entity entity = event.getRightClicked();
+        if (!(entity instanceof org.bukkit.entity.Animals)) {
+            return;
+        }
+        if (Version.isCurrentLower(Version.v26_2_0)) {
+            return;
+        }
+        if (ResidenceListener1_09.getHeldMaterial(event) != Material.SHEARS) {
+            return;
+        }
+        if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.shear, Flags.animalkilling)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void fixBlockMultiPlace(org.bukkit.event.block.BlockMultiPlaceEvent event) {
+        if (!event.isCancelled()) {
+            return;
+        }
+        if (Version.isCurrentLower(Version.v26_2_0)) {
+            return;
+        }
+        for (org.bukkit.block.BlockState state : event.getReplacedBlockStates()) {
+            switch (state.getType()) {
+            case BEDROCK:
+            case END_PORTAL:
+            case END_PORTAL_FRAME:
+                event.setCancelled(false);
+                return;
+            default:
+                break;
+            }
+        }
     }
 }
