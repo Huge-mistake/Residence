@@ -2597,7 +2597,7 @@ public class ResidencePlayerListener implements Listener {
         if (block == null) {
             return;
         }
-        if (Version.isCurrentLower(Version.v26_2_0)) {
+        if (Version.isCurrentLower(Version.v1_20_0)) {
             return;
         }
         if (block.getType() != Material.END_PORTAL_FRAME) {
@@ -2622,7 +2622,7 @@ public class ResidencePlayerListener implements Listener {
         if (!(entity instanceof org.bukkit.entity.Animals)) {
             return;
         }
-        if (Version.isCurrentLower(Version.v26_2_0)) {
+        if (Version.isCurrentLower(Version.v1_20_0)) {
             return;
         }
         if (ResidenceListener1_09.getHeldMaterial(event) != Material.SHEARS) {
@@ -2638,7 +2638,7 @@ public class ResidencePlayerListener implements Listener {
         if (!event.isCancelled()) {
             return;
         }
-        if (Version.isCurrentLower(Version.v26_2_0)) {
+        if (Version.isCurrentLower(Version.v1_20_0)) {
             return;
         }
         for (org.bukkit.block.BlockState state : event.getReplacedBlockStates()) {
