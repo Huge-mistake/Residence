@@ -253,13 +253,13 @@ public class ResidenceEntityListener implements Listener {
             }
             break;
         default:
-            if (mat.containsCriteria(CMIMC.BUTTON)) {
-                if (entity instanceof Projectile) {
+            if (entity instanceof Projectile) {
+                if (mat.containsCriteria(CMIMC.BUTTON)) {
                     flag = Flags.button;
-                }
-            } else if (mat.containsCriteria(CMIMC.PRESSUREPLATE)) {
-                if (entity instanceof Projectile || entity instanceof Item) {
+
+                } else if (mat.containsCriteria(CMIMC.PRESSUREPLATE)) {
                     flag = Flags.pressure;
+
                 }
             }
             break;
