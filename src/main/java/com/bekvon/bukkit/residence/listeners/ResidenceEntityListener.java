@@ -253,13 +253,13 @@ public class ResidenceEntityListener implements Listener {
             }
             break;
         default:
-            if (mat.containsCriteria(CMIMC.BUTTON)) {
-                if (entity instanceof Projectile) {
+            if (entity instanceof Projectile) {
+                if (mat.containsCriteria(CMIMC.BUTTON)) {
                     flag = Flags.button;
-                }
-            } else if (mat.containsCriteria(CMIMC.PRESSUREPLATE)) {
-                if (entity instanceof Projectile || entity instanceof Item) {
+
+                } else if (mat.containsCriteria(CMIMC.PRESSUREPLATE)) {
                     flag = Flags.pressure;
+
                 }
             }
             break;
@@ -296,37 +296,29 @@ public class ResidenceEntityListener implements Listener {
         case button:
         // Projectile and Item press pressure_plate
         case pressure:
-            final Flags flags = flag;
-            com.bekvon.bukkit.residence.listenersCache.EntityInteractCache.EntityInteractKey
-                    key = new com.bekvon.bukkit.residence.listenersCache.EntityInteractCache.EntityInteractKey(block);
-            if (com.bekvon.bukkit.residence.listenersCache.EntityInteractCache.getOrCompute(key, () -> shouldDenyEntityInteract(entity, flags, block))) {
-                event.setCancelled(true);
+            Player player = Utils.getPlayerSource(entity);
+            if (player != null) {
+                if (!FlagPermissions.shouldDenyAndNotify(player, block, flag, Flags.use, false)) {
+                    return;
+                }
+            } else {
+                ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
+                // skip check if shooter is a dispenser in the same Residence
+                if (entity instanceof Projectile && Utils.isSameResidenceOwner((Projectile) entity, res)) {
+                    return;
+                }
+                perms = (res != null)
+                        ? res.getPermissions()
+                        : plugin.getWorldFlags().getPerms(block.getWorld());
+                if (perms.has(flag, perms.has(Flags.use, true))) {
+                    return;
+                }
             }
-            return;
+            break;
         default:
             return;
         }
         event.setCancelled(true);
-    }
-
-    private boolean shouldDenyEntityInteract(@NotNull Entity entity, @NotNull Flags flag, @NotNull Block block) {
-        FlagPermissions perms;
-        Player player = Utils.getPlayerSource(entity);
-        if (player != null) {
-            return FlagPermissions.shouldDenyAndNotify(player, block, flag, Flags.use, false);
-
-        } else {
-            ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
-            // skip check if shooter is a dispenser in the same Residence
-            if (entity instanceof Projectile && Utils.isSameResidenceOwner((Projectile) entity, res)) {
-                return false;
-            }
-            perms = (res != null)
-                    ? res.getPermissions()
-                    : plugin.getWorldFlags().getPerms(block.getWorld());
-
-            return !perms.has(flag, perms.has(Flags.use, true));
-        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
