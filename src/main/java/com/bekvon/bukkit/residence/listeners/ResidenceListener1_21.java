@@ -4,7 +4,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.AbstractHorse;
-import org.bukkit.entity.AbstractWindCharge;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Boat;
@@ -14,7 +13,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Strider;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -144,7 +142,7 @@ public class ResidenceListener1_21 implements Listener {
         } else if (Flags.build.isGlobalyEnabled()) {
             if (ent instanceof Player) {
                 Player player = (Player) ent;
-                if (!FlagPermissions.shouldDenyAndNotify(player, player, Flags.build, null)) {
+                if (!FlagPermissions.shouldDenyAndNotify(player, Flags.build)) {
                     return;
                 }
             } else {
@@ -194,14 +192,13 @@ public class ResidenceListener1_21 implements Listener {
         if (event.getEntityType() != EntityType.FISHING_BOBBER) {
             return;
         }
-        Projectile hook = event.getEntity();
-        // have player source
-        if (!(hook.getShooter() instanceof Player)) {
+        ProjectileSource shooter = event.getEntity().getShooter();
+        if (!(shooter instanceof Player)) {
             return;
         }
-        Player player = (Player) hook.getShooter();
+        Player player = (Player) shooter;
 
-        if (FlagPermissions.shouldDenyAndNotify(player, hitEntity, Flags.hook, null)) {
+        if (FlagPermissions.shouldDenyAndNotify(player, hitEntity, Flags.hook)) {
             event.setCancelled(true);
         }
     }
@@ -415,20 +412,13 @@ public class ResidenceListener1_21 implements Listener {
     }
 
     public static void onWindExplode(EntityExplodeEvent event) {
+        // Any entity with Wind-Charged-Effect triggers a Wind-Explode on death
+        Player player = Utils.getPlayerSource(event.getEntity());
 
-        Entity originEntity = event.getEntity();
-        ProjectileSource cause;
-
-        if (originEntity instanceof AbstractWindCharge) {
-            cause = ((AbstractWindCharge) originEntity).getShooter();
-        } else {
-            // Any entity with Wind-Charged-Effect triggers a Wind-Explode on death
-            cause = ((ProjectileSource) originEntity);
-        }
         if (Flags.windexplode.isGlobalyEnabled()) {
             Location originLoc = event.getLocation();
             // Wind-Explode is prohibited at the origin location; cancel the event directly
-            if (shouldDenyWindExplode(originLoc, cause, Flags.windexplode, Flags.explode)) {
+            if (shouldDenyWindExplode(player, originLoc, Flags.windexplode, Flags.explode)) {
                 event.setCancelled(true);
                 return;
             }
@@ -439,13 +429,12 @@ public class ResidenceListener1_21 implements Listener {
             if (flag == null || !flag.isGlobalyEnabled()) {
                 return false;
             }
-            return shouldDenyWindExplode(block.getLocation(), cause, flag, Flags.use);
+            return shouldDenyWindExplode(player, block.getLocation(), flag, Flags.use);
         });
     }
 
-    private static boolean shouldDenyWindExplode(Location triggerLoc, ProjectileSource cause, Flags mainFlag, Flags subFlag) {
-        if (cause instanceof Player) {
-            Player player = (Player) cause;
+    private static boolean shouldDenyWindExplode(Player player, Location triggerLoc, Flags mainFlag, Flags subFlag) {
+        if (player != null) {
             if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
                 return false;
             }

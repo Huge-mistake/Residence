@@ -2648,8 +2648,6 @@ public class ResidencePlayerListener implements Listener {
             case END_PORTAL_FRAME:
                 event.setCancelled(false);
                 return;
-            default:
-                break;
             }
         }
     }
