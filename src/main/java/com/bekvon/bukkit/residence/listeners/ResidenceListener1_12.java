@@ -35,9 +35,10 @@ public class ResidenceListener1_12 implements Listener {
             return;
         }
         Entity entity = event.getEntity();
-        if (entity.hasMetadata("NPC"))
-            return;
 
+        if (entity.hasMetadata("NPC")) {
+            return;
+        }
         if (entity instanceof Player) {
 
             Player player = (Player) entity;

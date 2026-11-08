@@ -164,7 +164,7 @@ public class ResidenceListener1_21 implements Listener {
             EntityEquipment golemInv = ((LivingEntity) entity).getEquipment();
             // Right-click to remove items from holding copper_golem
             if (golemInv != null && golemInv.getItemInMainHand().getType() != Material.AIR) {
-                return FlagPermissions.shouldDenyAndNotify(player, entity, Flags.container, null);
+                return FlagPermissions.shouldDenyAndNotify(player, entity, Flags.container);
             }
         }
         // Now Copper_golem has no item in hand
