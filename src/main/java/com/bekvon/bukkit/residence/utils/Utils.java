@@ -18,6 +18,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.NPC;
 import org.bukkit.entity.Player;
@@ -35,6 +36,7 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -369,7 +371,25 @@ public class Utils {
     public static boolean isContainerEntityWithoutGui(Entity entity) {
         return  entity instanceof ItemFrame
                 || entity instanceof PoweredMinecart
-                || (Version.isCurrentEqualOrHigher(Version.v1_19_0) && entity instanceof org.bukkit.entity.Allay);
+                || (Version.isCurrentEqualOrHigher(Version.v1_19_0) && entity instanceof org.bukkit.entity.Allay)
+                || isCopperGolemHoldingItem(entity);
+    }
+
+    private static boolean isCopperGolemHoldingItem(Entity entity) {
+        // Right-click copper golem holding item to make it drop item
+        if (isCopperGolem(entity)) {
+            EntityEquipment equipment = ((LivingEntity) entity).getEquipment();
+            return equipment != null && equipment.getItemInMainHand().getType() != Material.AIR;
+        }
+        return false;
+    }
+
+    public static boolean isReadyToChangeCopperGolem(Entity entity, ItemStack item) {
+        if (item != null && isCopperGolem(entity)) {
+            Material mat = item.getType();
+            return mat == Material.HONEYCOMB || ResidenceListener1_14.isItemTag(mat, "axes");
+        }
+        return false;
     }
 
     public static boolean isChorusTeleport(TeleportCause tpcause) {

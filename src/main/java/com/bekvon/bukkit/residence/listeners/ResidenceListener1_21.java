@@ -158,27 +158,6 @@ public class ResidenceListener1_21 implements Listener {
         ent.removePotionEffect(PotionEffectType.WEAVING);
     }
 
-    public static boolean shouldDenyInteractCopperGolem(Player player, Entity entity, ItemStack itemStack) {
-
-        if (Flags.container.isGlobalyEnabled()) {
-            EntityEquipment golemInv = ((LivingEntity) entity).getEquipment();
-            // Right-click to remove items from holding copper_golem
-            if (golemInv != null && golemInv.getItemInMainHand().getType() != Material.AIR) {
-                return FlagPermissions.shouldDenyAndNotify(player, entity, Flags.container);
-            }
-        }
-        // Now Copper_golem has no item in hand
-        if (!Flags.copper.isGlobalyEnabled() || itemStack == null) {
-            return false;
-        }
-        Material held = itemStack.getType();
-        // Honeycomb and Axes can change CopperGolem
-        if (held != Material.HONEYCOMB && !isItemTag(held, "axes")) {
-            return false;
-        }
-        return FlagPermissions.shouldDenyAndNotify(player, entity, Flags.copper, Flags.animalkilling);
-    }
-
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onFishingBobberHitEntity(ProjectileHitEvent event) {
         // anti NPE
