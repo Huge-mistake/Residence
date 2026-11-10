@@ -338,7 +338,7 @@ public class Utils {
         return entity instanceof Tameable && ((Tameable) entity).isTamed();
     }
 
-    public static boolean isVillagerOrTrader(Entity entity) {
+    public static boolean isAbstractVillager(Entity entity) {
         if (Version.isCurrentEqualOrHigher(Version.v1_14_0)) {
             return entity instanceof org.bukkit.entity.AbstractVillager;
         }
@@ -387,6 +387,7 @@ public class Utils {
     public static boolean isReadyToChangeCopperGolem(Entity entity, ItemStack item) {
         if (item != null && isCopperGolem(entity)) {
             Material mat = item.getType();
+            // Items that can change CopperGolem's state
             return mat == Material.HONEYCOMB || ResidenceListener1_14.isItemTag(mat, "axes");
         }
         return false;

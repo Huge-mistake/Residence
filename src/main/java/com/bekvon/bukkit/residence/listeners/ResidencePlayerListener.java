@@ -1404,17 +1404,28 @@ public class ResidencePlayerListener implements Listener {
             held = CMIMaterial.get(item);
         }
 
-        if (Flags.container.isGlobalyEnabled() && Utils.isContainerEntityWithoutGui(entity)) {
+        if (Flags.commandblock.isGlobalyEnabled() && entity instanceof CommandMinecart) {
+            mainFlag = Flags.commandblock;
+
+        } else if (Flags.leash.isGlobalyEnabled() && entity instanceof LeashHitch) {
+            mainFlag = Flags.leash;
+
+        } else if (Flags.container.isGlobalyEnabled() && Utils.isContainerEntityWithoutGui(entity)) {
             mainFlag = Flags.container;
             subFlag = Flags.use;
+
+        } else if (Flags.trade.isGlobalyEnabled() && Utils.isAbstractVillager(entity)) {
+            mainFlag = Flags.trade;
 
         } else if (Flags.copper.isGlobalyEnabled() && Utils.isReadyToChangeCopperGolem(entity, item)) {
             mainFlag = Flags.copper;
             subFlag = Flags.animalkilling;
 
-            // Paper 1.16.5+ uses the better PlayerNameEntityEvent
-        } else if (!(Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_16_5))
-                && Flags.nametag.isGlobalyEnabled() && entity instanceof LivingEntity && held == CMIMaterial.NAME_TAG) {
+        } else if (Flags.dye.isGlobalyEnabled() && entity instanceof Sheep && held != null && held.containsCriteria(CMIMC.DYE)) {
+            mainFlag = Flags.dye;
+            subFlag = Flags.animalkilling;
+
+        } else if (Flags.nametag.isGlobalyEnabled() && entity instanceof LivingEntity && held == CMIMaterial.NAME_TAG) {
 
             mainFlag = Flags.nametag;
             if (Utils.isAnimal(entity)) {
@@ -1423,20 +1434,8 @@ public class ResidencePlayerListener implements Listener {
                 subFlag = Flags.mobkilling;
             }
 
-        } else if (Flags.dye.isGlobalyEnabled() && entity instanceof Sheep && held != null && held.containsCriteria(CMIMC.DYE)) {
-            mainFlag = Flags.dye;
-            subFlag = Flags.animalkilling;
-
-        } else if (Flags.commandblock.isGlobalyEnabled() && entity instanceof CommandMinecart) {
-            mainFlag = Flags.commandblock;
-
-        } else if (Flags.leash.isGlobalyEnabled() && entity instanceof LeashHitch) {
-            mainFlag = Flags.leash;
-
-        } else if (Flags.trade.isGlobalyEnabled() && Utils.isVillagerOrTrader(entity)) {
-            mainFlag = Flags.trade;
-
         }
+
         if (mainFlag == null) {
             return;
         }

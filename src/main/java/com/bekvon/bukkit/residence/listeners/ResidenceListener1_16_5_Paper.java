@@ -20,7 +20,6 @@ import com.destroystokyo.paper.event.entity.EntityZapEvent;
 import net.Zrips.CMILib.Version.Version;
 
 import io.papermc.paper.event.block.TargetHitEvent;
-import io.papermc.paper.event.player.PlayerNameEntityEvent;
 
 public class ResidenceListener1_16_5_Paper implements Listener {
 
@@ -89,27 +88,5 @@ public class ResidenceListener1_16_5_Paper implements Listener {
             return;
         }
         event.setCancelled(true);
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerNameEntity(PlayerNameEntityEvent event) {
-
-        Entity entity = event.getEntity();
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.nametag, entity)) {
-            return;
-        }
-        Flags subFlag = null;
-
-        if (Utils.isAnimal(entity)) {
-            subFlag = Flags.animalkilling;
-
-        } else if (Utils.isMonster(entity)) {
-            subFlag = Flags.mobkilling;
-
-        }
-        if (FlagPermissions.shouldDenyAndNotify(event.getPlayer(), entity, Flags.nametag, subFlag)) {
-            event.setCancelled(true);
-        }
     }
 }
