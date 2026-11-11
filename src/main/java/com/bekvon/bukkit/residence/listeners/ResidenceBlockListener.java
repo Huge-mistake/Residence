@@ -864,13 +864,11 @@ public class ResidenceBlockListener implements Listener {
         }
 
         Material mat = block.getType();
-        boolean isLava = (mat == Material.LAVA);
-        boolean isWater = (mat == Material.WATER);
         Flags flag;
 
-        if (isLava) {
+        if (mat == Material.LAVA) {
             flag = Flags.lavaflow;
-        } else if (isWater) {
+        } else if (mat == Material.WATER) {
             flag = Flags.waterflow;
         } else {
             return;
@@ -882,7 +880,7 @@ public class ResidenceBlockListener implements Listener {
         if (targetRes == null) {
             ConfigManager cfg = plugin.getConfigManager();
 
-            boolean shouldDenyFlow = (cfg.isNoLava() && isLava) || (cfg.isNoWater() && isWater);
+            boolean shouldDenyFlow = (cfg.isNoLava() && mat == Material.LAVA) || (cfg.isNoWater() && mat == Material.WATER);
 
             if (!shouldDenyFlow) {
                 return;

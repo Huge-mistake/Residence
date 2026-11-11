@@ -1580,9 +1580,8 @@ public class ResidencePlayerListener implements Listener {
             return;
         }
         if (res == null) {
-            boolean isLava = (cmat == CMIMaterial.LAVA_BUCKET);
-            boolean isWater = (cmat == CMIMaterial.WATER_BUCKET || cmat.containsCriteria(CMIMC.BUCKETANIMAL));
-            boolean shouldDeny = (cfg.isNoLavaPlace() && isLava) || (cfg.isNoWaterPlace() && isWater);
+            boolean shouldDeny = (cfg.isNoLavaPlace() && cmat == CMIMaterial.LAVA_BUCKET)
+                    || (cfg.isNoWaterPlace() && (cmat == CMIMaterial.WATER_BUCKET || cmat.containsCriteria(CMIMC.BUCKETANIMAL)));
 
             if (!shouldDeny) {
                 return;
@@ -1595,7 +1594,7 @@ public class ResidencePlayerListener implements Listener {
             }
             int level = cfg.getPlaceLevel();
 
-            if (isLava) {
+            if (cmat == CMIMaterial.LAVA_BUCKET) {
                 lm.General_CantPlaceLava.sendMessage(player, level);
             } else {
                 lm.General_CantPlaceWater.sendMessage(player, level);
