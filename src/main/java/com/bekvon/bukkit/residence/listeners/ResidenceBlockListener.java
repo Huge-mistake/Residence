@@ -726,10 +726,7 @@ public class ResidenceBlockListener implements Listener {
             return;
         }
         ClaimedResidence pistonRes = ClaimedResidence.getByLoc(piston.getLocation());
-
-        FlagPermissions perms = (pistonRes != null)
-                ? pistonRes.getPermissions()
-                : Residence.getInstance().getWorldFlags().getPerms(piston.getWorld());
+        FlagPermissions perms = FlagPermissions.getResOrWorldPerms(pistonRes, piston);
 
         if (!perms.has(Flags.piston, true)) {
             event.setCancelled(true);
@@ -769,10 +766,7 @@ public class ResidenceBlockListener implements Listener {
             return;
         }
         ClaimedResidence pistonRes = ClaimedResidence.getByLoc(piston.getLocation());
-
-        FlagPermissions perms = (pistonRes != null)
-                ? pistonRes.getPermissions()
-                : Residence.getInstance().getWorldFlags().getPerms(piston.getWorld());
+        FlagPermissions perms = FlagPermissions.getResOrWorldPerms(pistonRes, piston);
 
         if (!perms.has(Flags.piston, true)) {
             event.setCancelled(true);
@@ -852,10 +846,7 @@ public class ResidenceBlockListener implements Listener {
         Block toBlock = event.getToBlock();
 
         ClaimedResidence targetRes = ClaimedResidence.getByLoc(toBlock.getLocation());
-
-        FlagPermissions perms = (targetRes != null)
-                ? targetRes.getPermissions()
-                : Residence.getInstance().getWorldFlags().getPerms(toBlock.getWorld());
+        FlagPermissions perms = FlagPermissions.getResOrWorldPerms(targetRes, toBlock);
 
         if (targetRes != null && perms.has(Flags.flowinprotection, FlagCombo.TrueOrNone)) {
 

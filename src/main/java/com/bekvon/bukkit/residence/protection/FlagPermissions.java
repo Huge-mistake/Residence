@@ -1751,6 +1751,30 @@ public class FlagPermissions {
         return Residence.getInstance().getWorldFlags().getPerms(world);
     }
 
+    public static FlagPermissions getResOrWorldPerms(@Nullable ClaimedResidence res, @NotNull Block block) {
+        return (res != null)
+                ? res.getPermissions()
+                : Residence.getInstance().getWorldFlags().getPerms(block.getWorld());
+    }
+
+    public static FlagPermissions getResOrWorldPerms(@Nullable ClaimedResidence res, @NotNull Entity entity) {
+        return (res != null)
+                ? res.getPermissions()
+                : Residence.getInstance().getWorldFlags().getPerms(entity.getWorld());
+    }
+
+    public static FlagPermissions getResOrWorldPerms(@Nullable ClaimedResidence res, @NotNull Location location) {
+        return (res != null)
+                ? res.getPermissions()
+                : Residence.getInstance().getWorldFlags().getPerms(location.getWorld());
+    }
+
+    public static FlagPermissions getResOrWorldPerms(@Nullable ClaimedResidence res, @NotNull Player player) {
+        return (res != null)
+                ? res.getPermissions()
+                : Residence.getInstance().getWorldFlags().getPerms(player);
+    }
+
     public static boolean isIgnoreGroupedFlagsAccess() {
         return ignoreGroupedFlagsAccess;
     }

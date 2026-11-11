@@ -2,22 +2,19 @@ package com.bekvon.bukkit.residence.listeners;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.SulfurCube;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.EquipmentSlot;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
+
+import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener26_2 implements Listener {
 
@@ -27,37 +24,13 @@ public class ResidenceListener26_2 implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onPlayerIgniteTntSulfurCube(PlayerInteractEntityEvent event) {
-
-        Entity entity = event.getRightClicked();
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.ignite, entity)) {
-            return;
-        }
-        if (!(entity instanceof SulfurCube)) {
-            return;
-        }
-        EntityEquipment equipment = ((SulfurCube) entity).getEquipment();
-        if (equipment != null && equipment.getItem(EquipmentSlot.BODY).getType() != Material.TNT) {
-            return;
-        }
-        Material held = ResidenceListener1_09.getHeldMaterial(event);
-
-        if (held != Material.FLINT_AND_STEEL && held != Material.FIRE_CHARGE) {
-            return;
-        }
-        Player player = event.getPlayer();
-
-        if (FlagPermissions.shouldDenyAndNotify(player, entity, Flags.ignite, Flags.animalkilling)) {
-            event.setCancelled(true);
-        }
-    }
-
     // fix https://github.com/PaperMC/Paper/issues/14149
     @EventHandler(priority = EventPriority.LOWEST) // Do not use (ignoreCancelled = true)
     public void onPlayerSulfurCubeBucketEmpty(PlayerInteractEvent event) {
-
+        // https://github.com/PaperMC/Paper/pull/14150
+        if (Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v26_3_0)) {
+            return;
+        }
         if (event.useItemInHand() == Result.DENY) {
             return;
         }

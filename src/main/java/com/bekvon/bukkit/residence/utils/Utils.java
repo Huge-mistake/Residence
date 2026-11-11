@@ -393,6 +393,17 @@ public class Utils {
         return false;
     }
 
+    public static boolean isIgniteTntSulfurCube(Entity entity, ItemStack item) {
+        if (item != null && Version.isCurrentEqualOrHigher(Version.v26_2_0) && entity instanceof org.bukkit.entity.SulfurCube) {
+            EntityEquipment equipment = ((LivingEntity) entity).getEquipment();
+            if (equipment != null && equipment.getItem(EquipmentSlot.BODY).getType() == Material.TNT) {
+                Material mat = item.getType();
+                return mat == Material.FLINT_AND_STEEL || mat == Material.FIRE_CHARGE;
+            }
+        }
+        return false;
+    }
+
     public static boolean isChorusTeleport(TeleportCause tpcause) {
         return Version.isCurrentEqualOrHigher(Version.v1_9_0) && tpcause == TeleportCause.CHORUS_FRUIT;
     }

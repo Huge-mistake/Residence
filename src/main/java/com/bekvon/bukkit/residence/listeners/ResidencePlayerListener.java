@@ -1417,22 +1417,25 @@ public class ResidencePlayerListener implements Listener {
         } else if (Flags.trade.isGlobalyEnabled() && Utils.isAbstractVillager(entity)) {
             mainFlag = Flags.trade;
 
-        } else if (Flags.copper.isGlobalyEnabled() && Utils.isReadyToChangeCopperGolem(entity, item)) {
-            mainFlag = Flags.copper;
-            subFlag = Flags.animalkilling;
-
         } else if (Flags.dye.isGlobalyEnabled() && entity instanceof Sheep && held != null && held.containsCriteria(CMIMC.DYE)) {
             mainFlag = Flags.dye;
             subFlag = Flags.animalkilling;
 
         } else if (Flags.nametag.isGlobalyEnabled() && entity instanceof LivingEntity && held == CMIMaterial.NAME_TAG) {
-
             mainFlag = Flags.nametag;
             if (Utils.isAnimal(entity)) {
                 subFlag = Flags.animalkilling;
             } else if (Utils.isMonster(entity)) {
                 subFlag = Flags.mobkilling;
             }
+
+        } else if (Flags.copper.isGlobalyEnabled() && Utils.isReadyToChangeCopperGolem(entity, item)) {
+            mainFlag = Flags.copper;
+            subFlag = Flags.animalkilling;
+
+        } else if (Flags.ignite.isGlobalyEnabled() && Utils.isIgniteTntSulfurCube(entity, item)) {
+            mainFlag = Flags.ignite;
+            subFlag = Flags.animalkilling;
 
         }
 
@@ -1541,7 +1544,7 @@ public class ResidencePlayerListener implements Listener {
         if (plugin.isDisabledWorldListener(player)) {
             return;
         }
-        if (ResAdmin.isResAdmin(player)) {
+        if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
             return;
         }
         Block clickBlock = event.getBlockClicked();
@@ -1561,47 +1564,43 @@ public class ResidencePlayerListener implements Listener {
                 ? clickBlock.getLocation()
                 : clickBlock.getRelative(event.getBlockFace()).getLocation();
 
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(loc);
-        if (res != null) {
-            if (plugin.getConfigManager().preventRentModify() && plugin.getConfigManager().enabledRentSystem()) {
-                if (plugin.getRentManager().isRented(res)) {
-                    lm.Rent_ModifyDeny.sendMessage(player);
-                    event.setCancelled(true);
-                    return;
-                }
-            }
+        ClaimedResidence res = ClaimedResidence.getByLoc(loc);
+        ConfigManager cfg = plugin.getConfigManager();
 
-            if ((res.getPermissions().playerHas(player, Flags.build, FlagCombo.OnlyFalse))
-                    && plugin.getConfigManager().getNoPlaceWorlds().contains(loc.getWorld().getName())) {
-                if (cmat == CMIMaterial.LAVA_BUCKET || cmat == CMIMaterial.WATER_BUCKET || cmat.containsCriteria(CMIMC.BUCKETANIMAL)) {
-                    lm.Flag_Deny.sendMessage(player, Flags.build);
-                    event.setCancelled(true);
-                    return;
-                }
-            }
-        }
-
-        if (FlagPermissions.shouldDenyAndNotify(player, loc, Flags.build, null)) {
+        if (res != null && cfg.preventRentModify() && cfg.enabledRentSystem() && plugin.getRentManager().isRented(res)) {
+            lm.Rent_ModifyDeny.sendMessage(player);
             event.setCancelled(true);
             return;
         }
+        FlagPermissions perms = FlagPermissions.getResOrWorldPerms(res, player);
 
-        int level = plugin.getConfigManager().getPlaceLevel();
-        if (res == null && plugin.getConfigManager().isNoLavaPlace() && loc.getBlockY() >= level - 1 && plugin.getConfigManager()
-                .getNoPlaceWorlds().contains(loc.getWorld().getName())) {
-            if (cmat == CMIMaterial.LAVA_BUCKET) {
-                lm.General_CantPlaceLava.sendMessage(player, level);
-                event.setCancelled(true);
+        if (!perms.playerHas(player, Flags.place, perms.playerHas(player, Flags.build, true))) {
+            lm.Flag_Deny.sendMessage(player, Flags.place);
+            event.setCancelled(true);
+            return;
+        }
+        if (res == null) {
+            boolean isLava = (cmat == CMIMaterial.LAVA_BUCKET);
+            boolean isWater = (cmat == CMIMaterial.WATER_BUCKET || cmat.containsCriteria(CMIMC.BUCKETANIMAL));
+            boolean shouldDeny = (cfg.isNoLavaPlace() && isLava) || (cfg.isNoWaterPlace() && isWater);
+
+            if (!shouldDeny) {
                 return;
             }
-        }
-
-        if (res == null && plugin.getConfigManager().isNoWaterPlace() && loc.getBlockY() >= level - 1 && plugin.getConfigManager()
-                .getNoPlaceWorlds().contains(loc.getWorld().getName())) {
-            if (cmat == CMIMaterial.WATER_BUCKET || cmat.containsCriteria(CMIMC.BUCKETANIMAL)) {
-                lm.General_CantPlaceWater.sendMessage(player, level);
-                event.setCancelled(true);
+            if (loc.getBlockY() < cfg.getPlaceLevel()) {
+                return;
             }
+            if (!cfg.getNoPlaceWorlds().contains(loc.getWorld().getName())) {
+                return;
+            }
+            int level = cfg.getPlaceLevel();
+
+            if (isLava) {
+                lm.General_CantPlaceLava.sendMessage(player, level);
+            } else {
+                lm.General_CantPlaceWater.sendMessage(player, level);
+            }
+            event.setCancelled(true);
         }
     }
 
@@ -1612,7 +1611,7 @@ public class ResidencePlayerListener implements Listener {
         if (plugin.isDisabledWorldListener(player)) {
             return;
         }
-        if (ResAdmin.isResAdmin(player)) {
+        if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
             return;
         }
         // Cauldron uses CauldronLevelChangeEvent for checks on 1.9+
@@ -1622,12 +1621,17 @@ public class ResidencePlayerListener implements Listener {
         Location loc = event.getBlockClicked().getLocation();
 
         ClaimedResidence res = ClaimedResidence.getByLoc(loc);
-        if (res != null && plugin.getConfigManager().preventRentModify() && plugin.getConfigManager().enabledRentSystem() && plugin.getRentManager().isRented(res)) {
+        ConfigManager cfg = plugin.getConfigManager();
+
+        if (res != null && cfg.preventRentModify() && cfg.enabledRentSystem() && plugin.getRentManager().isRented(res)) {
             lm.Rent_ModifyDeny.sendMessage(player);
             event.setCancelled(true);
             return;
         }
-        if (FlagPermissions.shouldDenyAndNotify(player, loc, Flags.destroy, Flags.build)) {
+        FlagPermissions perms = FlagPermissions.getResOrWorldPerms(res, player);
+
+        if (!perms.playerHas(player, Flags.destroy, perms.playerHas(player, Flags.build, true))) {
+            lm.Flag_Deny.sendMessage(player, Flags.destroy);
             event.setCancelled(true);
         }
     }

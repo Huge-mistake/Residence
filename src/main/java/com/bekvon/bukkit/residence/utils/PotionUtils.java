@@ -117,18 +117,14 @@ public class PotionUtils {
                 if (attackerPlayer == victim) {
                     return false;
                 }
-                FlagPermissions attackerPerms = (attackerRes != null)
-                        ? attackerRes.getPermissions()
-                        : Residence.getInstance().getWorldFlags().getPerms(attackerPlayer.getWorld());
+                FlagPermissions attackerPerms = FlagPermissions.getResOrWorldPerms(attackerRes, attackerPlayer);
                 // if PVP disabled at attacker location, deny the effect
                 if (attackerPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
                     lm.Flag_Deny.sendMessage(attackerPlayer, Flags.pvp);
                     return true;
                 }
                 ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());
-                FlagPermissions victimPerms = (victimRes != null)
-                        ? victimRes.getPermissions()
-                        : Residence.getInstance().getWorldFlags().getPerms(victim.getWorld());
+                FlagPermissions victimPerms = FlagPermissions.getResOrWorldPerms(victimRes, victim);
                 // if PVP disabled at victim location, deny the effect
                 if (victimPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
                     lm.Flag_Deny.sendMessage(attackerPlayer, Flags.pvp);

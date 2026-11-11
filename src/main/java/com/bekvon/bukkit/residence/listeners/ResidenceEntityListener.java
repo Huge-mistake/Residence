@@ -307,9 +307,7 @@ public class ResidenceEntityListener implements Listener {
                 if (entity instanceof Projectile && Utils.isSameResidenceOwner((Projectile) entity, res)) {
                     return;
                 }
-                perms = (res != null)
-                        ? res.getPermissions()
-                        : plugin.getWorldFlags().getPerms(block.getWorld());
+                perms = FlagPermissions.getResOrWorldPerms(res, block);
                 if (perms.has(flag, perms.has(Flags.use, true))) {
                     return;
                 }
@@ -762,9 +760,7 @@ public class ResidenceEntityListener implements Listener {
             if (source instanceof Projectile && Utils.isSameResidenceOwner((Projectile) source, res)) {
                 return false;
             }
-            FlagPermissions perms = (res != null)
-                    ? res.getPermissions()
-                    : Residence.getInstance().getWorldFlags().getPerms(targetLoc.getWorld());
+            FlagPermissions perms = FlagPermissions.getResOrWorldPerms(res, targetLoc);
 
             boolean result = (subFlag == null) || perms.has(subFlag, true);
 
@@ -1434,9 +1430,7 @@ public class ResidenceEntityListener implements Listener {
                     return;
                 }
             }
-            FlagPermissions perms = (res != null)
-                    ? res.getPermissions()
-                    : plugin.getWorldFlags().getPerms(victim.getWorld());
+            FlagPermissions perms = FlagPermissions.getResOrWorldPerms(res, victim);
 
             if (!perms.has(Flags.destroy, perms.has(Flags.build, true))) {
                 event.setCancelled(true);
