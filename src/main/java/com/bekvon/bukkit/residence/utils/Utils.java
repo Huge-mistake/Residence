@@ -376,7 +376,6 @@ public class Utils {
     }
 
     private static boolean isCopperGolemHoldingItem(Entity entity) {
-        // Right-click copper golem holding item to make it drop item
         if (isCopperGolem(entity)) {
             EntityEquipment equipment = ((LivingEntity) entity).getEquipment();
             return equipment != null && equipment.getItemInMainHand().getType() != Material.AIR;
