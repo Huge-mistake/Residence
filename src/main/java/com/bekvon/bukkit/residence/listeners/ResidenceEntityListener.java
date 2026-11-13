@@ -1125,8 +1125,9 @@ public class ResidenceEntityListener implements Listener {
             if (dispenserRes != null && (dispenserRes == potionHitRes || dispenserRes.isOwner(potionHitRes.getOwner()))) {
                 return;
             }
+            FlagPermissions perms = potionHitRes.getPermissions();
             // Prevent Potion from being spawned into a Residence from outside
-            if (potionHitRes.getPermissions().has(Flags.build, FlagCombo.OnlyFalse)) {
+            if (!perms.has(Flags.place, perms.has(Flags.build, true))) {
                 event.setCancelled(true);
             }
             return;
@@ -1447,48 +1448,69 @@ public class ResidenceEntityListener implements Listener {
             return;
         }
         DamageCause cause = event.getCause();
-        if (Flags.damage.isGlobalyEnabled() && cause != DamageCause.VOID
-                && (entity instanceof Player || Utils.isTamed(entity))
-                && FlagPermissions.has(entity.getLocation(), Flags.damage, FlagCombo.OnlyFalse)) {
-            event.setCancelled(true);
-            entity.setFireTicks(0);
+        boolean shouldClearFire = false;
 
-        } else if (Flags.falldamage.isGlobalyEnabled() && cause == DamageCause.FALL && entity instanceof Player) {
-            if (FlagPermissions.has(entity.getLocation(), Flags.falldamage, FlagCombo.OnlyFalse)) {
+        FlagPermissions perms = null;
+        Flags mainFlag = null;
+        Flags subFlag = null;
+
+        if (Flags.damage.isGlobalyEnabled() && cause != DamageCause.VOID && (entity instanceof Player || Utils.isTamed(entity))) {
+            perms = FlagPermissions.getPerms(entity.getLocation());
+            if (perms.has(Flags.damage, FlagCombo.OnlyFalse)) {
                 event.setCancelled(true);
+                entity.setFireTicks(0);
+                return;
             }
+        }
+
+        if (Flags.falldamage.isGlobalyEnabled() && cause == DamageCause.FALL && entity instanceof Player) {
+            mainFlag = Flags.falldamage;
+
         } else if (Flags.pvp.isGlobalyEnabled() && cause == DamageCause.LIGHTNING && entity instanceof Player) {
-            if (FlagPermissions.has(entity.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
-                event.setCancelled(true);
-            }
+            mainFlag = Flags.pvp;
+
         } else if (Flags.destroy.isGlobalyEnabled()
                 && (cause == DamageCause.BLOCK_EXPLOSION || cause == DamageCause.ENTITY_EXPLOSION || cause == DamageCause.FIRE_TICK)
                 && (entity instanceof Arrow || Utils.isArmorStand(entity))) {
-            if (FlagPermissions.has(entity.getLocation(), Flags.destroy, FlagCombo.OnlyFalse)) {
-                event.setCancelled(true);
-                entity.setFireTicks(0);
-            }
+            shouldClearFire = (cause == DamageCause.FIRE_TICK);
+            mainFlag = Flags.destroy;
+            subFlag = Flags.build;
+
             // Even if BlockExplodeEvent is canceled, damage will still be dealt
             // Fix bed and respawn anchor explosions damaging entities
         } else if (cause == DamageCause.BLOCK_EXPLOSION) {
             if (Flags.pvp.isGlobalyEnabled() && entity instanceof Player) {
-                if (FlagPermissions.has(entity.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
-                    event.setCancelled(true);
-                }
+                mainFlag = Flags.pvp;
+                subFlag = Flags.explode;
+
             } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(entity)) {
-                if (FlagPermissions.has(entity.getLocation(), Flags.animalkilling, FlagCombo.OnlyFalse)) {
-                    event.setCancelled(true);
-                }
+                mainFlag = Flags.animalkilling;
+                subFlag = Flags.explode;
+
             } else if (Flags.mobkilling.isGlobalyEnabled() && Utils.isMonster(entity)) {
-                if (FlagPermissions.has(entity.getLocation(), Flags.mobkilling, FlagCombo.OnlyFalse)) {
-                    event.setCancelled(true);
-                }
+                mainFlag = Flags.mobkilling;
+                subFlag = Flags.explode;
+
             } else if (Flags.explode.isGlobalyEnabled()) {
-                FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
-                if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
-                    event.setCancelled(true);
-                }
+                mainFlag = Flags.explode;
+                subFlag = Flags.destroy;
+
             }
+        }
+
+        if (mainFlag == null) {
+            return;
+        }
+        if (perms == null) {
+            perms = FlagPermissions.getPerms(entity.getLocation());
+        }
+        boolean result = (subFlag == null) || perms.has(subFlag, true);
+        if (perms.has(mainFlag, result)) {
+            return;
+        }
+        event.setCancelled(true);
+        if (shouldClearFire) {
+            entity.setFireTicks(0);
         }
     }
 }

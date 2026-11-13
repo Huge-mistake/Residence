@@ -38,7 +38,7 @@ public class ResidenceListener26_2 implements Listener {
         if (block == null) {
             return;
         }
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, block)) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.place, block)) {
             return;
         }
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
@@ -48,8 +48,9 @@ public class ResidenceListener26_2 implements Listener {
             return;
         }
         Player player = event.getPlayer();
+        Block target = block.getRelative(event.getBlockFace());
 
-        if (FlagPermissions.shouldDenyAndNotify(player, block.getRelative(event.getBlockFace()), Flags.build, null)) {
+        if (FlagPermissions.shouldDenyAndNotify(player, target, Flags.place, Flags.build)) {
             event.setCancelled(true);
         }
     }

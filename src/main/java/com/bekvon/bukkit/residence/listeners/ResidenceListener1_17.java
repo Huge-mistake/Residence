@@ -102,7 +102,7 @@ public class ResidenceListener1_17 implements Listener {
 
         Block block = event.getBlock();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, block)) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.place, block)) {
             return;
         }
         if (ResidenceBlockListener.handlePlantGrowCrossResidence(event.getBlocks(), block.getLocation(), event.getPlayer())) {

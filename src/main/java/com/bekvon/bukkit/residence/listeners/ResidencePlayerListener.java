@@ -2587,7 +2587,7 @@ public class ResidencePlayerListener implements Listener {
         if (!(shooter instanceof Player)) {
             return;
         }
-        if (FlagPermissions.shouldDenyAndNotify((Player) shooter, projectile, Flags.build)) {
+        if (FlagPermissions.shouldDenyAndNotify((Player) shooter, projectile, Flags.place, Flags.build)) {
             event.setCancelled(true);
         }
     }
@@ -2615,7 +2615,7 @@ public class ResidencePlayerListener implements Listener {
         if (ResAdmin.isResAdmin(player)) {
             return;
         }
-        lm.Flag_Deny.sendMessage(player, Flags.build);
+        lm.Flag_Deny.sendMessage(player, Flags.place);
         event.setCancelled(true);
 
     }

@@ -32,7 +32,7 @@ public class ResidenceListener1_15 implements Listener {
         if (block == null)
             return;
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, block)) {
+        if (plugin.isDisabledWorldListener(block)) {
             return;
         }
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
@@ -53,9 +53,9 @@ public class ResidenceListener1_15 implements Listener {
             flag = Flags.honeycomb;
         }
 
-        if (flag == null)
+        if (flag == null || !flag.isGlobalyEnabled()) {
             return;
-
+        }
         Reflections ref = CMILib.getInstance().getReflectionManager();
 
         if (ref.getHoneyLevel(block) < ref.getMaxHoneyLevel(block)) {

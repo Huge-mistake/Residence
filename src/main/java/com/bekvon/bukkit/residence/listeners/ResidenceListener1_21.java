@@ -127,31 +127,35 @@ public class ResidenceListener1_21 implements Listener {
         if (!ent.hasPotionEffect(PotionEffectType.WEAVING))
             return;
 
+        Player player = null;
+        Flags mainFlag = null;
+
         if (Flags.animalgriefing.isGlobalyEnabled() && Utils.isAnimal(ent)) {
-            FlagPermissions perms = FlagPermissions.getPerms(ent.getLocation());
-            if (perms.has(Flags.animalgriefing, perms.has(Flags.build, true))) {
-                return;
-            }
+            mainFlag = Flags.animalgriefing;
 
         } else if (Flags.mobgriefing.isGlobalyEnabled() && Utils.isMonster(ent)) {
-            FlagPermissions perms = FlagPermissions.getPerms(ent.getLocation());
-            if (perms.has(Flags.mobgriefing, perms.has(Flags.build, true))) {
+            mainFlag = Flags.mobgriefing;
+
+        } else if (Flags.place.isGlobalyEnabled()) {
+            if (ent instanceof Player) {
+                player = (Player) ent;
+            }
+            mainFlag = Flags.place;
+
+        }
+
+        if (mainFlag == null) {
+            return;
+        }
+        if (player != null) {
+            if (!FlagPermissions.shouldDenyAndNotify(player, player, Flags.place, Flags.build)) {
                 return;
             }
-
-        } else if (Flags.build.isGlobalyEnabled()) {
-            if (ent instanceof Player) {
-                Player player = (Player) ent;
-                if (!FlagPermissions.shouldDenyAndNotify(player, Flags.build)) {
-                    return;
-                }
-            } else {
-                if (FlagPermissions.has(ent.getLocation(), Flags.build, true)) {
-                    return;
-                }
-            }
         } else {
-            return;
+            FlagPermissions perms = FlagPermissions.getPerms(ent.getLocation());
+            if (perms.has(mainFlag, perms.has(Flags.build, true))) {
+                return;
+            }
         }
         // Removing weaving effect on death as there is no other way to properly handle
         // this effect inside residence

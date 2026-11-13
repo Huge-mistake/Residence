@@ -1,6 +1,5 @@
 package com.bekvon.bukkit.residence.listeners;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -63,18 +62,16 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         if (statueRes == null)
             return;
 
-        Location entSpawnLoc = event.getEntity().getOrigin();
-        if (entSpawnLoc != null) {
+        ClaimedResidence entSpawnRes = ClaimedResidence.getByLoc(event.getEntity().getOrigin());
 
-            ClaimedResidence entSpawnRes = ClaimedResidence.getByLoc(entSpawnLoc);
-
-            if (entSpawnRes != null && (entSpawnRes == statueRes || entSpawnRes.isOwner(statueRes.getOwner())))
-                return;
-
+        if (entSpawnRes != null && (entSpawnRes == statueRes || entSpawnRes.isOwner(statueRes.getOwner()))) {
+            return;
         }
 
-        if (statueRes.getPermissions().has(Flags.build, true))
+        FlagPermissions perms = statueRes.getPermissions();
+        if (perms.has(Flags.place, perms.has(Flags.build, true))) {
             return;
+        }
 
         event.setCancelled(true);
 

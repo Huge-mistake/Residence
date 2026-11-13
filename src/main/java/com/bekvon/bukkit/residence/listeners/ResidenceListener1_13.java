@@ -144,7 +144,7 @@ public class ResidenceListener1_13 implements Listener {
 
         Block sponge = event.getBlock();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, sponge)) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.place, sponge)) {
             return;
         }
         ClaimedResidence spongeRes = ClaimedResidence.getByLoc(sponge.getLocation());

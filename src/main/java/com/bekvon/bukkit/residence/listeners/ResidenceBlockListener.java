@@ -172,7 +172,7 @@ public class ResidenceBlockListener implements Listener {
 
         }
         // Prevent griefers from introducing vines, sculk blocks, etc. from outside into Residences
-        if (Flags.build.isGlobalyEnabled() && type != CMIMaterial.GRASS_BLOCK && type != CMIMaterial.MYCELIUM) {
+        if (Flags.place.isGlobalyEnabled() && type != CMIMaterial.GRASS_BLOCK && type != CMIMaterial.MYCELIUM) {
             ClaimedResidence sourceRes = ClaimedResidence.getByLoc(source.getLocation());
             if (shouldDenySpread(event.getNewState(), sourceRes, null)) {
                 event.setCancelled(true);
@@ -207,8 +207,12 @@ public class ResidenceBlockListener implements Listener {
             }
         }
         // Prevent griefers from placing tree-related blocks from outside into Residences
-        if (Flags.build.isGlobalyEnabled()) {
-            if (handlePlantGrowCrossResidence(event.getBlocks(), event.getLocation(), event.getPlayer())) {
+        if (Flags.place.isGlobalyEnabled()) {
+            Player player = event.getPlayer();
+            if (player != null && (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player))) {
+                return;
+            }
+            if (handlePlantGrowCrossResidence(event.getBlocks(), event.getLocation(), player)) {
                 event.setCancelled(true);
             }
         }
@@ -221,7 +225,7 @@ public class ResidenceBlockListener implements Listener {
                 return false;
             }
             // cancel the event if the player lacks build permission at the source location
-            if (FlagPermissions.shouldDenyAndNotify(player, sourceLoc, Flags.build, null)) {
+            if (FlagPermissions.shouldDenyAndNotify(player, sourceLoc, Flags.place, Flags.build)) {
                 return true;
             }
         }
@@ -243,11 +247,12 @@ public class ResidenceBlockListener implements Listener {
         if (sourceRes != null && (sourceRes == spreadRes || sourceRes.isOwner(spreadRes.getOwner()))) {
             return false;
         }
+        FlagPermissions perms = spreadRes.getPermissions();
         // source & spread-block not in same Res, not same Res owner
         if (player != null) {
-            return spreadRes.getPermissions().playerHas(player, Flags.build, FlagCombo.OnlyFalse);
+            return !perms.playerHas(player, Flags.place, perms.playerHas(player, Flags.build, true));
         } else {
-            return spreadRes.getPermissions().has(Flags.build, FlagCombo.OnlyFalse);
+            return !perms.has(Flags.place, perms.has(Flags.build, true));
         }
     }
 
@@ -336,38 +341,46 @@ public class ResidenceBlockListener implements Listener {
             return;
         }
         Entity entity = event.getEntity();
+        Player player = null;
+        Flags mainFlag = null;
+        Flags subFlag = null;
 
         if (Flags.place.isGlobalyEnabled() && entity instanceof Player) {
-            Player player = (Player) entity;
-            // Prevent Frosted Ice generation from Frost Walker without notifying players
-            if (FlagPermissions.shouldDenyAndNotify(player, block, Flags.place, Flags.build, false)) {
-                event.setCancelled(true);
-            }
+            player = (Player) entity;
+            mainFlag = Flags.place;
+            subFlag = Flags.build;
 
         } else if (Flags.snowtrail.isGlobalyEnabled() && entity instanceof Snowman) {
-            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
-            if (!perms.has(Flags.snowtrail, true)) {
-                event.setCancelled(true);
-            }
+            mainFlag = Flags.snowtrail;
 
         } else if (Flags.animalgriefing.isGlobalyEnabled() && Utils.isAnimal(entity)) {
-            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
-            if (!perms.has(Flags.animalgriefing, perms.has(Flags.build, true))) {
-                event.setCancelled(true);
-            }
+            mainFlag = Flags.animalgriefing;
+            subFlag = Flags.build;
 
         } else if (Flags.mobgriefing.isGlobalyEnabled() && Utils.isMonster(entity)) {
-            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
-            if (!perms.has(Flags.mobgriefing, perms.has(Flags.build, true))) {
+            mainFlag = Flags.mobgriefing;
+            subFlag = Flags.build;
+
+        } else if (Flags.place.isGlobalyEnabled()) {
+            mainFlag = Flags.place;
+            subFlag = Flags.build;
+
+        }
+
+        if (mainFlag == null) {
+            return;
+        }
+        if (player != null) {
+            if (FlagPermissions.shouldDenyAndNotify(player, block, mainFlag, subFlag)) {
                 event.setCancelled(true);
             }
 
-        } else if (Flags.build.isGlobalyEnabled()) {
+        } else {
             FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
-            if (!perms.has(Flags.build, true)) {
+            boolean result = (subFlag == null) || perms.has(subFlag, true);
+            if (!perms.has(mainFlag, result)) {
                 event.setCancelled(true);
             }
-
         }
     }
 
@@ -969,7 +982,7 @@ public class ResidenceBlockListener implements Listener {
 
         Block block = event.getBlock();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, block)) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.place, block)) {
             return;
         }
         if (CMIMaterial.get(block.getType()) != CMIMaterial.DISPENSER)
@@ -1007,7 +1020,8 @@ public class ResidenceBlockListener implements Listener {
         if (sourceRes != null && (sourceRes == targetRes || sourceRes.isOwner(targetRes.getOwner()))) {
             return;
         }
-        if (targetRes.getPermissions().has(Flags.build, true)) {
+        FlagPermissions perms = targetRes.getPermissions();
+        if (perms.has(Flags.place, perms.has(Flags.build, true))) {
             return;
         }
         event.setCancelled(true);
@@ -1029,7 +1043,7 @@ public class ResidenceBlockListener implements Listener {
 
         World world = event.getWorld();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, world)) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.place, world)) {
             return;
         }
         if (!event.getReason().toString().equals("NETHER_PAIR"))
@@ -1047,31 +1061,23 @@ public class ResidenceBlockListener implements Listener {
             return;
         }
         ArrayList<Vector> corners = getNetherPortalCorners(event);
-        FlagPermissions worldPerms = null;
 
         for (Vector one : corners) {
             Location loc = new Location(world, one.getX(), one.getY(), one.getZ());
             ClaimedResidence res = ClaimedResidence.getByLoc(loc);
-            // Avoid repeatedly fetching world permissions
-            if (res == null && worldPerms == null) {
-                worldPerms = (player != null)
-                        ? Residence.getInstance().getWorldFlags().getPerms(player)
-                        : Residence.getInstance().getWorldFlags().getPerms(world);
-            }
-            FlagPermissions perms = (res != null)
-                    ? res.getPermissions()
-                    : worldPerms;
+            FlagPermissions perms = FlagPermissions.getResOrWorldPerms(res, loc);
 
-            boolean canBuild;
+            boolean canPlace;
             if (player != null) {
-                canBuild = perms.playerHas(player, Flags.build, true);
-                if (!canBuild) {
+                canPlace = perms.playerHas(player, Flags.place, perms.playerHas(player, Flags.build, true));
+            } else {
+                canPlace = perms.has(Flags.place, perms.has(Flags.build, true));
+            }
+
+            if (!canPlace) {
+                if (player != null) {
                     lm.Invalid_PortalDestination.sendMessage(player);
                 }
-            } else {
-                canBuild = perms.has(Flags.build, true);
-            }
-            if (!canBuild) {
                 event.setCancelled(true);
                 return;
             }
