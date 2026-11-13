@@ -8,8 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.EntityEquipment;
-import org.bukkit.inventory.EquipmentSlot;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
@@ -43,16 +41,10 @@ public class ResidenceListener1_21_8_Paper implements Listener {
     public static boolean shouldCancelKnockBack(Entity victim, Entity pushedBy) {
         Player attackerPlayer = Utils.getPlayerSource(pushedBy);
 
-        if (victim instanceof ArmorStand) {
-            return shouldDeny(victim, attackerPlayer, Flags.destroy, null);
-        }
-        if (victim instanceof Boat || victim instanceof Minecart) {
-            return shouldDeny(victim, attackerPlayer, Flags.vehicledestroy, null);
-        }
         if (victim instanceof Player) {
             // Monster-on-player knockback doesn't need to check Flags.pvp
             // Skip the check when players knock themselves back (e.g., by Wind Charges)
-            if (attackerPlayer == null || attackerPlayer == victim) {
+            if (!Flags.pvp.isGlobalyEnabled() || attackerPlayer == null || attackerPlayer == victim) {
                 return false;
             }
             if (FlagPermissions.has(attackerPlayer.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)
@@ -62,31 +54,40 @@ public class ResidenceListener1_21_8_Paper implements Listener {
             }
             return false;
         }
-        if (Utils.isAnimal(victim)) {
-            // SulfurCube containing blocks doesn't take damage
-            // preferentially uses Flags.push instead on Paper 26.2+
-            if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()
-                    && victim instanceof org.bukkit.entity.SulfurCube) {
 
-                EntityEquipment equipment = ((org.bukkit.entity.SulfurCube) victim).getEquipment();
-                // Check if SulfurCube has a block inside
-                if (equipment != null && !equipment.getItem(EquipmentSlot.BODY).isEmpty()) {
-                    return shouldDeny(victim, attackerPlayer, Flags.push, Flags.animalkilling);
-                }
+        Flags mainFlag = null;
+        Flags subFlag = null;
+
+        if (victim instanceof ArmorStand) {
+            mainFlag = Flags.destroy;
+
+        } else if (victim instanceof Boat || victim instanceof Minecart) {
+            mainFlag = Flags.vehicledestroy;
+
+        } else if (Utils.isAnimal(victim)) {
+            // SulfurCube containing blocks are immune to damage
+            // Use Flags.push instead of Flags.animalkilling on Paper 26.2+
+            // to ensure consistent push flag behavior for SulfurCube
+            if (Version.isCurrentEqualOrHigher(Version.v26_2_0) && Version.isPaperBranch()
+                    && ResidenceListener26_2_Paper.isSulfurCubeHoldingBlock(victim)) {
+                mainFlag = Flags.push;
+                subFlag = Flags.animalkilling;
                 // SulfurCube without blocks still checks Flags.animalkilling
+            } else {
+                mainFlag = Flags.animalkilling;
+
             }
-            return shouldDeny(victim, attackerPlayer, Flags.animalkilling, null);
+        } else if (Utils.isMonster(victim)) {
+            mainFlag = Flags.mobkilling;
+
         }
-        if (Utils.isMonster(victim)) {
-            return shouldDeny(victim, attackerPlayer, Flags.mobkilling, null);
+        if (mainFlag == null || !mainFlag.isGlobalyEnabled()) {
+            return false;
         }
-        return false;
+        return shouldDeny(victim, attackerPlayer, mainFlag, subFlag);
     }
 
     private static boolean shouldDeny(Entity victim, Player attackerPlayer, Flags mainFlag, Flags subFlag) {
-        if (!mainFlag.isGlobalyEnabled()) {
-            return false;
-        }
         if (attackerPlayer != null) {
 
             return FlagPermissions.shouldDenyAndNotify(attackerPlayer, victim, mainFlag, subFlag);
