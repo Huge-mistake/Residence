@@ -32,10 +32,10 @@ public class ResidenceListener1_20 implements Listener {
 
         Player player = event.getPlayer();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, player)) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.editsign, player)) {
             return;
         }
-        if (FlagPermissions.shouldDenyAndNotify(player, event.getSign().getLocation(), Flags.build, Flags.use)) {
+        if (FlagPermissions.shouldDenyAndNotify(player, event.getSign().getLocation(), Flags.editsign, Flags.build)) {
             event.setCancelled(true);
         }
     }

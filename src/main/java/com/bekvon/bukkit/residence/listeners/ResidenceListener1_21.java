@@ -148,7 +148,7 @@ public class ResidenceListener1_21 implements Listener {
             return;
         }
         if (player != null) {
-            if (!FlagPermissions.shouldDenyAndNotify(player, player, Flags.place, Flags.build)) {
+            if (!FlagPermissions.shouldDenyAndNotify(player, player, mainFlag, Flags.build)) {
                 return;
             }
         } else {

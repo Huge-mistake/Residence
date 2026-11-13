@@ -139,6 +139,9 @@ Global:
     # Allows or denys sheep dyeing
     dye: true
     # Applies to: Both
+    # Allow or deny player opening sign edit GUI (1.20+)
+    editsign: true
+    # Applies to: Both
     # Allows or denys interaction with dragon egg
     egg: true
     # Applies to: Both
@@ -484,6 +487,7 @@ Global:
     dragongrief: DIRT
     dryup: BLUE_STAINED_GLASS_PANE
     dye: ORANGE_DYE
+    editsign: OAK_SIGN
     egg: EGG
     elytra: ELYTRA
     enchant: ENCHANTING_TABLE

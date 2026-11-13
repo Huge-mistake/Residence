@@ -50,6 +50,7 @@ public enum Flags {
     dryup(CMIMaterial.BLUE_STAINED_GLASS_PANE, FlagMode.Residence, "Prevents land from drying up", true),
     diode(CMIMaterial.REPEATER, FlagMode.Both, "Allows or denys players to use redstone repeaters", true),
     door(CMIMaterial.OAK_DOOR, FlagMode.Both, "Allows or denys players to use doors and trapdoors", true),
+    editsign(CMIMaterial.OAK_SIGN, FlagMode.Both, "Allow or deny player opening sign edit GUI (1.20+)", true),
     egg(CMIMaterial.EGG, FlagMode.Both, "Allows or denys interaction with dragon egg", true),
     enchant(CMIMaterial.ENCHANTING_TABLE, FlagMode.Both, "Allows or denys players to use enchanting tables", true),
     explode(CMIMaterial.TNT_MINECART, FlagMode.Residence, "Allows or denys explosions in residences", true),
