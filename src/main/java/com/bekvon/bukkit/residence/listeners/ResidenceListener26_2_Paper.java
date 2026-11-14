@@ -2,12 +2,12 @@ package com.bekvon.bukkit.residence.listeners;
 
 import java.util.List;
 
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.SulfurCube;
-import org.bukkit.event.Event.Result;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -20,7 +20,6 @@ import com.bekvon.bukkit.residence.listenersCache.PlayerCollideWithEntityCache.P
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.utils.Utils;
 
-import io.papermc.paper.event.entity.EntityAttemptSmashAttackEvent;
 import io.papermc.paper.event.entity.EntityCollideWithEntityEvent;
 import io.papermc.paper.event.entity.EntityKnockbackEvent;
 
@@ -87,49 +86,36 @@ public class ResidenceListener26_2_Paper implements Listener {
         return FlagPermissions.shouldDenyAndNotify(pushedBy, target, Flags.push, subFlag);
     }
 
-    // Fix protection bypass when attacking block-holding Sulfur Cubes with a mace.
-    // These attacks can trigger Smash Attacks and Wind Burst
-    // without firing EntityDamageByEntityEvent.
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onEntityAttemptSmashAttack(EntityAttemptSmashAttackEvent event) {
-
-        if (!event.getOriginalResult()) {
-            return;
-        }
-        Entity target = event.getTarget();
-
-        if (!isSulfurCubeHoldingBlock(target)) {
-            return;
-        }
-        Entity attack = event.getEntity();
-
-        if (!(attack instanceof Player)) {
-            return;
-        }
-        // SulfurCube containing blocks are immune to damage
-        // Use Flags.push instead of Flags.animalkilling on Paper 26.2+
-        // to ensure consistent push flag behavior for SulfurCube
-        if (FlagPermissions.shouldDenyAndNotify((Player) attack, target, Flags.push, Flags.animalkilling)) {
-            event.setResult(Result.DENY);
-        }
-    }
-
     public static boolean isSulfurCubeHoldingBlock(Entity entity) {
         return entity instanceof SulfurCube && !((SulfurCube) entity).getEquipped().isEmpty();
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onSulfurCubeKnockbackByExplode(EntityKnockbackEvent event) {
+    public void onEntityKnockbackByExplode(EntityKnockbackEvent event) {
 
         if (event.getCause() != EntityKnockbackEvent.Cause.EXPLOSION) {
             return;
         }
         Entity entity = event.getEntity();
-        if (!isSulfurCubeHoldingBlock(entity)) {
+        Flags mainFlag = null;
+        Flags subFlag = null;
+
+        if (isSulfurCubeHoldingBlock(entity)) {
+            mainFlag = Flags.push;
+            subFlag = Flags.animalkilling;
+
+        } else if (entity instanceof ArmorStand) {
+            mainFlag = Flags.destroy;
+
+        }
+        if (mainFlag == null) {
             return;
         }
         FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
-        if (perms.has(Flags.push, perms.has(Flags.animalkilling, true))) {
+
+        boolean result = (subFlag == null || perms.has(subFlag, true));
+
+        if (perms.has(mainFlag, result)) {
             return;
         }
         event.setCancelled(true);
