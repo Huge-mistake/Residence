@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.util.Vector;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
@@ -34,8 +35,10 @@ public class ResidenceListener1_21_8_Paper implements Listener {
         if (plugin.isDisabledWorldListener(event.getEntity())) {
             return;
         }
-        if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy()))
+        if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy())) {
             event.setCancelled(true);
+            event.setKnockback(new Vector(0, 0, 0));
+        }
     }
 
     public static boolean shouldCancelKnockBack(Entity victim, Entity pushedBy) {
