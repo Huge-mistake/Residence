@@ -35,10 +35,8 @@ public class ResidenceListener1_21_8_Paper implements Listener {
         if (plugin.isDisabledWorldListener(event.getEntity())) {
             return;
         }
-        if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy())) {
+        if (shouldCancelKnockBack(event.getEntity(), event.getPushedBy()))
             event.setCancelled(true);
-            event.setKnockback(new Vector(0, 0, 0));
-        }
     }
 
     public static boolean shouldCancelKnockBack(Entity victim, Entity pushedBy) {

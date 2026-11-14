@@ -22,6 +22,7 @@ import com.bekvon.bukkit.residence.utils.Utils;
 
 import io.papermc.paper.event.entity.EntityAttemptSmashAttackEvent;
 import io.papermc.paper.event.entity.EntityCollideWithEntityEvent;
+import io.papermc.paper.event.entity.EntityKnockbackEvent;
 
 public class ResidenceListener26_2_Paper implements Listener {
 
@@ -115,5 +116,22 @@ public class ResidenceListener26_2_Paper implements Listener {
 
     public static boolean isSulfurCubeHoldingBlock(Entity entity) {
         return entity instanceof SulfurCube && !((SulfurCube) entity).getEquipped().isEmpty();
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onSulfurCubeKnockbackByExplode(EntityKnockbackEvent event) {
+
+        if (event.getCause() != EntityKnockbackEvent.Cause.EXPLOSION) {
+            return;
+        }
+        Entity entity = event.getEntity();
+        if (!isSulfurCubeHoldingBlock(entity)) {
+            return;
+        }
+        FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
+        if (perms.has(Flags.push, perms.has(Flags.animalkilling, true))) {
+            return;
+        }
+        event.setCancelled(true);
     }
 }
