@@ -892,10 +892,8 @@ public class ResidenceEntityListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
-
-        Entity entity = event.getEntity();
         // disabling event on world
-        if (plugin.isDisabledWorldListener(entity)) {
+        if (plugin.isDisabledWorldListener(event.getEntity())) {
             return;
         }
         // ExplosionResult.TRIGGER_BLOCK does not destroy blocks
@@ -988,10 +986,6 @@ public class ResidenceEntityListener implements Listener {
         }
         if (shouldDeny) {
             event.setCancelled(true);
-            // Fix End_Crystal not disappearing when EntityExplodeEvent is canceled in legacy versions
-            if (entity instanceof EnderCrystal) {
-                entity.remove();
-            }
             return;
         }
         // Source allows explosion, so check each affected block for destruction
