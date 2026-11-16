@@ -16,6 +16,7 @@ import org.bukkit.WeatherType;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.Damageable;
@@ -1094,7 +1095,7 @@ public class ResidencePlayerListener implements Listener {
                 loc = block.getRelative(event.getBlockFace()).getLocation();
 
             } else if (isBuildClickBlockTop(blockType, heldItem)) {
-                loc = block.getLocation().clone().add(0, 1, 0);
+                loc = block.getRelative(BlockFace.UP).getLocation();
 
             }
         } else {
