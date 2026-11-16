@@ -665,6 +665,7 @@ public class ResidenceBlockListener implements Listener {
             if (cmat == null) {
                 cmat = CMIMaterial.get(mat);
             }
+            // Prevent chest placement that merges chests across Residence boundaries
             if (cmat.containsCriteria(CMIMC.CHEST)) {
                 return canPlaceChest(player, block, mat, res);
             }
@@ -680,7 +681,7 @@ public class ResidenceBlockListener implements Listener {
             BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST
     };
 
-    private static boolean canPlaceChest(@NotNull Player player, @NotNull Block block, @NotNull Material chestType, @Nullable ClaimedResidence res) {
+    private static boolean canPlaceChest(Player player, Block block, Material chestType, ClaimedResidence res) {
         for (BlockFace blockFace : CHEST_FACES) {
             Block faceBlock = block.getRelative(blockFace);
             if (faceBlock.getType() != chestType) {
