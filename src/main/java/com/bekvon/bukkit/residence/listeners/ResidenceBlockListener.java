@@ -2,7 +2,6 @@ package com.bekvon.bukkit.residence.listeners;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -276,23 +275,17 @@ public class ResidenceBlockListener implements Listener {
             return true;
         }
         ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
-        FlagPermissions perms;
 
-        if (res != null) {
-            if (Residence.getInstance().getConfigManager().enabledRentSystem()
-                    && Residence.getInstance().getConfigManager().preventRentModify()
-                    && res.isRented()) {
-                if (inform) {
-                    lm.Rent_ModifyDeny.sendMessage(player);
-                }
-                return false;
+        if (res != null && Residence.getInstance().getConfigManager().enabledRentSystem()
+                && Residence.getInstance().getConfigManager().preventRentModify() && res.isRented()) {
+            if (inform) {
+                lm.Rent_ModifyDeny.sendMessage(player);
             }
-            // In Residence, get Residence permission status
-            perms = res.getPermissions();
-        } else {
-            // Not in Residence, get World permission status
-            perms = Residence.getInstance().getWorldFlags().getPerms(player);
+            return false;
         }
+
+        FlagPermissions perms = FlagPermissions.getResOrWorldPerms(res, player);
+
         boolean canBreak = perms.playerHas(player, Flags.destroy, perms.playerHas(player, Flags.build, true));
         // Residence raid active (not vanilla raid)
         if (res != null && ConfigManager.RaidEnabled && res.getRaid().isUnderRaid()) {
@@ -512,20 +505,8 @@ public class ResidenceBlockListener implements Listener {
             event.getEntity().setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, res.getName()));
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onChestPlace(BlockPlaceEvent event) {
-
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock()))
-            return;
+    private void handleNotifyNewPlayers(Player player) {
         if (!plugin.getConfigManager().ShowNoobMessage())
-            return;
-
-        Player player = event.getPlayer();
-        if (ResAdmin.isResAdmin(player))
-            return;
-        Block block = event.getBlock();
-        if (!CMIMaterial.get(block.getType()).containsCriteria(CMIMC.CHEST))
             return;
 
         if (plugin.getPlayerManager().getResidenceCount(player.getUniqueId()) != 0)
@@ -542,66 +523,8 @@ public class ResidenceBlockListener implements Listener {
         MessageInformed.add(player.getUniqueId());
     }
 
-    private boolean checkBlock(ClaimedResidence orRes, Location loc, Vector offset, Material type, Player player) {
-        Block b = loc.clone().add(offset).getBlock();
-        if (b.getType() != type)
-            return false;
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(b.getLocation());
-        return res != null && !res.equals(orRes) && !res.isOwner(player) && !res.isTrusted(player);
-    }
-
-    private static final List<Vector> chestVectors = new ArrayList<Vector>(Arrays.asList(
-            new Vector(0, 0, -1),
-            new Vector(0, 0, 1),
-            new Vector(1, 0, 0),
-            new Vector(-1, 0, 0)));
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onChestPlaceNearResidence(BlockPlaceEvent event) {
-
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock()))
-            return;
-
-        Player player = event.getPlayer();
-        if (ResAdmin.isResAdmin(player))
-            return;
-
-        Block block = event.getBlock();
-
-        Material type = block.getType();
-
-        if (!CMIMaterial.get(type).containsCriteria(CMIMC.CHEST))
-            return;
-
-        ClaimedResidence orRes = plugin.getResidenceManager().getByLoc(block.getLocation());
-
-        for (Vector vector : chestVectors) {
-            if (!checkBlock(orRes, block.getLocation(), vector, type, player))
-                continue;
-
-            CMIActionBar.send(player, lm.General_CantPlaceChest.getMessage());
-            event.setCancelled(true);
-            return;
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onChestPlaceCreateRes(BlockPlaceEvent event) {
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getBlock()))
-            return;
+    private void handleNewPlayerChestPlaceCreateRes(Player player, Block block) {
         if (!plugin.getConfigManager().isNewPlayerUse())
-            return;
-
-        Player player = event.getPlayer();
-
-        if (ResAdmin.isResAdmin(player))
-            return;
-
-        Block block = event.getBlock();
-
-        if (!CMIMaterial.get(block.getType()).containsCriteria(CMIMC.CHEST))
             return;
 
         ResidencePlayer rp = ResidencePlayer.get(player);
@@ -625,6 +548,29 @@ public class ResidenceBlockListener implements Listener {
         if (created) {
             rp.getData().ownedResidence(true);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onChestPlace(BlockPlaceEvent event) {
+        // BlockMultiPlaceEvent uses separate check logic
+        if (event instanceof BlockMultiPlaceEvent) {
+            return;
+        }
+        Block block = event.getBlock();
+
+        if (plugin.isDisabledWorldListener(block)) {
+            return;
+        }
+        if (!CMIMaterial.get(block.getType()).containsCriteria(CMIMC.CHEST)) {
+            return;
+        }
+        Player player = event.getPlayer();
+
+        if (player.hasMetadata("NPC") || ResAdmin.isResAdmin(player)) {
+            return;
+        }
+        handleNotifyNewPlayers(player);
+        handleNewPlayerChestPlaceCreateRes(player, block);
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -682,8 +628,8 @@ public class ResidenceBlockListener implements Listener {
             return true;
         }
         ClaimedResidence res = ClaimedResidence.getByLoc(block.getLocation());
+        CMIMaterial cmat = null;
         Material mat = block.getType();
-        FlagPermissions perms;
 
         if (res != null) {
             if (Residence.getInstance().getConfigManager().enabledRentSystem()
@@ -694,19 +640,17 @@ public class ResidenceBlockListener implements Listener {
                 }
                 return false;
             }
+            cmat = CMIMaterial.get(mat);
             // Residence item blacklist
-            if (!CMIMaterial.get(mat).isNone() && !res.getItemBlacklist().isAllowed(mat)) {
+            if (!cmat.isNone() && !res.getItemBlacklist().isAllowed(mat)) {
                 if (informPlayer) {
                     lm.General_ItemBlacklisted.sendMessage(player);
                 }
                 return false;
             }
-            // In Residence, get Residence permission status
-            perms = res.getPermissions();
-        } else {
-            // Not in Residence, get World permission status
-            perms = Residence.getInstance().getWorldFlags().getPerms(player);
         }
+        FlagPermissions perms = FlagPermissions.getResOrWorldPerms(res, player);
+
         boolean canPlace = perms.playerHas(player, Flags.place, perms.playerHas(player, Flags.build, true));
         // Residence raid active (not vanilla raid)
         if (res != null && ConfigManager.RaidEnabled && res.getRaid().isUnderRaid()) {
@@ -715,19 +659,40 @@ public class ResidenceBlockListener implements Listener {
                 canPlace = true;
             }
         }
-        if (canPlace) {
-            return true;
-        }
-        if (Residence.getInstance().getItemManager().isIgnored(player, mat, block.getWorld())) {
-            return true;
-        }
-        if (ResPerm.bypass_build.hasPermission(player, 10000L)) {
+        if (canPlace || Residence.getInstance().getItemManager().isIgnored(player, mat, block.getWorld())
+                || ResPerm.bypass_build.hasPermission(player, 10000L)) {
+
+            if (cmat == null) {
+                cmat = CMIMaterial.get(mat);
+            }
+            if (cmat.containsCriteria(CMIMC.CHEST)) {
+                return canPlaceChest(player, block, mat, res);
+            }
             return true;
         }
         if (informPlayer) {
             lm.Flag_Deny.sendMessage(player, Flags.place);
         }
         return false;
+    }
+
+    private static final BlockFace[] CHEST_FACES = {
+            BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST
+    };
+
+    private static boolean canPlaceChest(@NotNull Player player, @NotNull Block block, @NotNull Material chestType, @Nullable ClaimedResidence res) {
+        for (BlockFace blockFace : CHEST_FACES) {
+            Block faceBlock = block.getRelative(blockFace);
+            if (faceBlock.getType() != chestType) {
+                continue;
+            }
+            ClaimedResidence faceRes = ClaimedResidence.getByLoc(faceBlock.getLocation());
+            if (faceRes != null && faceRes != res && !faceRes.isOwner(player) && !faceRes.isTrusted(player)) {
+                CMIActionBar.send(player, lm.General_CantPlaceChest.getMessage());
+                return false;
+            }
+        }
+        return true;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -1144,21 +1109,28 @@ public class ResidenceBlockListener implements Listener {
         if (plugin.isDisabledWorldListener(block)) {
             return;
         }
+        Flags flag = null;
+        Player player = null;
+
         if (Flags.firespread.isGlobalyEnabled() && event.getCause() == IgniteCause.SPREAD) {
-            if (FlagPermissions.has(block.getLocation(), Flags.firespread, FlagCombo.OnlyFalse)) {
-                event.setCancelled(true);
-            }
+            flag = Flags.firespread;
 
         } else if (Flags.ignite.isGlobalyEnabled()) {
-            Player player = event.getPlayer();
-            if (player != null) {
-                if (FlagPermissions.shouldDenyAndNotify(player, block, Flags.ignite, null)) {
-                    event.setCancelled(true);
-                }
-            } else {
-                if (FlagPermissions.has(block.getLocation(), Flags.ignite, FlagCombo.OnlyFalse)) {
-                    event.setCancelled(true);
-                }
+            flag = Flags.ignite;
+            player = Utils.getPlayerSource(event.getIgnitingEntity());
+
+        }
+
+        if (flag == null) {
+            return;
+        }
+        if (player != null) {
+            if (FlagPermissions.shouldDenyAndNotify(player, block, flag, null)) {
+                event.setCancelled(true);
+            }
+        } else {
+            if (FlagPermissions.has(block.getLocation(), flag, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
             }
         }
     }
