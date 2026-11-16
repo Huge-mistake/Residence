@@ -22,7 +22,7 @@ import net.Zrips.CMILib.Version.Version;
 
 public class ResidenceListener1_21_8_Paper implements Listener {
 
-    private Residence plugin;
+    private final Residence plugin;
 
     public ResidenceListener1_21_8_Paper(Residence plugin) {
         this.plugin = plugin;
