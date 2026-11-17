@@ -1158,27 +1158,21 @@ public class ResidenceEntityListener implements Listener {
                 return;
             }
             for (LivingEntity victim : event.getAffectedEntities()) {
-                if (PotionUtils.shouldDenyHealingEffect(victim, attackerPlayer)) {
+                if (PotionUtils.shouldDenyHealingEffect(attackerPlayer, victim)) {
                     event.setIntensity(victim, 0);
                 }
             }
 
         } else if (isDamageEffect) {
-            ClaimedResidence attackerRes = (attackerPlayer != null)
-                    ? ClaimedResidence.getByLoc(attackerPlayer.getLocation())
-                    : null;
             for (LivingEntity victim : event.getAffectedEntities()) {
-                if (PotionUtils.shouldDenyDamageEffect(victim, attackerPlayer, attackerRes)) {
+                if (PotionUtils.shouldDenyDamageEffect(attackerPlayer, victim)) {
                     event.setIntensity(victim, 0);
                 }
             }
 
         } else if (isHarmfulEffect) {
-            ClaimedResidence attackerRes = (attackerPlayer != null)
-                    ? ClaimedResidence.getByLoc(attackerPlayer.getLocation())
-                    : null;
             for (LivingEntity victim : event.getAffectedEntities()) {
-                if (PotionUtils.shouldDenyHarmfulEffect(victim, attackerPlayer, attackerRes)) {
+                if (PotionUtils.shouldDenyHarmfulEffect(attackerPlayer, victim)) {
                     event.setIntensity(victim, 0);
                 }
             }
@@ -1199,11 +1193,10 @@ public class ResidenceEntityListener implements Listener {
         }
         Player attackerPlayer = Utils.getPlayerSource(event.getCombuster());
 
-        if (attackerPlayer == null || attackerPlayer == victim) {
+        if (attackerPlayer == null) {
             return;
         }
-        if (FlagPermissions.has(attackerPlayer.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)
-                || FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
+        if (shouldDenyPlayerDamagePlayer(attackerPlayer, (Player) victim)) {
             event.setCancelled(true);
         }
     }
@@ -1233,27 +1226,20 @@ public class ResidenceEntityListener implements Listener {
         }
     }
 
-    private static void process(lm lm, Player attacker, boolean isOnFire, Entity victim, EntityDamageEvent event) {
-        if (attacker != null)
-            lm.sendMessage(attacker);
-        if (isOnFire)
-            victim.setFireTicks(0);
-        event.setCancelled(true);
-    }
-
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerDamageByPlayer(EntityDamageByEntityEvent event) {
+
         Entity victim = event.getEntity();
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(victim)) {
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.pvp, victim)) {
             return;
         }
-        if (!(victim instanceof Player) || victim.hasMetadata("NPC")) {
+        if (!(victim instanceof Player)) {
             return;
         }
         Entity attacker = event.getDamager();
         Player attackerPlayer = null;
-        boolean isOnFire = false;
+        boolean shouldClearFire = false;
 
         if (attacker instanceof Player) {
             attackerPlayer = (Player) attacker;
@@ -1273,76 +1259,81 @@ public class ResidenceEntityListener implements Listener {
             }
 
         } else if (attacker instanceof Projectile) {
-            Projectile project = (Projectile) attacker;
-            ProjectileSource shooter = project.getShooter();
-            if (!(shooter instanceof Player)) {
-                return;
-            }
-            attackerPlayer = (Player) shooter;
-            if (project.getFireTicks() > 0) {
-                isOnFire = true;
+            Projectile projectile = (Projectile) attacker;
+            ProjectileSource shooter = projectile.getShooter();
+            if (shooter instanceof Player) {
+                attackerPlayer = (Player) shooter;
+                shouldClearFire = projectile.getFireTicks() > 0;
             }
 
         }
-        if (attackerPlayer == null || attackerPlayer.hasMetadata("NPC")) {
+
+        if (attackerPlayer == null) {
             return;
         }
+        if (shouldDenyPlayerDamagePlayer(attackerPlayer, (Player) victim)) {
+            if (shouldClearFire) {
+                victim.setFireTicks(0);
+            }
+            event.setCancelled(true);
+        }
+    }
+
+    public static boolean shouldDenyPlayerDamagePlayer(@NotNull Player attacker, @NotNull Player victim) {
         // Skip the PvP check when players attack themselves
-        // e.g. Players fire an arrow from above and deliberately step into it to hit themselves
-        if (attackerPlayer == victim) {
-            return;
+        // e.g. Wind charge knockback, self-hit arrows, or self-splashed harmful potions
+        if (attacker == victim) {
+            return false;
         }
-        // Now both the attacker and the victim are guaranteed to be players
-        ClaimedResidence attackerRes = ClaimedResidence.getByLoc(attackerPlayer.getLocation());
+        if (attacker.hasMetadata("NPC") || victim.hasMetadata("NPC")) {
+            return false;
+        }
+        ClaimedResidence attackerRes = ClaimedResidence.getByLoc(attacker.getLocation());
         ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());
+
+        boolean shouldDeny = false;
+
         // Attacker and victim are in the same Residence
         if (attackerRes != null && attackerRes == victimRes) {
-
+            // Ignore Flags.pvp setting during residence raids
             if (ConfigManager.RaidEnabled && victimRes.getRaid().isUnderRaid()) {
-                boolean raidSameTeam = victimRes.getRaid().onSameTeam(attackerPlayer, (Player) victim);
-                if (raidSameTeam && !ConfigManager.RaidFriendlyFire) {
-                    event.setCancelled(true);
-                    return;
-                }
-                if (!raidSameTeam) {
-                    return;
-                }
-            }
-            FlagPermissions attackerPerms = attackerRes.getPermissions();
+                // Prevent damage to teammates during raids
+                shouldDeny = !ConfigManager.RaidFriendlyFire && victimRes.getRaid().onSameTeam(attacker, victim);
 
-            if (attackerPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
-                process(lm.General_NoPVPZone, attackerPlayer, isOnFire, victim, event);
-                return;
-            }
-            if (attackerPerms.playerHas((Player) victim, Flags.friendlyfire, FlagCombo.OnlyFalse)
-                    && attackerPerms.playerHas(attackerPlayer, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
-                CMIActionBar.send(attackerPlayer, plugin.getLM().getMessage(lm.General_NoFriendlyFire));
-                event.setCancelled(true);
-                if (isOnFire) {
-                    victim.setFireTicks(0);
+            } else {
+                FlagPermissions perms = attackerRes.getPermissions();
+
+                if (perms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
+                    lm.Residence_FlagDeny.sendMessage(attacker, Flags.pvp, attackerRes.getName());
+                    shouldDeny = true;
+
+                } else if (perms.playerHas(attacker, Flags.friendlyfire, FlagCombo.OnlyFalse)
+                        && perms.playerHas(victim, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
+                    lm.Residence_FlagDeny.sendMessage(attacker, Flags.friendlyfire, attackerRes.getName());
+                    shouldDeny = true;
+
                 }
             }
-            // Attacker and victim are not in the same Residence
-        } else {
-            // if PVP disabled at attacker location, cancel event
-            if (attackerRes != null && attackerRes.getPermissions().has(Flags.pvp, FlagCombo.OnlyFalse)) {
-                process(lm.General_NoPVPZone, attackerPlayer, isOnFire, victim, event);
-                return;
-            }
-            // if PVP disabled at victim location, cancel event
-            if (victimRes != null && victimRes.getPermissions().has(Flags.pvp, FlagCombo.OnlyFalse)) {
-                process(lm.General_NoPVPZone, attackerPlayer, isOnFire, victim, event);
-                return;
-            }
-            // Now attacker and victim are not in Residence
-            if (attackerRes == null && victimRes == null) {
-                /* World PvP */
-                if (plugin.getWorldFlags().getPerms(attackerPlayer.getWorld()).has(Flags.pvp, FlagCombo.OnlyFalse)) {
-                    process(lm.General_WorldPVPDisabled, attackerPlayer, isOnFire, victim, event);
-                    return;
-                }
-            }
+
+            // If PvP is disabled at the attacker's residence, prevent damage
+        } else if (attackerRes != null && attackerRes.getPermissions().has(Flags.pvp, FlagCombo.OnlyFalse)) {
+            lm.Residence_FlagDeny.sendMessage(attacker, Flags.pvp, attackerRes.getName());
+            shouldDeny = true;
+
+            // If PvP is disabled at the victim's residence, prevent damage
+        } else if (victimRes != null && victimRes.getPermissions().has(Flags.pvp, FlagCombo.OnlyFalse)) {
+            lm.Residence_FlagDeny.sendMessage(attacker, Flags.pvp, victimRes.getName());
+            shouldDeny = true;
+
+            // If both players are outside residences and world PvP is disabled, prevent damage
+        } else if (attackerRes == null && victimRes == null
+                && Residence.getInstance().getWorldFlags().getPerms(attacker.getWorld()).has(Flags.pvp, FlagCombo.OnlyFalse)) {
+            lm.Flag_Deny.sendMessage(attacker, Flags.pvp);
+            shouldDeny = true;
+
         }
+
+        return shouldDeny;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

@@ -11,9 +11,7 @@ import org.bukkit.event.Listener;
 
 import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
-import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
-import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 
 import io.papermc.paper.event.entity.EntityPushedByEntityAttackEvent;
@@ -43,16 +41,10 @@ public class ResidenceListener1_21_8_Paper implements Listener {
 
         if (victim instanceof Player) {
             // Monster-on-player knockback doesn't need to check Flags.pvp
-            // Skip the check when players knock themselves back (e.g., by Wind Charges)
-            if (!Flags.pvp.isGlobalyEnabled() || attackerPlayer == null || attackerPlayer == victim) {
+            if (!Flags.pvp.isGlobalyEnabled() || attackerPlayer == null) {
                 return false;
             }
-            if (FlagPermissions.has(attackerPlayer.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)
-                    || FlagPermissions.has(victim.getLocation(), Flags.pvp, FlagCombo.OnlyFalse)) {
-                lm.Flag_Deny.sendMessage(attackerPlayer, Flags.pvp);
-                return true;
-            }
-            return false;
+            return ResidenceEntityListener.shouldDenyPlayerDamagePlayer(attackerPlayer, (Player) victim);
         }
 
         Flags mainFlag = null;

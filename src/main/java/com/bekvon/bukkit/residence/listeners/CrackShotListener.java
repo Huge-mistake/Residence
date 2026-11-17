@@ -15,6 +15,7 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.containers.ResAdmin;
 import com.bekvon.bukkit.residence.containers.lm;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
+import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.Utils;
 import com.shampaggon.crackshot.events.WeaponDamageEntityEvent;
@@ -102,52 +103,25 @@ public class CrackShotListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityDamage(WeaponDamageEntityEvent event) {
-        // disabling event on world
-        if (plugin.isDisabledWorldListener(event.getPlayer()))
-            return;
-        if (!(event.getVictim() instanceof Player))
-            return;
 
-        Player victim = (Player) event.getVictim();
-        if (victim.hasMetadata("NPC")) {
+        Entity victim = event.getVictim();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.pvp, victim)) {
             return;
         }
-
-        ClaimedResidence area = plugin.getResidenceManager().getByLoc(victim.getLocation());
-        /* Living Entities */
-        Player damager = event.getPlayer();
-        ClaimedResidence srcarea = null;
-
-        if (damager == null)
+        if (!(victim instanceof Player)) {
             return;
-
-        srcarea = ClaimedResidence.getByLoc(damager.getLocation());
-
-        boolean srcpvp = true;
-        if (srcarea != null) {
-            srcpvp = srcarea.getPermissions().has(Flags.pvp, true);
         }
+        Player attacker = event.getPlayer();
 
-        if (!srcpvp) {
-            lm.General_NoPVPZone.sendMessage(damager);
+        if (attacker == null) {
+            attacker = Utils.getPlayerSource(event.getDamager());
+        }
+        if (attacker == null) {
+            return;
+        }
+        if (ResidenceEntityListener.shouldDenyPlayerDamagePlayer(attacker, (Player) victim)) {
             event.setCancelled(true);
-            return;
         }
-        /* Check for Player vs Player */
-        if (area == null) {
-            /* World PvP */
-            if (!plugin.getWorldFlags().getPerms(damager.getWorld().getName()).has(Flags.pvp, true)) {
-                lm.General_WorldPVPDisabled.sendMessage(damager);
-                event.setCancelled(true);
-            }
-        } else {
-            /* Normal PvP */
-            if (!area.getPermissions().has(Flags.pvp, true)) {
-                lm.General_NoPVPZone.sendMessage(damager);
-                event.setCancelled(true);
-            }
-        }
-        return;
-
     }
 }

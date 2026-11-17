@@ -267,19 +267,13 @@ public class ResidenceListener1_09 implements Listener {
             if (!Flags.mobkilling.isGlobalyEnabled()) {
                 return;
             }
-            event.getAffectedEntities().removeIf(victim -> PotionUtils.shouldDenyHealingEffect(victim, attackerPlayer));
+            event.getAffectedEntities().removeIf(victim -> PotionUtils.shouldDenyHealingEffect(attackerPlayer, victim));
 
         } else if (isDamageCloud) {
-            ClaimedResidence attackerRes = (attackerPlayer != null)
-                    ? ClaimedResidence.getByLoc(attackerPlayer.getLocation())
-                    : null;
-            event.getAffectedEntities().removeIf(victim -> PotionUtils.shouldDenyDamageEffect(victim, attackerPlayer, attackerRes));
+            event.getAffectedEntities().removeIf(victim -> PotionUtils.shouldDenyDamageEffect(attackerPlayer, victim));
 
         } else if (isHarmfulCloud) {
-            ClaimedResidence attackerRes = (attackerPlayer != null)
-                    ? ClaimedResidence.getByLoc(attackerPlayer.getLocation())
-                    : null;
-            event.getAffectedEntities().removeIf(victim -> PotionUtils.shouldDenyHarmfulEffect(victim, attackerPlayer, attackerRes));
+            event.getAffectedEntities().removeIf(victim -> PotionUtils.shouldDenyHarmfulEffect(attackerPlayer, victim));
 
         }
     }

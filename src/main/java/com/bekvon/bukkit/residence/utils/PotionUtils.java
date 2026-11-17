@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.bekvon.bukkit.residence.listeners.ResidenceEntityListener;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
@@ -88,7 +89,7 @@ public class PotionUtils {
         return type.getName().equalsIgnoreCase("HARM");
     }
 
-    public static boolean shouldDenyHealingEffect(@NotNull LivingEntity victim, @Nullable Player attackerPlayer) {
+    public static boolean shouldDenyHealingEffect(@Nullable Player attackerPlayer, @NotNull LivingEntity victim) {
         // Healing effect damages undead mobs
         if (attackerPlayer != null) {
             if (Utils.isUndead(victim)) {
@@ -102,40 +103,19 @@ public class PotionUtils {
         return false;
     }
 
-    public static boolean shouldDenyDamageEffect(@NotNull LivingEntity victim, @Nullable Player attackerPlayer, @Nullable ClaimedResidence attackerRes) {
+    public static boolean shouldDenyDamageEffect(@Nullable Player attackerPlayer, @NotNull LivingEntity victim) {
         // Damage effect heals undead instead of harming them
         if (Utils.isUndead(victim)) {
             return false;
         }
-        return shouldDenyHarmfulEffect(victim, attackerPlayer, attackerRes);
+        return shouldDenyHarmfulEffect(attackerPlayer, victim);
     }
 
-    public static boolean shouldDenyHarmfulEffect(@NotNull LivingEntity victim, @Nullable Player attackerPlayer, @Nullable ClaimedResidence attackerRes) {
+    public static boolean shouldDenyHarmfulEffect(@Nullable Player attackerPlayer, @NotNull LivingEntity victim) {
         if (attackerPlayer != null) {
             if (Flags.pvp.isGlobalyEnabled() && victim instanceof Player) {
-                // Skip the PvP check when players apply negative effects to themselves
-                if (attackerPlayer == victim) {
-                    return false;
-                }
-                FlagPermissions attackerPerms = FlagPermissions.getResOrWorldPerms(attackerRes, attackerPlayer);
-                // if PVP disabled at attacker location, deny the effect
-                if (attackerPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
-                    lm.Flag_Deny.sendMessage(attackerPlayer, Flags.pvp);
-                    return true;
-                }
-                ClaimedResidence victimRes = ClaimedResidence.getByLoc(victim.getLocation());
-                FlagPermissions victimPerms = FlagPermissions.getResOrWorldPerms(victimRes, victim);
-                // if PVP disabled at victim location, deny the effect
-                if (victimPerms.has(Flags.pvp, FlagCombo.OnlyFalse)) {
-                    lm.Flag_Deny.sendMessage(attackerPlayer, Flags.pvp);
-                    return true;
-                }
-                if (attackerRes != null && attackerRes == victimRes
-                        && attackerPerms.playerHas(attackerPlayer, Flags.friendlyfire, FlagCombo.OnlyFalse)
-                        && attackerPerms.playerHas((Player) victim, Flags.friendlyfire, FlagCombo.OnlyFalse)) {
-                    CMIActionBar.send(attackerPlayer, Residence.getInstance().getLM().getMessage(lm.General_NoFriendlyFire));
-                    return true;
-                }
+                return ResidenceEntityListener.shouldDenyPlayerDamagePlayer(attackerPlayer, (Player) victim);
+
             } else if (Flags.animalkilling.isGlobalyEnabled() && Utils.isAnimal(victim)) {
                 return FlagPermissions.shouldDenyAndNotify(attackerPlayer, victim, Flags.animalkilling);
 
