@@ -4,19 +4,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import com.bekvon.bukkit.residence.listeners.ResidenceEntityListener;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
-import com.bekvon.bukkit.residence.Residence;
 import com.bekvon.bukkit.residence.containers.Flags;
-import com.bekvon.bukkit.residence.containers.lm;
-import com.bekvon.bukkit.residence.protection.ClaimedResidence;
+import com.bekvon.bukkit.residence.listeners.ResidenceEntityListener;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 
-import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Version.Version;
 
 import org.jetbrains.annotations.NotNull;
