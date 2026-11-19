@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSignOpenEvent;
+import org.bukkit.event.player.PlayerSignOpenEvent.Cause;
 import org.bukkit.inventory.ItemStack;
 
 import com.bekvon.bukkit.residence.Residence;
@@ -29,7 +30,9 @@ public class ResidenceListener1_20 implements Listener {
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onSignInteract(PlayerSignOpenEvent event) {
-
+        if (event.getCause() != Cause.INTERACT) {
+            return;
+        }
         Player player = event.getPlayer();
 
         if (FlagPermissions.shouldIgnoreCheck(Flags.editsign, player)) {
