@@ -22,6 +22,7 @@ import com.bekvon.bukkit.residence.utils.Utils;
 
 import io.papermc.paper.event.entity.EntityCollideWithEntityEvent;
 import io.papermc.paper.event.entity.EntityKnockbackEvent;
+import io.papermc.paper.event.entity.EntityPushedByEntityAttackEvent;
 
 public class ResidenceListener26_2_Paper implements Listener {
 
@@ -92,7 +93,9 @@ public class ResidenceListener26_2_Paper implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityKnockbackByExplode(EntityKnockbackEvent event) {
-
+        if (event instanceof EntityPushedByEntityAttackEvent) {
+            return;
+        }
         if (event.getCause() != EntityKnockbackEvent.Cause.EXPLOSION) {
             return;
         }
