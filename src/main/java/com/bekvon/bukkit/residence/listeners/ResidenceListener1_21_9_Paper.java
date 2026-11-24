@@ -35,12 +35,27 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         if (event.getEntityType() != EntityType.COPPER_GOLEM)
             return;
 
-        FlagPermissions perms = FlagPermissions.getPerms(event.getBlock().getLocation());
-        if (perms.has(Flags.golemopenchest, perms.has(Flags.container, true)))
+        Block chest = event.getBlock();
+        ClaimedResidence chestRes = ClaimedResidence.getByLoc(chest.getLocation());
+        FlagPermissions chestPerms = FlagPermissions.getResOrWorldPerms(chestRes, chest);
+
+        if (!chestPerms.has(Flags.golemopenchest, true)) {
+            event.setAllowed(false);
             return;
+        }
+        // If Flags.golemopenchest is allowed, check cross-residence access
+        if (chestRes != null) {
 
-        event.setAllowed(false);
+            ClaimedResidence golemSpawnRes = ClaimedResidence.getByLoc(event.getEntity().getOrigin());
+            if (golemSpawnRes != null && (golemSpawnRes == chestRes || golemSpawnRes.isOwner(chestRes.getOwner()))) {
+                return;
+            }
+            if (chestPerms.has(Flags.container, chestPerms.has(Flags.use, true))) {
+                return;
+            }
+            event.setAllowed(false);
 
+        }
     }
 
     // Prevent external copper golems from forming statues inside Residence
