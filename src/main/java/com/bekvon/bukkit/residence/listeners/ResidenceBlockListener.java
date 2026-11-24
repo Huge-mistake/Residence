@@ -519,7 +519,7 @@ public class ResidenceBlockListener implements Listener {
         if (Flags.fallinprotection.isGlobalyEnabled() && entity instanceof FallingBlock) {
 
             ClaimedResidence toRes = ClaimedResidence.getByLoc(event.getTo());
-            if (toRes!= null && toRes.getPermissions().has(Flags.fallinprotection, FlagCombo.TrueOrNone)) {
+            if (toRes != null && toRes.getPermissions().has(Flags.fallinprotection, FlagCombo.TrueOrNone)) {
                 event.setCancelled(true);
             }
 
