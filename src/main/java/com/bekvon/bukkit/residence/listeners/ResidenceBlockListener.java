@@ -13,6 +13,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowman;
 import org.bukkit.entity.minecart.HopperMinecart;
@@ -38,6 +40,7 @@ import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -503,6 +506,30 @@ public class ResidenceBlockListener implements Listener {
 
         if (res != null)
             event.getEntity().setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, res.getName()));
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEntityPortal(EntityPortalEvent event) {
+
+        Entity entity = event.getEntity();
+
+        if (plugin.isDisabledWorldListener(entity)) {
+            return;
+        }
+        if (Flags.fallinprotection.isGlobalyEnabled() && entity instanceof FallingBlock) {
+
+            ClaimedResidence toRes = ClaimedResidence.getByLoc(event.getTo());
+            if (toRes!= null && toRes.getPermissions().has(Flags.fallinprotection, FlagCombo.TrueOrNone)) {
+                event.setCancelled(true);
+            }
+
+        } else if (Flags.itemdrop.isGlobalyEnabled() && entity instanceof Item) {
+
+            if (FlagPermissions.has(event.getTo(), Flags.itemdrop, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+            }
+
+        }
     }
 
     private void handleNotifyNewPlayers(Player player) {
