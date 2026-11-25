@@ -74,7 +74,6 @@ import com.bekvon.bukkit.residence.protection.FlagPermissions.FlagCombo;
 import com.bekvon.bukkit.residence.utils.PotionUtils;
 import com.bekvon.bukkit.residence.utils.Utils;
 
-import net.Zrips.CMILib.ActionBar.CMIActionBar;
 import net.Zrips.CMILib.Entities.CMIEntityType;
 import net.Zrips.CMILib.Items.CMIItemStack;
 import net.Zrips.CMILib.Items.CMIMC;
@@ -157,7 +156,7 @@ public class ResidenceEntityListener implements Listener {
             shouldDeny = shouldDenyEntityHit(entity, block.getLocation(), Flags.destroy, null);
 
         } else if (Flags.fallinprotection.isGlobalyEnabled() && entity instanceof FallingBlock) {
-            shouldDeny = shouldDenyFallingBlockEntityPlaceBlock(block, entity, event.getTo());
+            shouldDeny = shouldDenyFallingBlockPlace(block, entity, event.getTo());
 
         }
 
@@ -207,7 +206,7 @@ public class ResidenceEntityListener implements Listener {
 
     private static final String SourceResidenceName = "SourceResidenceName";
 
-    private boolean shouldDenyFallingBlockEntityPlaceBlock(Block block, Entity entity, Material toType) {
+    private boolean shouldDenyFallingBlockPlace(Block block, Entity entity, Material toType) {
         Location fallingEntitySpawn = Utils.getSpawnLocation(entity);
 
         // Normally enters this logic on Paper 1.9.4+
