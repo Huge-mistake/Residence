@@ -432,80 +432,67 @@ public class ResidenceBlockListener implements Listener {
 
     public static final String SourceResidenceName = "SourceResidenceName";
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        // Disabling listener if flag disabled globally
-        if (!Flags.fallinprotection.isGlobalyEnabled())
-            return;
-        if (event.getEntityType() != EntityType.FALLING_BLOCK)
-            return;
-        Entity ent = event.getEntity();
-
-        if (!ent.hasMetadata(SourceResidenceName) && /*
-                                                      * Equals to air when generic falling block is spawned, not when falling block
-                                                      * originates from spawnegg
-                                                      */ event.getTo() == Material.AIR) {
-
-            ClaimedResidence res = plugin.getResidenceManager().getByLoc(ent.getLocation());
-            String resName = res == null ? "NULL" : res.getName();
-            ent.setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, resName));
-            return;
-        }
-
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(ent.getLocation());
-
-        if (res != null && res.getPermissions().has(Flags.fallinprotection, FlagCombo.OnlyFalse))
-            return;
-
-        String resName = res == null ? "NULL" : res.getName();
-
-        String saved = "NULL";
-        if (!ent.hasMetadata(SourceResidenceName))
-            return;
-
-        @NotNull
-        List<MetadataValue> meta = ent.getMetadata(SourceResidenceName);
-
-        if (meta.isEmpty())
-            return;
-
-        saved = ent.getMetadata(SourceResidenceName).get(0).asString();
-
-        if (res == null || saved.equalsIgnoreCase(resName))
-            return;
-
-        event.setCancelled(true);
-        ent.remove();
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onBlockFall(EntityChangeBlockEvent event) {
 
         Block block = event.getBlock();
 
         if (FlagPermissions.shouldIgnoreCheck(Flags.fallinprotection, block)) {
             return;
         }
-        if (!plugin.getConfigManager().isBlockFall())
+        Entity entity = event.getEntity();
+
+        if (!(entity instanceof FallingBlock)) {
             return;
+        }
+        Location fallingBlockSpawnLoc = Utils.getSpawnLocation(entity);
 
-        if ((event.getEntityType() != EntityType.FALLING_BLOCK))
+        if (fallingBlockSpawnLoc != null) {
+            handleFallingBlockEntityChangeBlock(event, fallingBlockSpawnLoc);
             return;
-
-        Material typeTo = event.getTo();
-        if (typeTo.hasGravity() || CMIMaterial.get(typeTo).equals(CMIMaterial.SCAFFOLDING))
+        }
+        // Equals to air when generic falling block is spawned
+        // not when falling block originates from spawnegg
+        if (event.getTo() == Material.AIR && !entity.hasMetadata(SourceResidenceName)) {
+            ClaimedResidence originRes = ClaimedResidence.getByLoc(entity.getLocation());
+            String resName = originRes == null ? "NULL" : originRes.getName();
+            entity.setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, resName));
             return;
+        }
 
-        if (!plugin.getConfigManager().getBlockFallWorlds().contains(block.getLocation().getWorld().getName()))
+        ClaimedResidence targetRes = ClaimedResidence.getByLoc(block.getLocation());
+
+        if (targetRes == null || !targetRes.getPermissions().has(Flags.fallinprotection, true)) {
             return;
-
-        if (block.getY() <= plugin.getConfigManager().getBlockFallLevel())
+        }
+        if (!entity.hasMetadata(SourceResidenceName)) {
             return;
+        }
+        List<MetadataValue> meta = entity.getMetadata(SourceResidenceName);
 
-        ClaimedResidence res = plugin.getResidenceManager().getByLoc(block.getLocation());
+        if (meta.isEmpty()) {
+            return;
+        }
+        if (meta.get(0).asString().equalsIgnoreCase(targetRes.getName())) {
+            return;
+        }
+        event.setCancelled(true);
+        entity.remove();
+    }
 
-        if (res != null)
-            event.getEntity().setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, res.getName()));
+    private void handleFallingBlockEntityChangeBlock(EntityChangeBlockEvent event, @NotNull Location fallingOrigin) {
+        if (event.getTo() == Material.AIR) {
+            return;
+        }
+        ClaimedResidence targetRes = ClaimedResidence.getByLoc(event.getBlock().getLocation());
+        if (targetRes == null || !targetRes.getPermissions().has(Flags.fallinprotection, true)) {
+            return;
+        }
+        ClaimedResidence originRes = ClaimedResidence.getByLoc(fallingOrigin);
+        if (originRes != null && (originRes == targetRes || originRes.isOwner(targetRes.getOwner()))) {
+            return;
+        }
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

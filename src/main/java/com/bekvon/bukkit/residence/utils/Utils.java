@@ -475,4 +475,11 @@ public class Utils {
             return false;
         }
     }
+
+    public static @Nullable Location getSpawnLocation(Entity entity) {
+        if (Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_9_4)) {
+            return entity.getOrigin();
+        }
+        return null;
+    }
 }

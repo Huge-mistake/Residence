@@ -1,8 +1,10 @@
 package com.bekvon.bukkit.residence.listeners;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.CopperGolem;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,7 +19,7 @@ import io.papermc.paper.event.entity.ItemTransportingEntityValidateTargetEvent;
 
 public class ResidenceListener1_21_9_Paper implements Listener {
 
-    private Residence plugin;
+    private final Residence plugin;
 
     public ResidenceListener1_21_9_Paper(Residence plugin) {
         this.plugin = plugin;
@@ -29,13 +31,15 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         if (!event.isAllowed())
             return;
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.golemopenchest, event.getEntity())) {
+        Block chest = event.getBlock();
+
+        if (FlagPermissions.shouldIgnoreCheck(Flags.golemopenchest, chest)) {
             return;
         }
-        if (event.getEntityType() != EntityType.COPPER_GOLEM)
+        Entity entity = event.getEntity();
+        if (!(entity instanceof CopperGolem)) {
             return;
-
-        Block chest = event.getBlock();
+        }
         ClaimedResidence chestRes = ClaimedResidence.getByLoc(chest.getLocation());
         FlagPermissions chestPerms = FlagPermissions.getResOrWorldPerms(chestRes, chest);
 
@@ -46,7 +50,11 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         // If Flags.golemopenchest is allowed, check cross-residence access
         if (chestRes != null) {
 
-            ClaimedResidence golemSpawnRes = ClaimedResidence.getByLoc(event.getEntity().getOrigin());
+            Location golemSpawnLoc = entity.getOrigin();
+            if (golemSpawnLoc == null) {
+                return;
+            }
+            ClaimedResidence golemSpawnRes = ClaimedResidence.getByLoc(golemSpawnLoc);
             if (golemSpawnRes != null && (golemSpawnRes == chestRes || golemSpawnRes.isOwner(chestRes.getOwner()))) {
                 return;
             }
@@ -64,22 +72,30 @@ public class ResidenceListener1_21_9_Paper implements Listener {
 
         Block block = event.getBlock();
 
-        if (FlagPermissions.shouldIgnoreCheck(Flags.build, block)) {
+        if (FlagPermissions.shouldIgnoreCheck(Flags.place, block)) {
             return;
         }
-        if (event.getEntityType() != EntityType.COPPER_GOLEM)
+        Entity entity = event.getEntity();
+        if (!(entity instanceof CopperGolem)) {
             return;
+        }
 
-        if (event.getTo() != Material.OXIDIZED_COPPER_GOLEM_STATUE)
+        if (event.getTo() != Material.OXIDIZED_COPPER_GOLEM_STATUE) {
             return;
+        }
 
         ClaimedResidence statueRes = ClaimedResidence.getByLoc(block.getLocation());
-        if (statueRes == null)
+        if (statueRes == null) {
             return;
+        }
 
-        ClaimedResidence entSpawnRes = ClaimedResidence.getByLoc(event.getEntity().getOrigin());
+        Location golemSpawnLoc = entity.getOrigin();
+        if (golemSpawnLoc == null) {
+            return;
+        }
 
-        if (entSpawnRes != null && (entSpawnRes == statueRes || entSpawnRes.isOwner(statueRes.getOwner()))) {
+        ClaimedResidence golemSpawnRes = ClaimedResidence.getByLoc(golemSpawnLoc);
+        if (golemSpawnRes != null && (golemSpawnRes == statueRes || golemSpawnRes.isOwner(statueRes.getOwner()))) {
             return;
         }
 
