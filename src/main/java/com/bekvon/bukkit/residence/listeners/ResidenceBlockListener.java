@@ -12,9 +12,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.FallingBlock;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowman;
 import org.bukkit.entity.minecart.HopperMinecart;
@@ -39,8 +36,6 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockSpreadEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.block.LeavesDecayEvent;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -49,8 +44,6 @@ import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.metadata.MetadataValue;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
@@ -427,95 +420,6 @@ public class ResidenceBlockListener implements Listener {
         FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
         if (!perms.has(Flags.icemelt, true)) {
             event.setCancelled(true);
-        }
-    }
-
-    public static final String SourceResidenceName = "SourceResidenceName";
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-
-        Block block = event.getBlock();
-
-        if (FlagPermissions.shouldIgnoreCheck(Flags.fallinprotection, block)) {
-            return;
-        }
-        Entity entity = event.getEntity();
-
-        if (!(entity instanceof FallingBlock)) {
-            return;
-        }
-        Location fallingBlockSpawnLoc = Utils.getSpawnLocation(entity);
-
-        if (fallingBlockSpawnLoc != null) {
-            handleFallingBlockEntityChangeBlock(event, fallingBlockSpawnLoc);
-            return;
-        }
-        // Equals to air when generic falling block is spawned
-        // not when falling block originates from spawnegg
-        if (event.getTo() == Material.AIR && !entity.hasMetadata(SourceResidenceName)) {
-            ClaimedResidence originRes = ClaimedResidence.getByLoc(entity.getLocation());
-            String resName = originRes == null ? "NULL" : originRes.getName();
-            entity.setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, resName));
-            return;
-        }
-
-        ClaimedResidence targetRes = ClaimedResidence.getByLoc(block.getLocation());
-
-        if (targetRes == null || !targetRes.getPermissions().has(Flags.fallinprotection, true)) {
-            return;
-        }
-        if (!entity.hasMetadata(SourceResidenceName)) {
-            return;
-        }
-        List<MetadataValue> meta = entity.getMetadata(SourceResidenceName);
-
-        if (meta.isEmpty()) {
-            return;
-        }
-        if (meta.get(0).asString().equalsIgnoreCase(targetRes.getName())) {
-            return;
-        }
-        event.setCancelled(true);
-        entity.remove();
-    }
-
-    private void handleFallingBlockEntityChangeBlock(EntityChangeBlockEvent event, @NotNull Location fallingOrigin) {
-        if (event.getTo() == Material.AIR) {
-            return;
-        }
-        ClaimedResidence targetRes = ClaimedResidence.getByLoc(event.getBlock().getLocation());
-        if (targetRes == null || !targetRes.getPermissions().has(Flags.fallinprotection, true)) {
-            return;
-        }
-        ClaimedResidence originRes = ClaimedResidence.getByLoc(fallingOrigin);
-        if (originRes != null && (originRes == targetRes || originRes.isOwner(targetRes.getOwner()))) {
-            return;
-        }
-        event.setCancelled(true);
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onEntityPortal(EntityPortalEvent event) {
-
-        Entity entity = event.getEntity();
-
-        if (plugin.isDisabledWorldListener(entity)) {
-            return;
-        }
-        if (Flags.fallinprotection.isGlobalyEnabled() && entity instanceof FallingBlock) {
-
-            ClaimedResidence toRes = ClaimedResidence.getByLoc(event.getTo());
-            if (toRes != null && toRes.getPermissions().has(Flags.fallinprotection, FlagCombo.TrueOrNone)) {
-                event.setCancelled(true);
-            }
-
-        } else if (Flags.itemdrop.isGlobalyEnabled() && entity instanceof Item) {
-
-            if (FlagPermissions.has(event.getTo(), Flags.itemdrop, FlagCombo.OnlyFalse)) {
-                event.setCancelled(true);
-            }
-
         }
     }
 

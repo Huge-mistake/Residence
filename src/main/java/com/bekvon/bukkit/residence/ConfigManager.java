@@ -67,7 +67,7 @@ public class ConfigManager {
     protected boolean NoLava;
     protected boolean NoWater;
     protected boolean NoLavaPlace;
-    //protected boolean useBlockFall;
+//    protected boolean useBlockFall;
     protected boolean NoWaterPlace;
     protected boolean AutoCleanUp;
     protected boolean SellSubzone;
@@ -139,7 +139,7 @@ public class ConfigManager {
 
     protected int FlowLevel;
     protected int PlaceLevel;
-    //protected int BlockFallLevel;
+//    protected int BlockFallLevel;
     protected int CleanLevel = 63;
     protected int NewPlayerRangeX;
     protected int NewPlayerRangeY;
@@ -226,7 +226,7 @@ public class ConfigManager {
     private boolean AutoCleanTrasnferToUser;
     private String AutoCleanUserName;
     protected List<String> NoPlaceWorlds;
-    //protected List<String> BlockFallWorlds;
+//    protected List<String> BlockFallWorlds;
     protected List<String> CleanWorlds;
     protected List<String> FlagsList;
     protected List<String> NegativePotionEffects = new ArrayList<String>();
@@ -1009,12 +1009,12 @@ public class ConfigManager {
         NoPlaceWorlds = c.get("Global.AntiGreef.Place.Worlds", Arrays.asList(defaultWorldName));
 
         // Sand fall
-        //c.addComment("Global.AntiGreef.BlockFall.Use", "With this set to true, falling blocks will be deleted if they will land in different area");
-        //useBlockFall = c.get("Global.AntiGreef.BlockFall.Use", true);
-        //c.addComment("Global.AntiGreef.BlockFall.Level", "Level from which one to start block block's fall",
-                //"This don't have effect in residence area or outside");
-        //BlockFallLevel = c.get("Global.AntiGreef.BlockFall.Level", 62);
-        //BlockFallWorlds = c.get("Global.AntiGreef.BlockFall.Worlds", Arrays.asList(defaultWorldName));
+//        c.addComment("Global.AntiGreef.BlockFall.Use", "With this set to true, falling blocks will be deleted if they will land in different area");
+//        useBlockFall = c.get("Global.AntiGreef.BlockFall.Use", true);
+//        c.addComment("Global.AntiGreef.BlockFall.Level", "Level from which one to start block block's fall",
+//                "This don't have effect in residence area or outside");
+//        BlockFallLevel = c.get("Global.AntiGreef.BlockFall.Level", 62);
+//        BlockFallWorlds = c.get("Global.AntiGreef.BlockFall.Worlds", Arrays.asList(defaultWorldName));
 
         if (Version.isCurrentEqualOrHigher(Version.v1_13_R1)) {
             // Res cleaning
@@ -1620,9 +1620,9 @@ public class ConfigManager {
         return NoLavaPlace;
     }
 
-    //public boolean isBlockFall() {
-        //return useBlockFall;
-    //}
+//    public boolean isBlockFall() {
+//        return useBlockFall;
+//    }
 
     public boolean isNoWaterPlace() {
         return NoWaterPlace;
@@ -1786,9 +1786,9 @@ public class ConfigManager {
         return PlaceLevel;
     }
 
-    //public int getBlockFallLevel() {
-        //return BlockFallLevel;
-    //}
+//    public int getBlockFallLevel() {
+//        return BlockFallLevel;
+//    }
 
     public int getCleanLevel() {
         return CleanLevel;
@@ -1985,9 +1985,9 @@ public class ConfigManager {
         return NoPlaceWorlds;
     }
 
-    //public List<String> getBlockFallWorlds() {
-        //return BlockFallWorlds;
-    //}
+//    public List<String> getBlockFallWorlds() {
+//        return BlockFallWorlds;
+//    }
 
     @Deprecated
     public List<String> getNegativePotionEffects() {

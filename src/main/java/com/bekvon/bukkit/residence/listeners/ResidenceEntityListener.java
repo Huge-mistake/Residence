@@ -13,6 +13,7 @@ import org.bukkit.entity.Creeper;
 import org.bukkit.entity.EnderCrystal;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.Item;
@@ -41,6 +42,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
+import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.entity.EntityTeleportEvent;
@@ -154,6 +156,9 @@ public class ResidenceEntityListener implements Listener {
             // Projectile-triggered EntityChangeBlockEvent always breaks blocks
             shouldDeny = shouldDenyEntityHit(entity, block.getLocation(), Flags.destroy, null);
 
+        } else if (Flags.fallinprotection.isGlobalyEnabled() && entity instanceof FallingBlock) {
+            shouldDeny = shouldDenyFallingBlockEntityPlaceBlock(block, entity, event.getTo());
+
         }
 
         if (shouldDeny) {
@@ -197,6 +202,78 @@ public class ResidenceEntityListener implements Listener {
             return FlagPermissions.shouldDenyAndNotify(player, block, Flags.destroy, null, false);
         } else {
             return FlagPermissions.has(block.getLocation(), Flags.destroy, FlagCombo.OnlyFalse);
+        }
+    }
+
+    private static final String SourceResidenceName = "SourceResidenceName";
+
+    private boolean shouldDenyFallingBlockEntityPlaceBlock(Block block, Entity entity, Material toType) {
+        Location fallingEntitySpawn = Utils.getSpawnLocation(entity);
+
+        // Normally enters this logic on Paper 1.9.4+
+        if (fallingEntitySpawn != null) {
+            // Exclude events triggered by newly spawned FallingBlockEntity
+            if (toType == Material.AIR) {
+                return false;
+            }
+            // Now handling FallingBlockEntity landing to place block
+            ClaimedResidence targetRes = ClaimedResidence.getByLoc(block.getLocation());
+            if (targetRes == null || !targetRes.getPermissions().has(Flags.fallinprotection, true)) {
+                return false;
+            }
+            ClaimedResidence originRes = ClaimedResidence.getByLoc(fallingEntitySpawn);
+            // Origin and target are not in the same Residence and do not have the same Owner
+            return originRes == null || (originRes != targetRes && !originRes.isOwner(targetRes.getOwner()));
+        }
+
+        // Equals to air for naturally spawned falling blocks
+        // not for falling blocks spawned by other means (e.g. spawn eggs)
+        if (toType == Material.AIR && !entity.hasMetadata(SourceResidenceName)) {
+            ClaimedResidence originRes = ClaimedResidence.getByLoc(entity.getLocation());
+            String resName = originRes == null ? "NULL" : originRes.getName();
+            entity.setMetadata(SourceResidenceName, new FixedMetadataValue(plugin, resName));
+            return false;
+        }
+
+        ClaimedResidence targetRes = ClaimedResidence.getByLoc(block.getLocation());
+
+        if (targetRes == null || !targetRes.getPermissions().has(Flags.fallinprotection, true)) {
+            return false;
+        }
+        if (!entity.hasMetadata(SourceResidenceName)) {
+            return false;
+        }
+        List<MetadataValue> meta = entity.getMetadata(SourceResidenceName);
+
+        if (meta.isEmpty()) {
+            return false;
+        }
+        // Source and target are not in the same Residence
+        return !meta.get(0).asString().equalsIgnoreCase(targetRes.getName());
+    }
+
+    // fix https://github.com/Zrips/Residence/issues/1496
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEntityPortal(EntityPortalEvent event) {
+
+        Entity entity = event.getEntity();
+
+        if (plugin.isDisabledWorldListener(entity)) {
+            return;
+        }
+        if (Flags.fallinprotection.isGlobalyEnabled() && entity instanceof FallingBlock) {
+
+            ClaimedResidence toRes = ClaimedResidence.getByLoc(event.getTo());
+            if (toRes != null && toRes.getPermissions().has(Flags.fallinprotection, FlagCombo.TrueOrNone)) {
+                event.setCancelled(true);
+            }
+
+        } else if (Flags.itemdrop.isGlobalyEnabled() && entity instanceof Item) {
+
+            if (FlagPermissions.has(event.getTo(), Flags.itemdrop, FlagCombo.OnlyFalse)) {
+                event.setCancelled(true);
+            }
+
         }
     }
 
