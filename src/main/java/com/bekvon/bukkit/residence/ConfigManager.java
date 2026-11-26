@@ -200,6 +200,7 @@ public class ConfigManager {
     private boolean DisableResidenceCreation;
     private boolean HopperCrossResidenceCheck;
     private boolean AutoMobRemovalIgnoreNamedMobs;
+    private boolean EntityOriginCheck;
 
     // Town
 //    private boolean TownEnabled = false;
@@ -793,6 +794,15 @@ public class ConfigManager {
                 "Whether to check hoppers crossing Residence borders to prevent edge container theft (default: true)",
                 "If Flags.container is globally disabled, this option has no effect");
         HopperCrossResidenceCheck = c.get("Global.Optimizations.ExtraProtection.HopperCrossResidenceCheck", true);
+
+        c.addComment("Global.Optimizations.ExtraProtection.EntityOriginCheck",
+                "If set to true, when entity breaking is allowed:",
+                "an additional Flags.destroy check is performed only if the block and the entity's spawn origin are in different Residences.",
+                "Some machines need TNT/wither block breaking enabled inside Residence, but griefers must be prevented from spawning TNT/withers outside Residence to grief.",
+                "Currently effective entities: TNT, TNT Minecart, Wither, Wither Skull.",
+                "This option only takes effect on Paper 1.9.4+ (default: true)");
+        EntityOriginCheck = c.get("Global.Optimizations.ExtraProtection.EntityOriginCheck", true)
+                && Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_9_4);
 
         SignsMaxPerResidence = c.get("Global.Signs.MaxPerResidence", 5);
         SignsMaxPerResidence = SignsMaxPerResidence < 0 ? 0 : SignsMaxPerResidence;
@@ -2219,6 +2229,10 @@ public class ConfigManager {
 
     public boolean getAutoMobRemovalIgnoreNamedMobs() {
         return AutoMobRemovalIgnoreNamedMobs;
+    }
+
+    public boolean getEntityOriginCheck() {
+        return EntityOriginCheck;
     }
 
 //    public int getTownMinRange() {

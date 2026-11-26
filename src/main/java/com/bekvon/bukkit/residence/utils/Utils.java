@@ -19,6 +19,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.NPC;
 import org.bukkit.entity.Player;
@@ -477,7 +478,15 @@ public class Utils {
     }
 
     public static @Nullable Location getSpawnLocation(Entity entity) {
-        if (Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_9_4)) {
+        if (entity != null && Version.isPaperBranch() && Version.isCurrentEqualOrHigher(Version.v1_9_4)) {
+            // e.g. get the wither spawn origin for wither skull
+            if (entity instanceof Projectile) {
+                ProjectileSource shooter = ((Projectile) entity).getShooter();
+                // Non-player
+                if (shooter instanceof Mob) {
+                    entity = (Mob) shooter;
+                }
+            }
             return entity.getOrigin();
         }
         return null;

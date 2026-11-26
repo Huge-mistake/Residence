@@ -2272,7 +2272,7 @@ public class ClaimedResidence {
         return Residence.getInstance().getResidenceManager().getByName(landName);
     }
 
-    public static ClaimedResidence getByLoc(Location loc) {
+    public static @Nullable ClaimedResidence getByLoc(Location loc) {
         return Residence.getInstance().getResidenceManager().getByLoc(loc);
     }
 

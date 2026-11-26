@@ -57,7 +57,7 @@ public class ResidenceListener26_3_Paper implements Listener {
             return;
         }
         FlagPermissions perms = FlagPermissions.getPerms(entity.getLocation());
-        if (!perms.has(Flags.explode, perms.has(Flags.destroy, true))) {
+        if (!perms.has(Flags.explode, true) || !perms.has(Flags.destroy, perms.has(Flags.build, true))) {
             event.setCancelled(true);
         }
     }
