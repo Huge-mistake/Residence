@@ -45,24 +45,18 @@ public class ResidenceListener1_21_9_Paper implements Listener {
 
         if (!chestPerms.has(Flags.golemopenchest, true)) {
             event.setAllowed(false);
-            return;
-        }
-        // If Flags.golemopenchest is allowed, check cross-residence access
-        if (chestRes != null) {
 
-            Location golemSpawnLoc = entity.getOrigin();
-            if (golemSpawnLoc == null) {
-                return;
-            }
-            ClaimedResidence golemSpawnRes = ClaimedResidence.getByLoc(golemSpawnLoc);
-            if (golemSpawnRes != null && (golemSpawnRes == chestRes || golemSpawnRes.isOwner(chestRes.getOwner()))) {
-                return;
-            }
-            if (chestPerms.has(Flags.container, chestPerms.has(Flags.use, true))) {
-                return;
-            }
-            event.setAllowed(false);
+            // If Flags.golemopenchest is allowed, check cross-residence access
+            // Treat copper golems like hoppers since both can take and insert items
+            // Also check Residence-origin copper golems inserting items into external chests
+        } else if (ResidenceEntityListener.shouldCheckOrigin(chestRes, chestPerms)) {
+            Location golemOrigin = entity.getOrigin();
+            boolean hasOrigin = golemOrigin != null;
+            ClaimedResidence golemOriginRes = hasOrigin ? ClaimedResidence.getByLoc(golemOrigin) : null;
 
+            if (ResidenceEntityListener.shouldDenyExternalOrigin(chestRes, chestPerms, golemOriginRes, hasOrigin, Flags.container, Flags.use)) {
+                event.setAllowed(false);
+            }
         }
     }
 

@@ -365,11 +365,25 @@ public class ResidenceBlockListener implements Listener {
             }
 
         } else {
-            FlagPermissions perms = FlagPermissions.getPerms(block.getLocation());
+
+            ClaimedResidence targetRes = ClaimedResidence.getByLoc(block.getLocation());
+            FlagPermissions perms = FlagPermissions.getResOrWorldPerms(targetRes, block);
             boolean result = (subFlag == null) || perms.has(subFlag, true);
+
             if (!perms.has(mainFlag, result)) {
                 event.setCancelled(true);
+
+                // If snowtrail is allowed, check external snow golem trails
+            } else if (mainFlag == Flags.snowtrail && ResidenceEntityListener.shouldCheckOrigin(targetRes, perms)) {
+                Location origin = Utils.getSpawnLocation(entity);
+                boolean hasOrigin = origin != null;
+                ClaimedResidence originRes = hasOrigin ? ClaimedResidence.getByLoc(origin) : null;
+
+                if (ResidenceEntityListener.shouldDenyExternalOrigin(targetRes, perms, originRes, hasOrigin, Flags.place, Flags.build)) {
+                    event.setCancelled(true);
+                }
             }
+
         }
     }
 
@@ -948,8 +962,7 @@ public class ResidenceBlockListener implements Listener {
 
         for (Vector one : corners) {
             Location loc = new Location(world, one.getX(), one.getY(), one.getZ());
-            ClaimedResidence res = ClaimedResidence.getByLoc(loc);
-            FlagPermissions perms = FlagPermissions.getResOrWorldPerms(res, loc);
+            FlagPermissions perms = FlagPermissions.getPerms(loc);
 
             boolean canPlace;
             if (player != null) {
