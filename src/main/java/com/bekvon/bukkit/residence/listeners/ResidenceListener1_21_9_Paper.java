@@ -53,43 +53,40 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         // If Flags.golemopenchest is allowed, check cross-residence access
         // Treat copper golems like hoppers since both can take and insert items
         // Also check Residence-origin copper golems inserting items into external chests
-        if (!Flags.entityorigin.isGlobalyEnabled()) {
+        ClaimedResidence golemSpawnRes = ClaimedResidence.getByLoc(entity.getOrigin());
+
+        // Source and Chest not in Res
+        if (golemSpawnRes == null && chestRes == null) {
             return;
         }
-        Location golemOrigin = entity.getOrigin();
-        boolean hasOrigin = golemOrigin != null;
 
-        ClaimedResidence targetRes;
-        ClaimedResidence originRes;
-        FlagPermissions targetPerms = null;
+        // Source and Chest in Res
+        if (golemSpawnRes != null && chestRes != null) {
+            // In Same Res, or have Same Res owner
+            if (golemSpawnRes == chestRes || golemSpawnRes.isOwner(chestRes.getOwner())) {
+                return;
+            }
 
-        // Check Residence-origin copper golems taking items from external copper chests
-        if (CMIMaterial.get(chest.getType()).containsCriteria(CMIMC.COPPERCHEST)) {
-            targetRes = hasOrigin ? ClaimedResidence.getByLoc(golemOrigin) : null;
-            originRes = chestRes;
+            // Not in Same Res and not Same Res owner
+            if (golemSpawnRes.getPermissions().has(Flags.container, true)
+                    && chestPerms.has(Flags.container, true)) {
+                return;
+            }
 
-            // Check external-origin copper golems inserting items into wooden chests inside the Residence
+            // Source in Res, Chest definitely not in Res
+        } else if (golemSpawnRes != null) {
+            if (golemSpawnRes.getPermissions().has(Flags.container, true)) {
+                return;
+            }
+
+            // Chest in Res, Source definitely not in Res
         } else {
-            ClaimedResidence entityOriginRes = hasOrigin ? ClaimedResidence.getByLoc(golemOrigin) : null;
-
-            if (chestRes != null) {
-                targetRes = chestRes;
-                originRes = entityOriginRes;
-                targetPerms = chestPerms;
-            } else {
-                // Check Residence-origin copper golems inserting items into external chests
-                targetRes = entityOriginRes;
-                originRes = null;
+            if (chestPerms.has(Flags.container, true)) {
+                return;
             }
 
         }
-
-        if (!ResidenceEntityListener.shouldCheckOrigin(targetRes, targetPerms)) {
-            return;
-        }
-        if (ResidenceEntityListener.shouldDenyExternalOrigin(targetRes, targetPerms, originRes, hasOrigin, Flags.container, Flags.use)) {
-            event.setAllowed(false);
-        }
+        event.setAllowed(false);
     }
 
     // Prevent external copper golems from forming statues inside Residence
