@@ -15,9 +15,6 @@ import com.bekvon.bukkit.residence.containers.Flags;
 import com.bekvon.bukkit.residence.protection.FlagPermissions;
 import com.bekvon.bukkit.residence.protection.ClaimedResidence;
 
-import net.Zrips.CMILib.Items.CMIMC;
-import net.Zrips.CMILib.Items.CMIMaterial;
-
 import io.papermc.paper.event.entity.ItemTransportingEntityValidateTargetEvent;
 
 public class ResidenceListener1_21_9_Paper implements Listener {
@@ -51,8 +48,9 @@ public class ResidenceListener1_21_9_Paper implements Listener {
             return;
         }
         // If Flags.golemopenchest is allowed, check cross-residence access
-        // Treat copper golems like hoppers since both can take and insert items
-        // Also check Residence-origin copper golems inserting items into external chests
+        if (!Flags.entityorigin.isGlobalyEnabled()) {
+            return;
+        }
         ClaimedResidence golemSpawnRes = ClaimedResidence.getByLoc(entity.getOrigin());
 
         // Source and Chest not in Res
@@ -67,21 +65,26 @@ public class ResidenceListener1_21_9_Paper implements Listener {
                 return;
             }
 
-            // Not in Same Res and not Same Res owner
-            if (golemSpawnRes.getPermissions().has(Flags.container, true)
-                    && chestPerms.has(Flags.container, true)) {
+            // Treat copper golems like hoppers since both can take and insert items
+            FlagPermissions golemSpawnPerms = golemSpawnRes.getPermissions();
+            if (!golemSpawnPerms.has(Flags.entityorigin, true) && !chestPerms.has(Flags.entityorigin, true)) {
+                return;
+            }
+            if (golemSpawnPerms.has(Flags.container, true) && chestPerms.has(Flags.container, true)) {
                 return;
             }
 
             // Source in Res, Chest definitely not in Res
         } else if (golemSpawnRes != null) {
-            if (golemSpawnRes.getPermissions().has(Flags.container, true)) {
+            // Also check Residence-origin copper golems inserting items into external chests
+            FlagPermissions golemSpawnPerms = golemSpawnRes.getPermissions();
+            if (!golemSpawnPerms.has(Flags.entityorigin, true) || golemSpawnPerms.has(Flags.container, true)) {
                 return;
             }
 
             // Chest in Res, Source definitely not in Res
         } else {
-            if (chestPerms.has(Flags.container, true)) {
+            if (!chestPerms.has(Flags.entityorigin, true) || chestPerms.has(Flags.container, true)) {
                 return;
             }
 
