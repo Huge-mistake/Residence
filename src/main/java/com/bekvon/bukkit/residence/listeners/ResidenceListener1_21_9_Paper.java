@@ -26,7 +26,7 @@ public class ResidenceListener1_21_9_Paper implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onCopperGolemInteract(ItemTransportingEntityValidateTargetEvent event) {
+    public void onCopperGolemValidateChest(ItemTransportingEntityValidateTargetEvent event) {
 
         if (!event.isAllowed())
             return;
@@ -51,7 +51,12 @@ public class ResidenceListener1_21_9_Paper implements Listener {
         if (!Flags.entityorigin.isGlobalyEnabled()) {
             return;
         }
-        ClaimedResidence golemSpawnRes = ClaimedResidence.getByLoc(entity.getOrigin());
+        Location golemSpawn = entity.getOrigin();
+        // Skip check if entity has no origin
+        if (golemSpawn == null) {
+            return;
+        }
+        ClaimedResidence golemSpawnRes = ClaimedResidence.getByLoc(golemSpawn);
 
         // Source and Chest not in Res
         if (golemSpawnRes == null && chestRes == null) {
@@ -89,7 +94,9 @@ public class ResidenceListener1_21_9_Paper implements Listener {
             }
 
         }
+
         event.setAllowed(false);
+
     }
 
     // Prevent external copper golems from forming statues inside Residence
