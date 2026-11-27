@@ -53,7 +53,7 @@ public enum Flags {
     editsign(CMIMaterial.OAK_SIGN, FlagMode.Both, "Allow or deny player interaction to open sign edit GUI", true),
     egg(CMIMaterial.EGG, FlagMode.Both, "Allows or denys interaction with dragon egg", true),
     enchant(CMIMaterial.ENCHANTING_TABLE, FlagMode.Both, "Allows or denys players to use enchanting tables", true),
-    entityorigin(CMIMaterial.ENDER_EYE, FlagMode.Residence, "Allow or deny external entity origin recheck action (Paper 1.9.4+)", true),
+    entityorigin(CMIMaterial.ENDER_EYE, FlagMode.Residence, "Allow or deny additional Flag checks for entities from outside the Residence (Paper 1.9.4+)", true),
     explode(CMIMaterial.TNT_MINECART, FlagMode.Residence, "Allows or denys explosions in residences", true),
     elytra(CMIMaterial.ELYTRA, FlagMode.Both, "Allows or denys elytra usage in residences", false),
     enderpearl(CMIMaterial.ENDER_PEARL, FlagMode.Both, "Allow or disallow teleporting to the residence with enderpearl", true),

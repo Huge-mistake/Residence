@@ -154,7 +154,7 @@ Global:
     # Allow or disallow teleporting to the residence with enderpearl
     enderpearl: true
     # Applies to: Residence
-    # Allow or deny external entity origin recheck action (Paper 1.9.4+)
+    # Allow or deny additional Flag checks for entities from outside the Residence (Paper 1.9.4+)
     entityorigin: false
     # Applies to: Residence
     # Allows or denys explosions in residences
