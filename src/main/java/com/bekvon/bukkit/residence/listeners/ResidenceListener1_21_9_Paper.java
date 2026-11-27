@@ -70,9 +70,17 @@ public class ResidenceListener1_21_9_Paper implements Listener {
 
             // Check external-origin copper golems inserting items into wooden chests inside the Residence
         } else {
-            targetRes = chestRes;
-            originRes = hasOrigin ? ClaimedResidence.getByLoc(golemOrigin) : null;
-            targetPerms = chestPerms;
+            ClaimedResidence entityOriginRes = hasOrigin ? ClaimedResidence.getByLoc(golemOrigin) : null;
+
+            if (chestRes != null) {
+                targetRes = chestRes;
+                originRes = entityOriginRes;
+                targetPerms = chestPerms;
+            } else {
+                // Check Residence-origin copper golems inserting items into external chests
+                targetRes = entityOriginRes;
+                originRes = null;
+            }
 
         }
 
